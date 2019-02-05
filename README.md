@@ -1,2 +1,2 @@
-# S-DPP
-Code base for D++ with suggested counterfactual partners
+To setup:
+import rover_domain_w_setup.py
