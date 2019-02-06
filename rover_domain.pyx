@@ -13,6 +13,7 @@ from libcpp.vector cimport vector
 from libc cimport math as cmath
 from  temp_array cimport TempArray
 from libcpp.algorithm cimport partial_sort
+from parameters import Parameters as p
 
 cimport cython
 
@@ -61,21 +62,21 @@ cdef class RoverDomain:
 
 
     def __cinit__(self):
-        self.n_rovers = 3
-        self.n_pois = 3
-        self.n_steps = 100
+        self.n_rovers = p.num_rovers
+        self.n_pois = p.num_pois
+        self.n_steps = p.num_steps
 
-        self.n_req = 1
-        self.min_dist = 1.
+        self.n_req = p.coupling
+        self.min_dist = p.min_distance
         self.step_id = 0
 
         # Done is set to true to prevent stepping the sim forward
         # before a call to reset (i.e. the domain is not yet ready/initialized).
         self.done = True
 
-        self.setup_size = 10.
-        self.interaction_dist = 1.
-        self.n_obs_sections = 4
+        self.setup_size = p.world_size
+        self.interaction_dist = p.activation_dist
+        self.n_obs_sections = p.n_sectors
         self.reorients = False
         self.discounts_eval = False
 
@@ -326,7 +327,7 @@ cdef class RoverDomain:
     cpdef double calc_traj_global_eval(self):
         cdef Py_ssize_t step_id, poi_id
         cdef TempArray[double] poi_evals
-        cdef double evaluation
+        cdef double evaluation = 0.0
         # Only evaluate trajectories at the end
         if not self.done:
             return 0.
