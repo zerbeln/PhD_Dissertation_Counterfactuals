@@ -25,7 +25,7 @@ cpdef calc_global_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_number, agent_id, observer_count
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = 100000
+    cdef double inf = 1000000
     cdef double g_reward = 0.0 # Global reward
     cdef double current_poi_reward = 0.0 #Tracks current highest reward from observing a specific POI
     cdef double temp_reward = 0.0
@@ -43,7 +43,6 @@ cpdef calc_global_reward(rover_history, poi_vals, poi_pos):
             summed_distances = 0.0
             temp_reward = 0.0
 
-            # For all agents
             # Calculate distance between poi and agent
             for agent_id in range(n_rovers):
                 agent_x_dist = poi_positions[poi_id, 0] - agent_pos_history[step_number, agent_id, 0]
@@ -89,7 +88,7 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_number, agent_id, observer_count, other_agent_id
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = float("inf")
+    cdef double inf = 1000000
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
     cdef double current_poi_reward = 0.0 #Tracks current highest reward from observing a specific POI
@@ -163,7 +162,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_number, agent_id, observer_count, other_agent_id, counterfactual_count
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = float("inf")
+    cdef double inf = 1000000
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
     cdef double g_with_counterfactuals = 0.0 # Reward with n counterfactual partners added
@@ -172,12 +171,13 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
     cdef double temp_dpp_reward = 0.0
     cdef double summed_distances = 0.0
     cdef double[:] dplusplus_reward = np.zeros(n_rovers)
+    cdef double[:] difference_reward = np.zeros(n_rovers)
 
     # CALCULATE GLOBAL REWARD
     g_reward = calc_global_reward(rover_history, poi_vals, poi_pos)
 
     # CALCULATE DIFFERENCE REWARD
-    dplusplus_reward = calc_difference_reward(rover_history, poi_vals, poi_pos)
+    difference_reward = calc_difference_reward(rover_history, poi_vals, poi_pos)
 
     # CALCULATE DPP REWARD
     for counterfactual_count in range(coupling):
@@ -226,7 +226,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                         for rv in range(coupling):
                             summed_distances += observer_distances[rv]
                             assert(observer_distances[rv] <= activation_dist)
-                        temp_reward = poi_values[poi_id]/(0.5*summed_distances)
+                        temp_reward = poi_values[poi_id]/summed_distances
                     else:
                         temp_reward = 0.0
 
@@ -238,6 +238,10 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
             temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + counterfactual_count)
             if temp_dpp_reward > dplusplus_reward[agent_id]:
                 dplusplus_reward[agent_id] = temp_dpp_reward
+
+    for id in range(n_rovers):
+        if difference_reward[id] > dplusplus_reward[id]:
+            dplusplus_reward[id] = difference_reward[id]
 
     return dplusplus_reward
 
