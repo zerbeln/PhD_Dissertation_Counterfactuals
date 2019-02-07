@@ -124,7 +124,7 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
                         observer_distances[other_agent_id] = distance
 
                         # Check if agent observes poi, update closest step distance
-                        if distance < activation_dist:
+                        if distance <= activation_dist:
                             observer_count += 1
                     else:
                         observer_distances[agent_id] = inf
@@ -209,7 +209,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                             self_dist = distance # Track distance from self for counterfactuals
 
                         # Check if agent observes poi, update closest step distance
-                        if distance < activation_dist:
+                        if distance <= activation_dist:
                             observer_count += 1
 
                     if observer_count < coupling:
@@ -311,7 +311,6 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                     if observer_count < coupling:  # Suggest counterfactual partners
                         rov_partners = closest_others(step_number, counterfactual_count, agent_id, poi_id, rover_history, poi_pos)
                         # rov_partners = random_partners(step_number, counterfactual_count, agent_id, poi_id, rover_history, poi_pos)
-                        # rov_partners = value_based_partners(counterfactual_count, poi_id, poi_vals)
 
                         for rovid in range(counterfactual_count):
                             observer_distances.append(rov_partners[rovid])  # Append n closest

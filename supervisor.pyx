@@ -67,6 +67,8 @@ cpdef random_partners(tstep, c_number, current_rov, current_poi, rover_hist, poi
         x_dist = poi_positions[current_poi, 0] - agent_x
         y_dist = poi_positions[current_poi, 1] - agent_y
         dist = math.sqrt((x_dist**2)+(y_dist**2))
+        if dist < p.activation_dist:  # If rover is not in range, suppose that it is
+            dist = p.activation_dist
         partners[i] = dist
 
     return partners
