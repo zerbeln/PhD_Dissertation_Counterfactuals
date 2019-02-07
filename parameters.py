@@ -7,7 +7,7 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 100  # Number of generations for CCEA in each stat run
+    generations = 10  # Number of generations for CCEA in each stat run
 
     # Domain parameters
     reward_type = 2  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++

@@ -4,7 +4,7 @@ from neural_network import NeuralNetwork
 from parameters import Parameters as p
 from rover_domain_w_setup import *
 from rover_domain import RoverDomain
-from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward
+from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward, calc_sdpp_reward
 import csv
 
 def save_reward_history(reward_history, file_name):
@@ -69,6 +69,11 @@ def main():
                     for pop_id in range(p.num_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
+                if rtype == 3:
+                    reward = calc_sdpp_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
+                    for pop_id in range(p.num_rovers):
+                        policy_id = cc.team_selection[pop_id, team_number]
+                        cc.fitness[pop_id, policy_id] = reward[pop_id]
 
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
@@ -97,6 +102,8 @@ def main():
         save_reward_history(reward_history, "Difference_Reward.csv")
     if rtype == 2:
         save_reward_history(reward_history, "DPP_Reward.csv")
+    if rtype == 3:
+        save_reward_history(reward_history, 'SDPP_Reward.csv')
 
 
 main()  # Run the program
