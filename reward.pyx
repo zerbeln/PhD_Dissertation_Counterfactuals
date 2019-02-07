@@ -309,8 +309,8 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                             observer_count += 1
 
                     if observer_count < coupling:  # Suggest counterfactual partners
-                        rov_partners = closest_others(step_number, counterfactual_count, agent_id, poi_id, rover_history, poi_pos)
-                        # rov_partners = random_partners(step_number, counterfactual_count, agent_id, poi_id, rover_history, poi_pos)
+                        # rov_partners = closest_others(step_number, counterfactual_count, agent_id, poi_id, rover_history, poi_pos)
+                        rov_partners = random_partners(step_number, counterfactual_count, agent_id, poi_id, rover_history, poi_pos)
 
                         for rovid in range(counterfactual_count):
                             observer_distances.append(rov_partners[rovid])  # Append n closest

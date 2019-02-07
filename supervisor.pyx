@@ -14,8 +14,8 @@ cpdef closest_others(tstep, c_number, current_rov, current_poi, rover_hist, poi_
     cdef int agent_id, other_id, i, j
     cdef double agent_x, agent_y, other_agent_x, other_agent_y, x_dist, y_dist, dist
 
-    agent_x = rover_positions[current_rov, tstep, 0]
-    agent_y = rover_positions[current_rov, tstep, 1]
+    agent_x = rover_positions[tstep, current_rov, 0]
+    agent_y = rover_positions[tstep, current_rov, 1]
     for other_id in range(p.num_rovers):  # For current time step, figure out distance between current rover and others
         rov_ids[other_id] = other_id
         if current_rov != other_id:
