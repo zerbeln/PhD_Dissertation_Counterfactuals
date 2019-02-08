@@ -4,15 +4,51 @@ from neural_network import NeuralNetwork
 from parameters import Parameters as p
 from rover_domain_w_setup import *
 from rover_domain import RoverDomain
-from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward, calc_sdpp_reward
+from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward
 import csv
+import os
 
 def save_reward_history(reward_history, file_name):
-    save_file_name = file_name
+    dir_name = 'Output_Data/'  # Inteded directory for output files
+    save_file_name = os.path.join(dir_name, file_name)
 
-    with open(save_file_name, 'a', newline='') as csvfile:
+    with open(save_file_name, 'a', newline='') as csvfile:  # Record reward history for each stat run
         writer = csv.writer(csvfile)
         writer.writerow(['Performance'] + reward_history)
+
+def save_world_configuration(rover_positions, poi_positions, poi_vals):
+    dir_name = 'Output_Data/'  # Inteded directory for output files
+    nrovers = p.num_rovers * p.num_types
+
+    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
+        os.makedirs(dir_name)
+
+    rcoords_name = os.path.join(dir_name, 'Rover_Positions.txt')
+    pcoords_name = os.path.join(dir_name, 'POI_Positions.txt')
+    pvals_name = os.path.join(dir_name, 'POI_Values.txt')
+
+    rov_coords = open(rcoords_name, 'a')
+    for r_id in range(nrovers):  # Record initial rover positions to txt file
+        rov_coords.write('%f' % rover_positions[r_id, 0])
+        rov_coords.write('\t')
+        rov_coords.write('%f' % rover_positions[r_id, 1])
+        rov_coords.write('\t')
+    rov_coords.write('\n')
+    rov_coords.close()
+
+    poi_coords = open(pcoords_name, 'a')
+    poi_values = open(pvals_name, 'a')
+    for p_id in range(p.num_pois):  # Record POI positions and values
+        poi_coords.write('%f' % poi_positions[p_id, 0])
+        poi_coords.write('\t')
+        poi_coords.write('%f' % poi_positions[p_id, 1])
+        poi_coords.write('\t')
+        poi_values.write('%f' % poi_vals[p_id])
+        poi_values.write('\t')
+    poi_coords.write('\n')
+    poi_values.write('\n')
+    poi_coords.close()
+    poi_values.close()
 
 
 def main():
@@ -31,6 +67,8 @@ def main():
         nn.reset_nn()  # Initialize NN architecture
         rd.reset()  # Resets rovers to initial positions
 
+        save_world_configuration(rd.init_rover_positions, rd.poi_positions, rd.poi_values)
+
         for gen in range(p.generations):
             print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
@@ -41,7 +79,7 @@ def main():
                 done = False
                 step_count = 0
                 while done == False:
-                    for rover_id in range(p.num_rovers):
+                    for rover_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[rover_id, team_number]
                         nn.run_neural_network(rd.rover_observations[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     rd.move_rovers(nn.out_layer)
@@ -53,25 +91,25 @@ def main():
 
                 # Update fitness of policies using reward information
                 if rtype == 0:
-                    reward = calc_global_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
-                    for pop_id in range(p.num_rovers):
+                    reward = calc_global_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                    for pop_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward
                 if rtype == 1:
-                    reward = calc_difference_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
-                    for pop_id in range(p.num_rovers):
+                    reward = calc_difference_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                    for pop_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 if rtype == 2:
-                    reward = calc_dpp_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
-                    for pop_id in range(p.num_rovers):
+                    reward = calc_dpp_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                    for pop_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
-                if rtype == 3:
-                    reward = calc_sdpp_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
-                    for pop_id in range(p.num_rovers):
-                        policy_id = cc.team_selection[pop_id, team_number]
-                        cc.fitness[pop_id, policy_id] = reward[pop_id]
+                # if rtype == 3:
+                #     reward = calc_sdpp_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                #     for pop_id in range(rd.n_rovers):
+                #         policy_id = cc.team_selection[pop_id, team_number]
+                #         cc.fitness[pop_id, policy_id] = reward[pop_id]
 
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
@@ -82,7 +120,7 @@ def main():
             done = False
             step_count = 0
             while done == False:
-                for rover_id in range(p.num_rovers):
+                for rover_id in range(rd.n_rovers):
                     nn.run_neural_network(rd.rover_observations[rover_id], cc.pops[rover_id, 0], rover_id)
                 rd.move_rovers(nn.out_layer)
                 rd.rover_position_histories[step_count, ...] = rd.rover_positions.copy()
@@ -91,7 +129,7 @@ def main():
                 if step_count > p.num_steps:
                     done = True
 
-            reward = calc_global_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
+            reward = calc_global_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
             reward_history.append(reward)
 
     if rtype == 0:

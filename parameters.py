@@ -11,12 +11,13 @@ class Parameters:
 
     # Domain parameters
     reward_type = 0  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
-    num_rovers = 12  # Number of rovers on map
+    num_rovers = 6  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     num_pois = 10  # Number of POIs on map
     num_steps = 30  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     world_size = 30
-    coupling = 3  # Number of rovers required to view a POI for credit
+    num_types = 2  # How many types of rovers are on the map
+    coupling = num_types  # Number of rovers required to view a POI for credit
     activation_dist = 4.0  # Minimum distance rovers must be to observe POIs
     n_sectors = 4  # Number of sectors sensor observations are divided into
 

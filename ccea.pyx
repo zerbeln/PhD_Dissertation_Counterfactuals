@@ -16,7 +16,7 @@ cdef class Ccea:
     def __cinit__(self):
         self.mut_prob = p.mutation_rate
         self.epsilon = p.epsilon
-        self.n_populations = p.num_rovers  # One population for each rover
+        self.n_populations = p.num_rovers * p.num_types  # One population for each rover
         self.population_size  = p.pop_size*2  # Number of policies in each pop
         n_inputs = p.num_inputs
         n_outputs = p.num_outputs

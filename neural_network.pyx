@@ -17,7 +17,7 @@ cdef class NeuralNetwork:
     cdef public double[:, :] out_layer
 
     def __cinit__(self):
-        self.n_rovers = p.num_rovers
+        self.n_rovers = p.num_rovers * p.num_types
         self.n_inputs = p.num_inputs
         self.n_outputs = p.num_outputs
         self.n_nodes = p.num_nodes  # Number of nodes in hidden layer

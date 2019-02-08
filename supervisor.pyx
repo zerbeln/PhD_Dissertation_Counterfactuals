@@ -5,9 +5,10 @@ import numpy as np
 import random
 
 cpdef closest_others(tstep, c_number, current_rov, current_poi, rover_hist, poi_pos):
+    cdef int nrovers = p.num_rovers * p.num_types
     cdef double act_distance = p.activation_dist
-    cdef double[:] rov_distances = np.zeros(p.num_rovers)
-    cdef int[:] rov_ids = np.zeros(p.num_rovers, dtype = np.int32)
+    cdef double[:] rov_distances = np.zeros(nrovers)
+    cdef int[:] rov_ids = np.zeros(nrovers, dtype = np.int32)
     cdef double[:] partners = np.zeros(c_number)
     cdef double[:, :, :] rover_positions = rover_hist
     cdef double[:, :] poi_positions = poi_pos
@@ -16,7 +17,7 @@ cpdef closest_others(tstep, c_number, current_rov, current_poi, rover_hist, poi_
 
     agent_x = rover_positions[tstep, current_rov, 0]
     agent_y = rover_positions[tstep, current_rov, 1]
-    for other_id in range(p.num_rovers):  # For current time step, figure out distance between current rover and others
+    for other_id in range(nrovers):  # For current time step, figure out distance between current rover and others
         rov_ids[other_id] = other_id
         if current_rov != other_id:
             other_agent_x = rover_positions[tstep, other_id, 0]
@@ -49,7 +50,7 @@ cpdef closest_others(tstep, c_number, current_rov, current_poi, rover_hist, poi_
     return partners
 
 cpdef random_partners(tstep, c_number, current_rov, current_poi, rover_hist, poi_pos):
-    cdef double n_rovers = p.num_rovers
+    cdef double n_rovers = p.num_rovers * p.num_types
     cdef double[:] partners = np.zeros(c_number)
     cdef double[:, :, :] rover_positions = rover_hist
     cdef double[:, :] poi_positions = poi_pos

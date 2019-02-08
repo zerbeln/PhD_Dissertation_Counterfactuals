@@ -14,6 +14,7 @@ from libc cimport math as cmath
 from  temp_array cimport TempArray
 from libcpp.algorithm cimport partial_sort
 from parameters import Parameters as p
+from heterogeneous_rovers import init_rover_types, init_poi_values
 
 cimport cython
 
@@ -62,7 +63,7 @@ cdef class RoverDomain:
 
 
     def __cinit__(self):
-        self.n_rovers = p.num_rovers
+        self.n_rovers = (p.num_rovers * p.num_types)
         self.n_pois = p.num_pois
         self.n_steps = p.num_steps
 
@@ -80,13 +81,13 @@ cdef class RoverDomain:
         self.reorients = False
         self.discounts_eval = False
 
-        self.init_rover_positions = None
+        self.init_rover_positions = init_rover_types()
         self.init_rover_orientations =  None
-        self.rover_positions =  None
-        self.rover_position_histories =  None
+        self.rover_positions =  self.init_rover_positions.copy()
+        self.rover_position_histories =  np.zeros((self.n_steps + 1, self.n_rovers, 3))
         self.rover_orientations = None
 
-        self.poi_values =  None
+        self.poi_values =  init_poi_values()
         self.poi_positions =  None
         self.rover_observations = None
         self.rover_rewards = None
