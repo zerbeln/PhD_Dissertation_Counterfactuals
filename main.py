@@ -10,11 +10,9 @@ import csv
 def save_reward_history(reward_history, file_name):
     save_file_name = file_name
 
-    with open(save_file_name, 'w', newline='') as csvfile:
+    with open(save_file_name, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["Generation"] + list(range(p.generations)))
-        for s in range(p.stat_runs):
-                writer.writerow(['Performance'] + reward_history[s])
+        writer.writerow(['Performance'] + reward_history)
 
 
 def main():
@@ -23,10 +21,10 @@ def main():
     rd = RoverDomain()
 
     rtype = p.reward_type
-    reward_history = [[] for i in range(p.stat_runs)]
 
     for srun in range(p.stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
+        reward_history = []
 
         # Reset CCEA, NN, and world for new stat run
         cc.reset_populations()  # Randomly initialize ccea populations
@@ -94,7 +92,7 @@ def main():
                     done = True
 
             reward = calc_global_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
-            reward_history[srun].append(reward)
+            reward_history.append(reward)
 
     if rtype == 0:
         save_reward_history(reward_history, "Global_Reward.csv")
