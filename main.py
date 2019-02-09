@@ -4,7 +4,7 @@ from neural_network import NeuralNetwork
 from parameters import Parameters as p
 from rover_domain_w_setup import *
 from rover_domain import RoverDomain
-from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward
+from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward, calc_sdpp_reward
 import csv
 import os
 
@@ -91,25 +91,25 @@ def main():
 
                 # Update fitness of policies using reward information
                 if rtype == 0:
-                    reward = calc_global_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                    reward = calc_global_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
                     for pop_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward
                 if rtype == 1:
-                    reward = calc_difference_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                    reward = calc_difference_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
                     for pop_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 if rtype == 2:
-                    reward = calc_dpp_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+                    reward = calc_dpp_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
                     for pop_id in range(rd.n_rovers):
                         policy_id = cc.team_selection[pop_id, team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
-                # if rtype == 3:
-                #     reward = calc_sdpp_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
-                #     for pop_id in range(rd.n_rovers):
-                #         policy_id = cc.team_selection[pop_id, team_number]
-                #         cc.fitness[pop_id, policy_id] = reward[pop_id]
+                if rtype == 3:
+                    reward = calc_sdpp_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
+                    for pop_id in range(rd.n_rovers):
+                        policy_id = cc.team_selection[pop_id, team_number]
+                        cc.fitness[pop_id, policy_id] = reward[pop_id]
 
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
@@ -129,7 +129,7 @@ def main():
                 if step_count > p.num_steps:
                     done = True
 
-            reward = calc_global_reward(rd.rover_position_histories, rd.rover_positions, rd.poi_values, rd.poi_positions)
+            reward = calc_global_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
             reward_history.append(reward)
 
     if rtype == 0:
