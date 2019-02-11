@@ -12,7 +12,7 @@ def save_reward_history(reward_history, file_name):
     dir_name = 'Output_Data/'  # Inteded directory for output files
     save_file_name = os.path.join(dir_name, file_name)
 
-    with open(save_file_name, 'a', newline='') as csvfile:  # Record reward history for each stat run
+    with open(save_file_name, 'a+', newline='') as csvfile:  # Record reward history for each stat run
         writer = csv.writer(csvfile)
         writer.writerow(['Performance'] + reward_history)
 
@@ -70,7 +70,7 @@ def main():
         save_world_configuration(rd.init_rover_positions, rd.poi_positions, rd.poi_values)
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            # print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
                 rd.reset()
@@ -132,14 +132,14 @@ def main():
             reward = calc_global_reward(rd.rover_position_histories, rd.poi_values, rd.poi_positions)
             reward_history.append(reward)
 
-    if rtype == 0:
-        save_reward_history(reward_history, "Global_Reward.csv")
-    if rtype == 1:
-        save_reward_history(reward_history, "Difference_Reward.csv")
-    if rtype == 2:
-        save_reward_history(reward_history, "DPP_Reward.csv")
-    if rtype == 3:
-        save_reward_history(reward_history, 'SDPP_Reward.csv')
+        if rtype == 0:
+            save_reward_history(reward_history, "Global_Reward.csv")
+        if rtype == 1:
+            save_reward_history(reward_history, "Difference_Reward.csv")
+        if rtype == 2:
+            save_reward_history(reward_history, "DPP_Reward.csv")
+        if rtype == 3:
+            save_reward_history(reward_history, 'SDPP_Reward.csv')
 
 
 main()  # Run the program
