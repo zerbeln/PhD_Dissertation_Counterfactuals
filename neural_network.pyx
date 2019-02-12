@@ -1,7 +1,5 @@
 import numpy as np
 from parameters import Parameters as p
-import math
-cimport cython
 
 cdef class NeuralNetwork:
     cdef public int n_rovers
@@ -37,9 +35,8 @@ cdef class NeuralNetwork:
 
     cpdef get_inputs(self, state_vec, rov_id):  # Get inputs from state-vector
         cdef int i
-        for i in range(2):
-            for j in range(4):
-                self.in_layer[rov_id, (i*4)+j] = state_vec[i, j]
+        for i in range(p.num_inputs):
+            self.in_layer[rov_id, i] = state_vec[i]
 
     cpdef get_weights(self, nn_weights, rov_id):  # Get weights from CCEA population
         cdef int i
@@ -84,12 +81,12 @@ cdef class NeuralNetwork:
 
     cpdef tanh(self, inp): # Tanh function as activation function
         cdef double tanh
-        tanh = (2/(1 + math.exp(-2*inp)))-1
+        tanh = (2/(1 + np.exp(-2*inp)))-1
         return tanh
 
     cpdef sigmoid(self, inp): # Sigmoid function as activation function
         cdef double sig
-        sig = 1/(1 + math.exp(-inp))
+        sig = 1/(1 + np.exp(-inp))
         return sig
 
     cpdef run_neural_network(self, state_vec, weight_vec, rover_id):
