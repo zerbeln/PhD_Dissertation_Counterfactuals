@@ -40,7 +40,7 @@ cpdef calc_global_reward(rover_history, poi_vals, poi_pos):
             # Calculate distance between poi and agent
             for rtype in range(n_types):
                 for agent_id in range(n_rovers):
-                    rov_id = int(n_types*rtype + agent_id) # Converts identifier to be compatible with base code
+                    rov_id = int(n_rovers*rtype + agent_id) # Converts identifier to be compatible with base code
                     agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
                     agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
                     distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
@@ -118,7 +118,7 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
                     # Calculate distance between poi and agent
                     for other_type in range(n_types):
                         for other_agent_id in range(n_rovers):
-                            rov_id = int(n_types*other_type + other_agent_id)
+                            rov_id = int(n_rovers*other_type + other_agent_id)
                             if agent_id != other_agent_id or rtype != other_type:
                                 agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
                                 agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
@@ -150,7 +150,7 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
 
                 g_without_self += current_poi_reward
 
-            rov_id = int(n_types*rtype + agent_id)
+            rov_id = int(n_rovers*rtype + agent_id)
             difference_reward[rov_id] = g_reward - g_without_self
 
     return difference_reward
@@ -211,7 +211,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                         # Calculate distance between poi and agent
                         for other_type in range(n_types):
                             for other_agent_id in range(n_rovers):
-                                rov_id = int(n_types*other_type + other_agent_id)
+                                rov_id = int(n_rovers*other_type + other_agent_id)
                                 agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
                                 agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
                                 distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
@@ -250,7 +250,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                     g_with_counterfactuals += current_poi_reward
 
                 temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
-                rov_id = int(n_types*rtype + agent_id)
+                rov_id = int(n_rovers*rtype + agent_id)
                 if temp_dpp_reward > dplusplus_reward[rov_id]:
                     dplusplus_reward[rov_id] = temp_dpp_reward
 
@@ -314,7 +314,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                         # Calculate distance between poi and agent
                         for other_type in range(n_types):
                             for other_agent_id in range(n_rovers):
-                                rov_id = int(n_types*other_type + other_agent_id)
+                                rov_id = int(n_rovers*other_type + other_agent_id)
                                 agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
                                 agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
                                 distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
@@ -352,7 +352,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                     g_with_counterfactuals += current_poi_reward
 
                 temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
-                rov_id = int(n_types*rtype + agent_id)
+                rov_id = int(n_rovers*rtype + agent_id)
                 if temp_dpp_reward > dplusplus_reward[rov_id]:
                     dplusplus_reward[rov_id] = temp_dpp_reward
 

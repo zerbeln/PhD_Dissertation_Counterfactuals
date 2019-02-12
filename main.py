@@ -70,7 +70,7 @@ def main():
         save_world_configuration(rd.init_rover_positions, rd.poi_positions, rd.poi_values)
 
         for gen in range(p.generations):
-            # print("Gen: %i" % gen)
+            print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
                 rd.reset()

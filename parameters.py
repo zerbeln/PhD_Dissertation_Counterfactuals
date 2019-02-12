@@ -7,12 +7,12 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 30 # Number of generations for CCEA in each stat run
+    generations = 10  # Number of generations for CCEA in each stat run
 
     # Domain parameters
-    reward_type = 3  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
-    num_rovers = 3  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
-    num_types = 2  # How many types of rovers are on the map
+    reward_type = 1  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
+    num_rovers = 2  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+    num_types = 6  # How many types of rovers are on the map
     num_pois = 10  # Number of POIs on map
     num_steps = 30  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
