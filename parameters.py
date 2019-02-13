@@ -11,8 +11,8 @@ class Parameters:
 
     # Domain parameters
     rover_types = 'homogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
-    reward_type = 2  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
-    num_rovers = 6  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+    reward_type = 0  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
+    num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     num_types = 1  # How many types of rovers are on the map
     coupling = 3  # Number of rovers required to view a POI for credit
     num_pois = 10  # Number of POIs on map

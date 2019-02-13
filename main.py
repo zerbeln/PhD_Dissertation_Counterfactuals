@@ -7,6 +7,7 @@ from reward import calc_global_reward, calc_difference_reward, calc_dpp_reward, 
 from homogeneous_rewards import calc_global, calc_difference, calc_dpp
 import csv; import os; import sys
 
+
 def save_reward_history(reward_history, file_name):
     dir_name = 'Output_Data/'  # Inteded directory for output files
     save_file_name = os.path.join(dir_name, file_name)
@@ -14,6 +15,7 @@ def save_reward_history(reward_history, file_name):
     with open(save_file_name, 'a+', newline='') as csvfile:  # Record reward history for each stat run
         writer = csv.writer(csvfile)
         writer.writerow(['Performance'] + reward_history)
+
 
 def save_world_configuration(rover_positions, poi_positions, poi_vals):
     dir_name = 'Output_Data/'  # Inteded directory for output files
@@ -70,7 +72,7 @@ def run_heterogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_value)
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            #  print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
@@ -200,7 +202,7 @@ def run_homogeneous_rovers():
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
 
-            reward = calc_global_reward(rd.rover_path, rd.poi_value, rd.poi_pos)
+            reward = calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
             reward_history.append(reward)
 
         if rtype == 0:
@@ -209,6 +211,7 @@ def run_homogeneous_rovers():
             save_reward_history(reward_history, "Difference_Reward.csv")
         if rtype == 2:
             save_reward_history(reward_history, "DPP_Reward.csv")
+
 
 def main():
     if p.rover_types == 'homogeneous':

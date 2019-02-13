@@ -16,7 +16,7 @@ cpdef calc_global_reward(rover_history, poi_vals, poi_pos):
     cdef double[:] poi_values = poi_vals
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, rtype, rov_id, t
-    cdef double agent_x_dist, agent_y_dist, distance
+    cdef double rover_x_dist, rover_y_dist, distance
     cdef double inf = 1000.00
     cdef double g_reward = 0.0 # Global reward
     cdef double current_poi_reward = 0.0 #Tracks current highest reward from observing a specific POI
@@ -38,9 +38,9 @@ cpdef calc_global_reward(rover_history, poi_vals, poi_pos):
             for rtype in range(n_types):
                 for agent_id in range(n_rovers):
                     rov_id = int(n_rovers*rtype + agent_id) # Converts identifier to be compatible with base code
-                    agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
-                    agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
-                    distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
+                    rover_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
+                    rover_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
+                    distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
 
                     if distance < min_dist:
                         distance = min_dist
@@ -84,7 +84,7 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
     cdef double[:] poi_values = poi_vals
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, other_agent_id, rtype, other_type, rov_id, t
-    cdef double agent_x_dist, agent_y_dist, distance
+    cdef double rover_x_dist, rover_y_dist, distance
     cdef double inf = 1000.00
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
@@ -116,9 +116,9 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
                         for other_agent_id in range(n_rovers):
                             rov_id = int(n_rovers*other_type + other_agent_id)  # Convert rover id to AADI base format
                             if agent_id != other_agent_id or rtype != other_type:
-                                agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
-                                agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
-                                distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
+                                rover_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
+                                rover_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
+                                distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
                                 if distance < min_dist:
                                     distance = min_dist
                                 observer_distances[other_type, other_agent_id] = distance
@@ -165,7 +165,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
     cdef double[:] poi_values = poi_vals
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, other_agent_id, c_count, id, other_type, rtype, rov_id, t, c
-    cdef double agent_x_dist, agent_y_dist, distance
+    cdef double rover_x_dist, rover_y_dist, distance
     cdef double inf = 1000.00
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
@@ -207,9 +207,9 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                         for other_type in range(n_types):
                             for other_agent_id in range(n_rovers):
                                 rov_id = int(n_rovers*other_type + other_agent_id)  # Make rover ID AADI compatible
-                                agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
-                                agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
-                                distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
+                                rover_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
+                                rover_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
+                                distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
                                 if distance < min_dist:
                                     distance = min_dist
                                 observer_distances[other_type].append(distance)
@@ -266,7 +266,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
     cdef double[:] poi_values = poi_vals
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, other_agent_id, c_count, rov_id, rtype, other_type, rv
-    cdef double agent_x_dist, agent_y_dist, distance
+    cdef double rover_x_dist, rover_y_dist, distance
     cdef double inf = 1000.00
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
@@ -308,9 +308,9 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                         for other_type in range(n_types):
                             for other_agent_id in range(n_rovers):
                                 rov_id = int(n_rovers*other_type + other_agent_id)
-                                agent_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
-                                agent_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
-                                distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
+                                rover_x_dist = poi_positions[poi_id, 0] - rov_history[step_id, rov_id, 0]
+                                rover_y_dist = poi_positions[poi_id, 1] - rov_history[step_id, rov_id, 1]
+                                distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
                                 if distance < min_dist:
                                     distance = min_dist
                                 observer_distances[other_type].append(distance)
