@@ -12,7 +12,7 @@ cpdef one_of_each_type(c_number):
     cdef int i
 
     for i in range(c_number):
-        partners[i, 0] = 3.0
+        partners[i, 0] = 3.00
         partners[i, 1] = float(i)  # Type of rover
 
     return partners

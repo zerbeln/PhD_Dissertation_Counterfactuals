@@ -1,7 +1,6 @@
 import numpy as np
 from parameters import Parameters as p
 import random
-cimport cython
 
 cdef class Ccea:
     cdef public double mut_prob

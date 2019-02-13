@@ -198,7 +198,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                     for step_id in range(num_steps):
                         # Count how many agents observe poi, update closest distance if necessary
                         observer_count = 0
-                        observer_distances = np.zeros((n_types, n_rovers))
+                        observer_distances = [[] for _ in range(n_types)]
                         summed_distances = 0.0
                         temp_reward = 0.0
                         types_in_range = []
@@ -212,7 +212,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                                 distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
                                 if distance < min_dist:
                                     distance = min_dist
-                                observer_distances[other_type, other_agent_id] = distance
+                                observer_distances[other_type].append(distance)
 
                                 if other_agent_id == agent_id and other_type == rtype:
                                     self_dist = distance  # Track distance from self for counterfactuals
@@ -222,7 +222,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
 
                         if self_dist <= activation_dist:  # Add counterfactual partners if in range (more of me)
                             for c in range(c_count):
-                                np.append(observer_distances[rtype], self_dist)  # DOUBLE CHECK THIS
+                                observer_distances[rtype].append(self_dist)
                                 types_in_range.append(rtype)
 
                         for t in range(n_types):
@@ -232,7 +232,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
                         # update closest distance only if poi is observed
                         if observer_count >= coupling:
                             for rv in range(coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[rv, :])
+                                summed_distances += min(observer_distances[rv][:])
                             temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
@@ -299,7 +299,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                     for step_id in range(num_steps):
                         # Count how many agents observe poi, update closest distance if necessary
                         observer_count = 0
-                        observer_distances = np.zeros((n_types, n_rovers))
+                        observer_distances = [[] for _ in range(n_types)]
                         summed_distances = 0.0
                         temp_reward = 0.0
                         types_in_range = []
@@ -313,7 +313,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                                 distance = math.sqrt((agent_x_dist * agent_x_dist) + (agent_y_dist * agent_y_dist))
                                 if distance < min_dist:
                                     distance = min_dist
-                                observer_distances[other_type, other_agent_id] = distance
+                                observer_distances[other_type].append(distance)
 
                                 if other_agent_id == agent_id and rtype == other_type:
                                     self_dist = distance # Track distance from self for counterfactuals
@@ -326,7 +326,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                         rov_partners = one_of_each_type(c_count)
 
                         for rv in range(c_count):
-                            np.append(observer_distances[c_count], rov_partners[rv, 0]) # Append counterfactual
+                            observer_distances[rv].append(rov_partners[rv, 0])
                             if rov_partners[rv, 1] != rtype:
                                 observer_count += 1
 
@@ -334,8 +334,8 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
                         # update closest distance only if poi is observed
                         if observer_count >= coupling:
                             for rv in range(coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[rv, :])
-                            temp_reward = poi_values[poi_id]/(0.5*summed_distances)
+                                summed_distances += min(observer_distances[rv][:])
+                            temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
 
