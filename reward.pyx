@@ -17,7 +17,7 @@ cpdef calc_global_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, rtype, rov_id, t
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = 10000.00
+    cdef double inf = 1000.00
     cdef double g_reward = 0.0 # Global reward
     cdef double current_poi_reward = 0.0 #Tracks current highest reward from observing a specific POI
     cdef double temp_reward = 0.0
@@ -85,7 +85,7 @@ cpdef calc_difference_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, other_agent_id, rtype, other_type, rov_id, t
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = 10000.00
+    cdef double inf = 1000.00
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
     cdef double current_poi_reward = 0.0 #Tracks current highest reward from observing a specific POI
@@ -166,7 +166,7 @@ cpdef calc_dpp_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, other_agent_id, c_count, id, other_type, rtype, rov_id, t, c
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = 10000.00
+    cdef double inf = 1000.00
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
     cdef double g_with_counterfactuals = 0.0 # Reward with n counterfactual partners added
@@ -267,7 +267,7 @@ cpdef calc_sdpp_reward(rover_history, poi_vals, poi_pos):
     cdef double[:, :] poi_positions = poi_pos
     cdef int poi_id, step_id, agent_id, observer_count, other_agent_id, c_count, rov_id, rtype, other_type, rv
     cdef double agent_x_dist, agent_y_dist, distance
-    cdef double inf = 10000.00
+    cdef double inf = 1000.00
     cdef double g_reward = 0.0
     cdef double g_without_self = 0.0
     cdef double g_with_counterfactuals = 0.0 # Reward with n counterfactual partners added

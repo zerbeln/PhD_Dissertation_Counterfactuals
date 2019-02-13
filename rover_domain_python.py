@@ -171,7 +171,8 @@ class RoverDomain:
 
             # Log all distance into brackets for other drones
             for id, loc in enumerate(self.rover_pos):
-                if id == rover_id: continue #Ignore self
+                if id == rover_id:
+                    continue  # Ignore self
 
                 angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
                 if dist >= self.obs_radius:
