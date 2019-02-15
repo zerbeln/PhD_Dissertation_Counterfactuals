@@ -7,7 +7,7 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 100  # Number of generations for CCEA in each stat run
+    generations = 300  # Number of generations for CCEA in each stat run
 
     # Domain parameters
     rover_types = 'homogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
