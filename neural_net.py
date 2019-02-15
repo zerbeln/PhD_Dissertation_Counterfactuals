@@ -1,6 +1,7 @@
 import numpy as np
 from parameters import Parameters as p
 
+
 class NeuralNetwork:
 
     def __init__(self):
