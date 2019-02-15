@@ -2,43 +2,44 @@ import numpy as np
 from parameters import Parameters as p
 import random
 
+
 class Ccea:
 
     def __init__(self):
         self.mut_prob = p.mutation_rate
         self.epsilon = p.epsilon
         self.n_populations = p.num_rovers * p.num_types  # One population for each rover
-        self.population_size  = p.pop_size*2  # Number of policies in each pop
+        self.population_size = p.pop_size * 2  # Number of policies in each pop
         n_inputs = p.num_inputs
         n_outputs = p.num_outputs
         n_nodes = p.num_nodes  # Number of nodes in hidden layer
-        self.policy_size = (n_inputs + 1)*n_nodes + (n_nodes + 1)*n_outputs  # Number of weights for NN
+        self.policy_size = (n_inputs + 1)*n_nodes + (n_nodes + 1) * n_outputs  # Number of weights for NN
         self.pops = np.zeros((self.n_populations, self.population_size, self.policy_size))
         self.fitness = np.zeros((self.n_populations, self.population_size))
-        self.team_selection = np.zeros((self.n_populations, self.population_size), dtype = np.int32)
+        self.team_selection = [[0 for _ in range(self.population_size)] for _ in range(self.n_populations)]
 
     def reset_populations(self):  # Re-initializes CCEA populations for new run
         for pop_index in range(self.n_populations):
             for policy_index in range(self.population_size):
                 for w in range(self.policy_size):
                     self.pops[pop_index, policy_index, w] = random.uniform(-1, 1)
-                self.team_selection[pop_index, policy_index] = -1
+                self.team_selection[pop_index][policy_index] = -1
 
     def select_policy_teams(self):  # Create policy teams for testing
         for pop_id in range(self.n_populations):
             for policy_id in range(self.population_size):
-                self.team_selection[pop_id, policy_id] = -1
+                self.team_selection[pop_id][policy_id] = -1
 
         for pop_id in range(self.n_populations):
             for j in range(self.population_size):
                 rpol = random.randint(0, (self.population_size - 1))  # Select a random policy from pop
                 k = 0
                 while k < j:  # Check for duplicates
-                    if rpol == self.team_selection[pop_id, k]:
+                    if rpol == self.team_selection[pop_id][k]:
                         rpol = random.randint(0, (self.population_size - 1))
                         k = -1
                     k += 1
-                self.team_selection[pop_id, j] = rpol  # Assign policy to team
+                self.team_selection[pop_id][j] = rpol  # Assign policy to team
 
     def mutate(self):
         half_pop_length = int(self.population_size/2)

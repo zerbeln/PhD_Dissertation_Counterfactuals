@@ -81,7 +81,7 @@ def run_heterogeneous_rovers():
                 joint_state = rd.get_joint_state()
                 while done == False:
                     for rover_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[rover_id, team_number]
+                        policy_id = cc.team_selection[rover_id][team_number]
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     joint_state, done = rd.step(nn.out_layer)
 
@@ -89,22 +89,22 @@ def run_heterogeneous_rovers():
                 if rtype == 0:
                     reward = calc_hetero_global(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward
                 elif rtype == 1:
                     reward = calc_hetero_difference(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 elif rtype == 2:
                     reward = calc_hetero_dpp(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 elif rtype == 3:
                     reward = calc_sdpp(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 else:
                     sys.exit('Incorrect Reward Type for Heterogeneous Teams')
@@ -165,7 +165,7 @@ def run_homogeneous_rovers():
                 joint_state = rd.get_joint_state()
                 while done == False:
                     for rover_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[rover_id, team_number]
+                        policy_id = cc.team_selection[rover_id][team_number]
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     joint_state, done = rd.step(nn.out_layer)
 
@@ -173,17 +173,17 @@ def run_homogeneous_rovers():
                 if rtype == 0:
                     reward = calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward
                 elif rtype == 1:
                     reward = calc_difference(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 elif rtype == 2:
                     reward = calc_dpp(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for pop_id in range(rd.num_agents):
-                        policy_id = cc.team_selection[pop_id, team_number]
+                        policy_id = cc.team_selection[pop_id][team_number]
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
                 else:
                     sys.exit('Incorrect Reward Type for Homogeneous Teams')

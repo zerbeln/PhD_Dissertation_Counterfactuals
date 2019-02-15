@@ -1,9 +1,9 @@
 import random, sys
-from random import randint
 import numpy as np
 import math
-from heterogeneous_rovers import init_rover_types, init_poi_values, init_poi_positions
+from heterogeneous_rovers import *
 from parameters import Parameters as p
+
 
 class RoverDomain:
 
@@ -16,21 +16,21 @@ class RoverDomain:
         self.istep = 0 #Current Step counter
 
         # Initialize POI containers tha track POI position
-        self.poi_pos = init_poi_positions()
-        self.poi_value = init_poi_values()
+        self.poi_pos = init_poi_positions_four_corners()
+        self.poi_value = init_poi_values_fixed()
 
         # Initialize rover position container
-        self.rover_pos = init_rover_types()
+        self.rover_pos = init_rover_positions_fixed()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
         #Rover path trace for trajectory-wide global reward computation and vizualization purposes
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
 
     def reset(self):
-        self.rover_pos = init_rover_types()
+        self.rover_pos = init_rover_positions_fixed()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
-        self.poi_pos = init_poi_positions()
-        self.poi_value = init_poi_values()
+        self.poi_pos = init_poi_positions_four_corners()
+        self.poi_value = init_poi_values_fixed()
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
@@ -178,7 +178,7 @@ class RoverDomain:
                 if dist >= self.obs_radius:
                     continue  # Observability radius
 
-                if dist < p.min_distance: # Clip distance to not overwhelm tanh in NN
+                if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
                     dist = p.min_distance
                 bracket = int(angle / p.angle_resolution)
                 temp_rover_dist_list[bracket].append((1/dist))
@@ -187,20 +187,28 @@ class RoverDomain:
             ####Encode the information onto the state
             for bracket in range(int(360 / p.angle_resolution)):
                 # POIs
-                num_poi = len(temp_poi_dist_list[bracket])
+                num_poi = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
                 if num_poi > 0:
-                    if p.sensor_model == 'density': poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi  # Density Sensor
-                    elif p.sensor_model == 'closest': poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
-                    else: sys.exit('Incorrect sensor model')
-                else: poi_state[bracket] = -1.0
+                    if p.sensor_model == 'density':
+                        poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi  # Density Sensor
+                    elif p.sensor_model == 'closest':
+                        poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
+                    else:
+                        sys.exit('Incorrect sensor model')
+                else:
+                    poi_state[bracket] = -1.0
 
-                #Rovers
-                num_agents = len(temp_rover_dist_list[bracket])
+                # Rovers
+                num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
                 if num_agents > 0:
-                    if p.sensor_model == 'density': rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
-                    elif p.sensor_model == 'closest': rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
-                    else: sys.exit('Incorrect sensor model')
-                else: rover_state[bracket] = -1.0
+                    if p.sensor_model == 'density':
+                        rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
+                    elif p.sensor_model == 'closest':
+                        rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
+                    else:
+                        sys.exit('Incorrect sensor model')
+                else:
+                    rover_state[bracket] = -1.0
 
             state = rover_state + poi_state  # Append rover and poi to form the full state
 

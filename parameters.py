@@ -7,7 +7,7 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 300  # Number of generations for CCEA in each stat run
+    generations = 2  # Number of generations for CCEA in each stat run
 
     # Domain parameters
     rover_types = 'homogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
@@ -15,7 +15,7 @@ class Parameters:
     num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     num_types = 1  # How many types of rovers are on the map
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 10  # Number of POIs on map
+    num_pois = 4  # Number of POIs on map
     num_steps = 30  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     world_size = 30
