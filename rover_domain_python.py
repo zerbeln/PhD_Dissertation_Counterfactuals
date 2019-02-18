@@ -66,10 +66,7 @@ class RoverDomain:
         #Compute done
         done = int(self.istep >= p.num_steps)
 
-        if p.team_types == "heterogeneous":
-            joint_state = self.get_hetero_joint_state()
-        else:
-            joint_state = self.get_joint_state()
+        joint_state = self.get_joint_state()
 
         return joint_state, done
 
@@ -123,7 +120,7 @@ class RoverDomain:
                     else:
                         sys.exit('Incorrect sensor model')
                 else:
-                    poi_state[bracket] = -1.0
+                    poi_state[bracket] = 0.0
 
                 # Rovers
                 num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
@@ -131,79 +128,6 @@ class RoverDomain:
                     if p.sensor_model == 'density':
                         rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
                     elif p.sensor_model == 'closest':
-                        rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
-                    else:
-                        sys.exit('Incorrect sensor model')
-                else:
-                    rover_state[bracket] = -1.0
-
-            state = rover_state + poi_state  # Append rover and poi to form the full state
-
-            joint_state.append(state)
-
-        return joint_state
-
-    def get_hetero_joint_state(self):  # Two rover types with different sensors
-        joint_state = []
-
-        assert(p.num_types == 2)
-
-        for rover_id in range(self.num_agents):
-            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]
-            rover_type = self.rover_pos[rover_id, 2]
-
-            rover_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
-            poi_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
-            temp_poi_dist_list = [[] for _ in range(int(360 / p.angle_resolution))]
-            temp_rover_dist_list = [[] for _ in range(int(360 / p.angle_resolution))]
-
-            # Log all distance into brackets for POIs
-            for loc, value in zip(self.poi_pos, self.poi_value):
-
-                angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
-                if dist >= self.obs_radius:
-                    continue  # Observability radius
-
-                bracket = int(angle / p.angle_resolution)
-                if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
-                    dist = p.min_distance
-                temp_poi_dist_list[bracket].append((value/dist))
-
-            # Log all distance into brackets for other drones
-            for id, loc in enumerate(self.rover_pos):
-                if id == rover_id:
-                    continue  # Ignore self
-
-                angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
-                if dist >= self.obs_radius:
-                    continue  # Observability radius
-
-                if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
-                    dist = p.min_distance
-                bracket = int(angle / p.angle_resolution)
-                temp_rover_dist_list[bracket].append((1/dist))
-
-
-            ####Encode the information onto the state
-            for bracket in range(int(360 / p.angle_resolution)):
-                # POIs
-                num_poi = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
-                if num_poi > 0:
-                    if rover_type == 1:
-                        poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi  # Density Sensor
-                    elif rover_type == 0:
-                        poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
-                    else:
-                        sys.exit('Incorrect sensor model')
-                else:
-                    poi_state[bracket] = 0.0
-
-                # Rovers
-                num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
-                if num_agents > 0:
-                    if rover_type == 1:
-                        rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
-                    elif rover_type == 0:
                         rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
                     else:
                         sys.exit('Incorrect sensor model')

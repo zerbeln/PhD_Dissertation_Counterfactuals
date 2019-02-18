@@ -10,10 +10,10 @@ class Parameters:
     generations = 10  # Number of generations for CCEA in each stat run
 
     # Domain parameters
-    team_types = 'homogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
-    reward_type = 2  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
-    num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
-    num_types = 1  # How many types of rovers are on the map
+    team_types = 'heterogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
+    reward_type = 3  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
+    num_rovers = 4  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+    num_types = 3  # How many types of rovers are on the map
     coupling = 3  # Number of rovers required to view a POI for credit
     num_pois = 4  # Number of POIs on map
     num_steps = 50  # Number of steps rovers take each episode
