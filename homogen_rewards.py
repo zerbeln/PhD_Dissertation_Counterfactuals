@@ -17,7 +17,6 @@ def calc_global(rover_path, poi_values, poi_positions):
             observer_count = 0  # Track number of observers for given POI
             observer_distances = [0.0 for i in range(p.num_rovers)]
             summed_distances = 0.0  # Denominator of reward function
-            temp_reward = 0.0  # Tracks reward given by POI for each time step
 
             # For all agents
             # Calculate distance between poi and agent
@@ -25,8 +24,10 @@ def calc_global(rover_path, poi_values, poi_positions):
                 rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, rover_id, 0]
                 rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, rover_id, 1]
                 distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
+
                 if distance <= p.min_distance:
                     distance = p.min_distance  # Clip distance
+
                 observer_distances[rover_id] = distance
 
                 # Check if agent observes poi
@@ -35,11 +36,13 @@ def calc_global(rover_path, poi_values, poi_positions):
 
             if observer_count >= p.coupling:  # If observers meet coupling req, calculate reward
                 for rv in range(p.coupling):
+                    assert(min(observer_distances) <= p.activation_dist)
                     summed_distances += min(observer_distances)
                     od_index = observer_distances.index(min(observer_distances))
                     observer_distances[od_index] = inf
                 temp_reward = poi_values[poi_id]/summed_distances
             else:
+                assert (observer_count < p.coupling)
                 temp_reward = 0.0
 
             if temp_reward > current_poi_reward:
@@ -70,31 +73,34 @@ def calc_difference(rover_path, poi_values, poi_positions):
                 observer_count = 0  # Track number of POI observers at time step
                 observer_distances = [0.0 for i in range(p.num_rovers)]
                 summed_distances = 0.0  # Denominator of reward function
-                temp_reward = 0.0  # Tracks reward given by POI for each time step
 
                 # Calculate distance between poi and agent
                 for other_agent_id in range(p.num_rovers):
-                    if agent_id != other_agent_id:
+                    if agent_id != other_agent_id:  # Only do for other rovers
                         rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, other_agent_id, 0]
                         rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, other_agent_id, 1]
                         distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
+
                         if distance <= p.min_distance:
                             distance = p.min_distance
+
                         observer_distances[other_agent_id] = distance
 
-                        # Check if agent observes poi, update closest step distance
-                        if distance < p.activation_dist:
+                        if distance <= p.activation_dist:
                             observer_count += 1
-                    else:
-                        observer_distances[agent_id] = inf  # Ignore self
 
-                if observer_count >= p.coupling: # If coupling satisfied, compute reward
+                    if agent_id == other_agent_id:  # Ignore self
+                        observer_distances[agent_id] = inf
+
+                if observer_count >= p.coupling:  # If coupling satisfied, compute reward
                     for rv in range(p.coupling):
+                        assert (min(observer_distances) <= p.activation_dist)
                         summed_distances += min(observer_distances)
                         od_index = observer_distances.index(min(observer_distances))
                         observer_distances[od_index] = inf
                     temp_reward = poi_values[poi_id]/summed_distances
                 else:
+                    assert (observer_count < p.coupling)
                     temp_reward = 0.0
 
                 if temp_reward > current_poi_reward:
@@ -119,7 +125,7 @@ def calc_dpp(rover_path, poi_values, poi_positions):
     difference_reward = calc_difference(rover_path, poi_values, poi_positions)
 
     # CALCULATE DPP REWARD
-    for counterfactual_count in range(p.coupling):
+    for counterfactual_count in range(p.coupling-1):
 
         # Calculate Difference with Extra Me Reward
         for agent_id in range(p.num_rovers):
@@ -133,15 +139,16 @@ def calc_dpp(rover_path, poi_values, poi_positions):
                     observer_count = 0  # Track number of POI observers at time step
                     observer_distances = []
                     summed_distances = 0.0 # Denominator of reward function
-                    temp_reward = 0.0  # Tracks reward given by POI for each time step
 
                     # Calculate distance between poi and agent
                     for other_agent_id in range(p.num_rovers):
                         rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, other_agent_id, 0]
                         rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, other_agent_id, 1]
                         distance = math.sqrt((rover_x_dist * rover_x_dist) + (rover_y_dist * rover_y_dist))
-                        if distance < p.min_distance:
+
+                        if distance <= p.min_distance:
                             distance = p.min_distance
+
                         observer_distances.append(distance)
 
                         if other_agent_id == agent_id:
@@ -151,19 +158,20 @@ def calc_dpp(rover_path, poi_values, poi_positions):
                         if distance <= p.activation_dist:
                             observer_count += 1
 
-                    if observer_count < p.coupling:  # Add counterfactual partners if needed
-                        if self_dist <= p.activation_dist:
-                            for c in range(counterfactual_count):
-                                observer_distances.append(self_dist)
-                            observer_count += counterfactual_count
+                    if self_dist <= p.activation_dist:  # Another me only works if self in range
+                        for c in range(counterfactual_count):
+                            observer_distances.append(self_dist)
+                        observer_count += counterfactual_count
 
                     if observer_count >= p.coupling:  # If coupling satisfied, compute reward
                         for rv in range(p.coupling):
+                            assert(min(observer_distances) <= p.activation_dist)
                             summed_distances += min(observer_distances)
                             od_index = observer_distances.index(min(observer_distances))
                             observer_distances[od_index] = inf
                         temp_reward = poi_values[poi_id]/summed_distances
                     else:
+                        assert(observer_count < p.coupling)
                         temp_reward = 0.0
 
                     if temp_reward > current_poi_reward:

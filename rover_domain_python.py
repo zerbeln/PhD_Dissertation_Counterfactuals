@@ -71,7 +71,6 @@ class RoverDomain:
         else:
             joint_state = self.get_joint_state()
 
-
         return joint_state, done
 
     def get_joint_state(self):
@@ -146,6 +145,7 @@ class RoverDomain:
 
     def get_hetero_joint_state(self):  # Two rover types with different sensors
         joint_state = []
+
         assert(p.num_types == 2)
 
         for rover_id in range(self.num_agents):

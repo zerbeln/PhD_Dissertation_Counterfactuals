@@ -50,6 +50,22 @@ def save_world_configuration(rover_positions, poi_positions, poi_vals):
     poi_coords.close()
     poi_values.close()
 
+def save_rover_path(rover_path):
+    dir_name = 'Output_Data/'  # Intended directory for output files
+    nrovers = p.num_rovers * p.num_types
+
+    rpath_name = os.path.join(dir_name, 'Rover_Paths.txt')
+
+    rpath = open(rpath_name, 'w')
+    for rov_id in range(nrovers):
+        for t in range(p.num_steps):
+            rpath.write('%f' % rover_path[t, rov_id, 0])
+            rpath.write('\t')
+            rpath.write('%f' % rover_path[t, rov_id, 1])
+            rpath.write('\t')
+        rpath.write('\n')
+    rpath.close()
+
 
 # HETEROGENEOUS ROVER TEAMS -------------------------------------------------------------------------------------------
 def run_heterogeneous_rovers():
@@ -197,6 +213,9 @@ def run_homogeneous_rovers():
 
             reward = calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
             reward_history.append(reward)
+
+            if gen == (p.generations-1):  # Save path at end of final generation
+                save_rover_path(rd.rover_path)
 
         if rtype == 0:
             save_reward_history(reward_history, "Global_Reward.csv")
