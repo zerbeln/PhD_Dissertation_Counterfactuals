@@ -5,6 +5,7 @@ from rover_domain_python import RoverDomain
 from heterogen_rewards import calc_hetero_global, calc_hetero_difference, calc_hetero_dpp, calc_sdpp
 from homogen_rewards import calc_global, calc_difference, calc_dpp
 import csv; import os; import sys
+from visualizer import visualize
 
 
 def save_reward_history(reward_history, file_name):
@@ -140,6 +141,11 @@ def run_heterogeneous_rovers():
             reward = calc_hetero_global(rd.rover_path, rd.poi_value, rd.poi_pos)
             reward_history.append(reward)
 
+            if gen == (p.generations-1):  # Save path at end of final generation
+                save_rover_path(rd.rover_path)
+                if p.visualizer_on == True:
+                    visualize(rd, reward)
+
         if rtype == 0:
             save_reward_history(reward_history, "Global_Reward.csv")
         if rtype == 1:
@@ -218,6 +224,8 @@ def run_homogeneous_rovers():
 
             if gen == (p.generations-1):  # Save path at end of final generation
                 save_rover_path(rd.rover_path)
+                if p.visualizer_on == True:
+                    visualize(rd, reward)
 
         if rtype == 0:
             save_reward_history(reward_history, "Global_Reward.csv")

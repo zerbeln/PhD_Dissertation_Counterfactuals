@@ -151,7 +151,6 @@ class RoverDomain:
 
         return angle, dist
 
-
     # def reset_poi_pos(self):
     #
     #     if self.args.unit_test == 1: #Unit_test
@@ -228,27 +227,3 @@ class RoverDomain:
     #                 y = center + 1 - (rover_id / 4) % (center - rad)
     #             self.rover_pos[rover_id] = [x, y]
 
-    # def render(self):
-    #     # Visualize
-    #     grid = [['-' for _ in range(self.args.dim_x)] for _ in range(self.args.dim_y)]
-    #
-    #
-    #     # Draw in rover path
-    #     for rover_id, path in enumerate(self.rover_path):
-    #         for loc in path:
-    #             x = int(loc[0]); y = int(loc[1])
-    #             if x < self.args.dim_x and y < self.args.dim_y and x >=0 and y >=0:
-    #                 grid[x][y] = str(rover_id)
-    #
-    #     # Draw in food
-    #     for poi_pos, poi_status in zip(self.poi_pos, self.poi_status):
-    #         x = int(poi_pos[0]);
-    #         y = int(poi_pos[1])
-    #         marker = '$' if poi_status else '#'
-    #         grid[x][y] = marker
-    #
-    #     for row in grid:
-    #         print(row)
-    #     print()
-    #
-    #     print('------------------------------------------------------------------------')
