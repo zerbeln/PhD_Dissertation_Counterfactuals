@@ -97,7 +97,7 @@ def run_heterogeneous_rovers():
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
 
-                while done == False:
+                while not done:
                     for rover_id in range(rd.num_agents):
                         policy_id = cc.team_selection[rover_id][team_number]  # Select policy from CCEA pop
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
@@ -133,7 +133,7 @@ def run_heterogeneous_rovers():
             rd.reset_to_init()  # Reset rovers to initial positions
             done = False; rd.istep = 0
             joint_state = rd.get_joint_state()
-            while done == False:
+            while not done:
                 for rover_id in range(rd.num_agents):
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
@@ -143,7 +143,7 @@ def run_heterogeneous_rovers():
 
             if gen == (p.generations-1):  # Save path at end of final generation
                 save_rover_path(rd.rover_path)
-                if p.visualizer_on == True:
+                if p.visualizer_on:
                     visualize(rd, reward)
 
         if rtype == 0:
@@ -183,7 +183,7 @@ def run_homogeneous_rovers():
 
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
-                while done == False:
+                while not done:
                     for rover_id in range(rd.num_agents):
                         policy_id = cc.team_selection[rover_id][team_number]
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
@@ -214,7 +214,7 @@ def run_homogeneous_rovers():
             rd.reset_to_init()  # Reset rovers to initial positions
             done = False; rd.istep = 0
             joint_state = rd.get_joint_state()
-            while done == False:
+            while not done:
                 for rover_id in range(rd.num_agents):
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
@@ -224,7 +224,7 @@ def run_homogeneous_rovers():
 
             if gen == (p.generations-1):  # Save path at end of final generation
                 save_rover_path(rd.rover_path)
-                if p.visualizer_on == True:
+                if p.visualizer_on:
                     visualize(rd, reward)
 
         if rtype == 0:

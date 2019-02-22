@@ -22,7 +22,7 @@ def calc_hetero_global(rover_path, poi_values, poi_positions):
             # Calculate distance between poi and agent
             for rtype in range(p.num_types):
                 for agent_id in range(p.num_rovers):
-                    rov_id = int(p.num_rovers*rtype + agent_id) # Converts identifier to be compatible with base code
+                    rov_id = int(p.num_rovers*rtype + agent_id)  # Converts identifier to be compatible with base code
                     rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_id, rov_id, 0]
                     rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_id, rov_id, 1]
                     distance = math.sqrt((rover_x_dist**2) + (rover_y_dist**2))
@@ -35,14 +35,14 @@ def calc_hetero_global(rover_path, poi_values, poi_positions):
                     if distance <= p.activation_dist: # Rover is in observation range
                         types_in_range.append(rtype)
 
-            for t in range(p.num_types):
+            for t in range(p.num_types):  # Assumes coupling is one of each type
                 if t in types_in_range:  # If a rover of a given type is in range, count increases
                     observer_count += 1
 
             # Update closest distance only if poi is observed
             if observer_count >= p.coupling:
-                for rv in range(p.coupling):  # Coupling requirement is one of each type
-                    summed_distances += min(observer_distances[rv, :])  # Take distance from closest observer
+                for t in range(p.coupling):  # Coupling requirement is one of each type
+                    summed_distances += min(observer_distances[t, :])  # Take distance from closest observer
                 temp_reward = poi_values[poi_id]/summed_distances
             else:
                 temp_reward = 0.0
@@ -65,8 +65,8 @@ def calc_hetero_difference(rover_path, poi_values, poi_positions):
     g_reward = calc_hetero_global(rover_path, poi_values, poi_positions)  # Get true global reward
 
     # CALCULATE DIFFERENCE REWARD
-    for rtype in range(p.num_types):
-        for agent_id in range(p.num_rovers):
+    for current_type in range(p.num_types):
+        for current_rov in range(p.num_rovers):
             g_without_self = 0.0
 
             for poi_id in range(p.num_pois):
@@ -80,22 +80,22 @@ def calc_hetero_difference(rover_path, poi_values, poi_positions):
 
                     # Calculate distance between poi and other agents
                     for other_type in range(p.num_types):
-                        for other_agent_id in range(p.num_rovers):
-                            rov_id = int(p.num_rovers*other_type + other_agent_id)  # Convert rover id to AADI base format
+                        for other_rov in range(p.num_rovers):
+                            rov_id = int(p.num_rovers*other_type + other_rov)  # Convert rover id to AADI base format
 
-                            if agent_id != other_agent_id or rtype != other_type:
+                            if current_rov != other_rov or current_type != other_type:
                                 rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_id, rov_id, 0]
                                 rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_id, rov_id, 1]
                                 distance = math.sqrt((rover_x_dist**2) + (rover_y_dist**2))
 
                                 if distance < p.min_distance:  # Clip distance to avoid excessively large rewards
                                     distance = p.min_distance
-                                observer_distances[other_type, other_agent_id] = distance
+                                observer_distances[other_type, other_rov] = distance
 
                                 if distance <= p.activation_dist:  # Track what rover types are observing
                                     types_in_range.append(other_type)
                             else:
-                                observer_distances[rtype, agent_id] = inf  # Ignore self
+                                observer_distances[current_type, current_rov] = inf  # Ignore self
 
                     for t in range(p.num_types):
                         if t in types_in_range:  # If a rover of a given type is in range, count increases
@@ -103,8 +103,8 @@ def calc_hetero_difference(rover_path, poi_values, poi_positions):
 
                     # update closest distance only if poi is observed
                     if observer_count >= p.coupling:
-                        for rv in range(p.coupling):  # Coupling requirement is one of each type
-                            summed_distances += min(observer_distances[rv, :])
+                        for t in range(p.coupling):  # Coupling requirement is one of each type
+                            summed_distances += min(observer_distances[t, :])
                         temp_reward = poi_values[poi_id]/summed_distances
                     else:
                         temp_reward = 0.0
@@ -114,7 +114,7 @@ def calc_hetero_difference(rover_path, poi_values, poi_positions):
 
                 g_without_self += current_poi_reward
 
-            rov_id = int(p.num_rovers*rtype + agent_id)  # Convert to AADI compatible rover identifier
+            rov_id = int(p.num_rovers*current_type + current_rov)  # Convert to AADI compatible rover identifier
             difference_reward[rov_id] = g_reward - g_without_self
 
     return difference_reward
@@ -177,8 +177,8 @@ def calc_hetero_dpp(rover_path, poi_values, poi_positions):
 
                         # update closest distance only if poi is observed
                         if observer_count >= p.coupling:
-                            for rv in range(p.coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[rv][:])
+                            for t in range(p.coupling):  # Coupling is one of each type
+                                summed_distances += min(observer_distances[t][:])
                             temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
