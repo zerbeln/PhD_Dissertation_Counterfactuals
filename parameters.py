@@ -8,12 +8,12 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 1  # Number of generations for CCEA in each stat run
+    generations = 100  # Number of generations for CCEA in each stat run
     visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'heterogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
-    reward_type = 1  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
+    reward_type = 3  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
     num_rovers = 4  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     num_types = 2  # How many types of rovers are on the map
     coupling = 2  # Number of rovers required to view a POI for credit

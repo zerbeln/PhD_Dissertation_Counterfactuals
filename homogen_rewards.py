@@ -62,7 +62,7 @@ def calc_difference(rover_path, poi_values, poi_positions):
     g_reward = calc_global(rover_path, poi_values, poi_positions)
 
     # CALCULATE DIFFERENCE REWARD
-    for agent_id in range(p.num_rovers):
+    for rover_id in range(p.num_rovers):
         g_without_self = 0.0
 
         for poi_id in range(p.num_pois):
@@ -74,22 +74,22 @@ def calc_difference(rover_path, poi_values, poi_positions):
                 summed_distances = 0.0  # Denominator of reward function
 
                 # Calculate distance between poi and agent
-                for other_agent_id in range(p.num_rovers):
-                    if agent_id != other_agent_id:  # Only do for other rovers
-                        rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, other_agent_id, 0]
-                        rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, other_agent_id, 1]
+                for other_rover_id in range(p.num_rovers):
+                    if rover_id != other_rover_id:  # Only do for other rovers
+                        rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, other_rover_id, 0]
+                        rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, other_rover_id, 1]
                         distance = math.sqrt((rover_x_dist**2) + (rover_y_dist**2))
 
                         if distance <= p.min_distance:
                             distance = p.min_distance
 
-                        observer_distances[other_agent_id] = distance
+                        observer_distances[other_rover_id] = distance
 
                         if distance <= p.activation_dist:
                             observer_count += 1
 
-                    if agent_id == other_agent_id:  # Ignore self
-                        observer_distances[agent_id] = inf
+                    if rover_id == other_rover_id:  # Ignore self
+                        observer_distances[rover_id] = inf
 
                 if observer_count >= p.coupling:  # If coupling satisfied, compute reward
                     for rv in range(p.coupling):
@@ -104,7 +104,7 @@ def calc_difference(rover_path, poi_values, poi_positions):
                     current_poi_reward = temp_reward
 
             g_without_self += current_poi_reward
-        difference_rewards[agent_id] = g_reward - g_without_self
+        difference_rewards[rover_id] = g_reward - g_without_self
 
     return difference_rewards
 
@@ -125,7 +125,7 @@ def calc_dpp(rover_path, poi_values, poi_positions):
     for c_count in range(p.coupling-1):
 
         # Calculate Difference with Extra Me Reward
-        for agent_id in range(p.num_rovers):
+        for rover_id in range(p.num_rovers):
             g_with_counterfactuals = 0.0
 
             for poi_id in range(p.num_pois):
@@ -135,14 +135,14 @@ def calc_dpp(rover_path, poi_values, poi_positions):
                     observer_count = 0  # Track number of POI observers at time step
                     observer_distances = []
                     summed_distances = 0.0 # Denominator of reward function
-                    self_x = poi_positions[poi_id, 0] - rover_path[step_number, agent_id, 0]
-                    self_y = poi_positions[poi_id, 1] - rover_path[step_number, agent_id, 1]
+                    self_x = poi_positions[poi_id, 0] - rover_path[step_number, rover_id, 0]
+                    self_y = poi_positions[poi_id, 1] - rover_path[step_number, rover_id, 1]
                     self_dist = math.sqrt((self_x**2) + (self_y**2))
 
                     # Calculate distance between poi and agent
-                    for other_agent_id in range(p.num_rovers):
-                        rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, other_agent_id, 0]
-                        rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, other_agent_id, 1]
+                    for other_rover_id in range(p.num_rovers):
+                        rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_number, other_rover_id, 0]
+                        rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_number, other_rover_id, 1]
                         distance = math.sqrt((rover_x_dist**2) + (rover_y_dist**2))
 
                         if distance <= p.min_distance:
@@ -173,8 +173,8 @@ def calc_dpp(rover_path, poi_values, poi_positions):
                 g_with_counterfactuals += current_poi_reward
 
             temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
-            if temp_dpp_reward > dplusplus_reward[agent_id]:
-                dplusplus_reward[agent_id] = temp_dpp_reward
+            if temp_dpp_reward > dplusplus_reward[rover_id]:
+                dplusplus_reward[rover_id] = temp_dpp_reward
 
     for rov_id in range(p.num_rovers):
         if difference_reward[rov_id] > dplusplus_reward[rov_id]:  # Use difference reward, if it is better

@@ -136,8 +136,8 @@ def calc_hetero_dpp(rover_path, poi_values, poi_positions):
 
         # Calculate Difference with Extra Me Reward
         for rtype in range(p.num_types):
-            for agent_id in range(p.num_rovers):
-                g_with_counterfactuals = 0.0; self_id = p.num_rovers*rtype + agent_id
+            for current_rov in range(p.num_rovers):
+                g_with_counterfactuals = 0.0; self_id = p.num_rovers*rtype + current_rov
 
                 for poi_id in range(p.num_pois):
                     current_poi_reward = 0.0
@@ -153,8 +153,8 @@ def calc_hetero_dpp(rover_path, poi_values, poi_positions):
 
                         # Calculate distance between poi and agent
                         for other_type in range(p.num_types):
-                            for other_agent_id in range(p.num_rovers):
-                                rov_id = int(p.num_rovers*other_type + other_agent_id)  # Make rover ID AADI compatible
+                            for other_rov in range(p.num_rovers):
+                                rov_id = int(p.num_rovers*other_type + other_rov)  # Make rover ID AADI compatible
                                 rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_id, rov_id, 0]
                                 rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_id, rov_id, 1]
                                 distance = math.sqrt((rover_x_dist**2) + (rover_y_dist**2))
@@ -178,7 +178,7 @@ def calc_hetero_dpp(rover_path, poi_values, poi_positions):
                         # update closest distance only if poi is observed
                         if observer_count >= p.coupling:
                             for t in range(p.coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[t][:])
+                                summed_distances += min(observer_distances[t])
                             temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
@@ -189,7 +189,7 @@ def calc_hetero_dpp(rover_path, poi_values, poi_positions):
                     g_with_counterfactuals += current_poi_reward
 
                 temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
-                rov_id = int(p.num_rovers*rtype + agent_id)  # Convert rover identifier to AADI format
+                rov_id = int(p.num_rovers*rtype + current_rov)  # Convert rover identifier to AADI format
                 if temp_dpp_reward > dplusplus_reward[rov_id]:
                     dplusplus_reward[rov_id] = temp_dpp_reward
 
@@ -215,25 +215,25 @@ def calc_sdpp(rover_path, poi_values, poi_positions):
 
         # Calculate reward with suggested counterfacual partners
         for rtype in range(p.num_types):
-            for agent_id in range(p.num_rovers):
-                g_with_counterfactuals = 0.0; self_id = p.num_rovers*rtype + agent_id
+            for current_rov in range(p.num_rovers):
+                g_with_counterfactuals = 0.0; self_id = p.num_rovers*rtype + current_rov
 
                 for poi_id in range(p.num_pois):
                     current_poi_reward = 0.0
 
                     for step_id in range(num_steps):
                         # Count how many agents observe poi, update closest distance if necessary
-                        observer_count = 0; summed_distances = 0.0; self_dist = 0.0
+                        observer_count = 0; summed_distances = 0.0
                         observer_distances = [[] for _ in range(p.num_types)]
                         types_in_range = []
                         self_x = poi_positions[poi_id, 0] - rover_path[step_id, self_id, 0]
                         self_y = poi_positions[poi_id, 1] - rover_path[step_id, self_id, 1]
-                        self_dist = math.sqrt((self_x**2) + (self_y**2))
+                        self_dist = math.sqrt((self_x**2) + (self_y**2))  # Distance between self and POI
 
                         # Calculate distance between poi and agent
                         for other_type in range(p.num_types):
-                            for other_agent_id in range(p.num_rovers):
-                                rov_id = int(p.num_rovers*other_type + other_agent_id)
+                            for other_rov in range(p.num_rovers):
+                                rov_id = int(p.num_rovers*other_type + other_rov)
                                 rover_x_dist = poi_positions[poi_id, 0] - rover_path[step_id, rov_id, 0]
                                 rover_y_dist = poi_positions[poi_id, 1] - rover_path[step_id, rov_id, 1]
                                 distance = math.sqrt((rover_x_dist**2) + (rover_y_dist**2))
@@ -247,15 +247,16 @@ def calc_sdpp(rover_path, poi_values, poi_positions):
 
                         #  Add counterfactuals
                         if self_dist <= p.activation_dist:  # Don't add partners unless self in range
-                            rov_partners = one_of_each_type(c_count, rtype)
+                            rov_partners = one_of_each_type(c_count, rtype, self_dist)  # Get counterfactual partners
 
                             for rv in range(c_count):
                                 observer_distances[rv].append(rov_partners[rv, 0])
+                                assert(rov_partners[rv, 0] <= p.activation_dist)
                                 observer_count += 1
 
                         if observer_count >= p.coupling:
-                            for rv in range(p.coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[rv][:])
+                            for t in range(p.coupling):  # Coupling is one of each type
+                                summed_distances += min(observer_distances[t])
                             temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
@@ -266,7 +267,7 @@ def calc_sdpp(rover_path, poi_values, poi_positions):
                     g_with_counterfactuals += current_poi_reward
 
                 temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
-                rov_id = int(p.num_rovers*rtype + agent_id)
+                rov_id = int(p.num_rovers*rtype + current_rov)
                 if temp_dpp_reward > dplusplus_reward[rov_id]:
                     dplusplus_reward[rov_id] = temp_dpp_reward
 
