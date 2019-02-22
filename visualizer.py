@@ -25,7 +25,7 @@ def generate_color_array(num_colors): #generates num random colors
 
 
 def visualize(rd, episode_reward):
-    scale_factor = 30  # Scaling factor for images
+    scale_factor = 25  # Scaling factor for images
     width = 32  # robot icon widths
     x_map = p.x_dim + 10  # Slightly larger so POI are not cut off
     y_map = p.y_dim + 10
@@ -40,6 +40,7 @@ def visualize(rd, episode_reward):
     color_array = generate_color_array(p.num_rovers * p.num_types)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
+    poi_status = [False for _ in range(p.num_pois)]
     
     for tstep in range(p.num_steps):
         draw(game_display, background, image_adjust, image_adjust)
@@ -65,6 +66,8 @@ def visualize(rd, episode_reward):
                         observer_count += 1
 
             if observer_count >= p.coupling:
+                poi_status[poi_id] = True
+            if poi_status[poi_id]:
                 draw(game_display, greenflag, poi_x, poi_y)  # POI observed
             else:
                 draw(game_display, redflag, poi_x, poi_y)  # POI not observed
