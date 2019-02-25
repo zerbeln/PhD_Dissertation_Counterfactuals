@@ -144,7 +144,7 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
     g_reward = calc_global(rover_path, poi_values, poi_positions)
 
     # CALCULATE DIFFERENCE REWARD
-    difference_reward = calc_difference(rover_path, poi_values, poi_positions)
+    dplusplus_reward = calc_difference(rover_path, poi_values, poi_positions)
 
     # CALCULATE DPP REWARD
     for c_count in range(coupling):
@@ -200,9 +200,5 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
             temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
             if temp_dpp_reward > dplusplus_reward[rover_id]:
                 dplusplus_reward[rover_id] = temp_dpp_reward
-
-    for rov_id in range(nrovers):
-        if difference_reward[rov_id] > dplusplus_reward[rov_id]:  # Use difference reward, if it is better
-            dplusplus_reward[rov_id] = difference_reward[rov_id]
 
     return dplusplus_reward

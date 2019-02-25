@@ -48,10 +48,9 @@ cpdef calc_hetero_global(rover_path, poi_values, poi_positions):
                 if t in types_in_range:  # If a rover of a given type is in range, count increases
                     observer_count += 1
 
-            # Update closest distance only if poi is observed
-            if observer_count >= coupling:
-                for t in range(coupling):  # Coupling requirement is one of each type
-                    summed_distances += min(observer_distances[t, :])  # Take distance from closest observer
+            if observer_count >= coupling:  # If coupling satisfied, compute reward
+                for t in range(coupling):
+                    summed_distances += min(observer_distances[t, :])
                 temp_reward = poi_values[poi_id]/summed_distances
             else:
                 temp_reward = 0.0
@@ -121,9 +120,8 @@ cpdef calc_hetero_difference(rover_path, poi_values, poi_positions):
                         if t in types_in_range:  # If a rover of a given type is in range, count increases
                             observer_count += 1
 
-                    # update closest distance only if poi is observed
-                    if observer_count >= coupling:
-                        for t in range(coupling):  # Coupling requirement is one of each type
+                    if observer_count >= coupling:  # If coupling satisfied, compute reward
+                        for t in range(coupling):
                             summed_distances += min(observer_distances[t, :])
                         temp_reward = poi_values[poi_id]/summed_distances
                     else:
@@ -155,7 +153,6 @@ cpdef calc_hetero_dpp(rover_path, poi_values, poi_positions):
     cdef double summed_distances, rover_x_dist, rover_y_dist, distance, current_poi_reward, temp_reward, self_dist
     cdef double g_without_self, g_with_counterfactuals, self_x, self_y
     cdef double g_reward = 0.0
-    # cdef double[:] difference_reward = np.zeros(nrovers * ntypes)
     cdef double[:] dplusplus_reward = np.zeros(nrovers * ntypes)
 
     # CALCULATE GLOBAL REWARD
@@ -208,10 +205,9 @@ cpdef calc_hetero_dpp(rover_path, poi_values, poi_positions):
                             if t in types_in_range:  # If a rover of a given type is in range, count increases
                                 observer_count += 1
 
-                        # update closest distance only if poi is observed
-                        if observer_count >= coupling:
-                            for t in range(coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[t])
+                        if observer_count >= coupling:  # If coupling satisfied, compute reward
+                            for t in range(coupling):
+                                summed_distances += min(observer_distances[t][:])
                             temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
@@ -226,9 +222,6 @@ cpdef calc_hetero_dpp(rover_path, poi_values, poi_positions):
                 if temp_dpp_reward > dplusplus_reward[rv_id]:
                     dplusplus_reward[rv_id] = temp_dpp_reward
 
-    # for rv_id in range(nrovers * ntypes):
-    #     if difference_reward[rv_id] > dplusplus_reward[rv_id]:
-    #         dplusplus_reward[rv_id] = difference_reward[rv_id]
 
     return dplusplus_reward
 
@@ -247,15 +240,14 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
     cdef double summed_distances, rover_x_dist, rover_y_dist, distance, current_poi_reward, temp_reward, self_dist
     cdef double g_without_self, g_with_counterfactuals, self_x, self_y
     cdef double g_reward = 0.0
-    # cdef double[:] difference_reward = np.zeros(nrovers * ntypes)
-    cdef double[:] dplusplus_reward = np.zeros(nrovers * ntypes)
+    cdef double[:] s_dplusplus_reward = np.zeros(nrovers * ntypes)
     cdef double[:, :] rov_partners
 
     # CALCULATE GLOBAL REWARD
     g_reward = calc_hetero_global(rover_path, poi_values, poi_positions)
 
     # CALCULATE DIFFERENCE REWARD
-    dplusplus_reward = calc_hetero_difference(rover_path, poi_values, poi_positions)
+    s_dplusplus_reward = calc_hetero_difference(rover_path, poi_values, poi_positions)
 
     # CALCULATE S-DPP REWARD
     for c_count in range(coupling):
@@ -278,7 +270,7 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
                         self_y = poi_positions[poi_id, 1] - rover_path[step_id, self_id, 1]
                         self_dist = math.sqrt((self_x**2) + (self_y**2))  # Distance between self and POI
 
-                        # Calculate distance between poi and agent
+                        # Calculate distance between all poi and rovers
                         for other_type in range(ntypes):
                             for other_rov in range(nrovers):
                                 rv_id = int(nrovers*other_type + other_rov)
@@ -290,7 +282,7 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
                                     distance = min_dist
                                 observer_distances[other_type].append(distance)
 
-                                if distance <= act_dist:
+                                if distance <= act_dist:  # Rover type appended to observer list
                                     types_in_range.append(other_type)
 
                         #  Add counterfactuals
@@ -301,9 +293,9 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
                                 observer_distances[rv].append(rov_partners[rv, 0])
                                 observer_count += 1
 
-                        if observer_count >= coupling:
-                            for t in range(coupling):  # Coupling is one of each type
-                                summed_distances += min(observer_distances[t])
+                        if observer_count >= coupling:  # If coupling satisfied, compute reward
+                            for t in range(coupling):
+                                summed_distances += min(observer_distances[t][:])
                             temp_reward = poi_values[poi_id]/summed_distances
                         else:
                             temp_reward = 0.0
@@ -315,11 +307,7 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
 
                 temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
                 rv_id = int(nrovers*rtype + current_rov)
-                if temp_dpp_reward > dplusplus_reward[rv_id]:
-                    dplusplus_reward[rv_id] = temp_dpp_reward
+                if temp_dpp_reward > s_dplusplus_reward[rv_id]:
+                    s_dplusplus_reward[rv_id] = temp_dpp_reward
 
-    # for rv_id in range(nrovers * ntypes):
-    #     if difference_reward[rv_id] > dplusplus_reward[rv_id]:
-    #         dplusplus_reward[rv_id] = difference_reward[rv_id]
-
-    return dplusplus_reward
+    return s_dplusplus_reward

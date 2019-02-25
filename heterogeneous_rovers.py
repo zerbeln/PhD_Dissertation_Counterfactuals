@@ -16,6 +16,17 @@ def init_rover_positions_fixed():  # Set rovers to fixed starting position
 
     return rover_positions
 
+def init_rover_positions_random():  # Randomly set rovers on map
+    nrovers = p.num_rovers * p.num_types  # Total number of rovers (of all types)
+    rover_positions = np.zeros((nrovers, 3))
+
+    for t in range(p.num_types):
+        for rov_id in range(p.num_rovers):
+            r_id = (p.num_rovers * t + rov_id)
+            rover_positions[r_id, 0] = random.uniform(0, p.x_dim-1)  # Rover X-Coordinate
+            rover_positions[r_id, 1] = random.uniform(0, p.y_dim-1)  # Rover Y-Coordinate
+            rover_positions[r_id, 2] = t  # Rover type
+
 
 def init_poi_positions_random():  # Randomly set POI on the map
     poi_positions = np.zeros((p.num_pois, 2))
