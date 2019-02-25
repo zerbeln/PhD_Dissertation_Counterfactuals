@@ -14,6 +14,6 @@ cpdef one_of_each_type(c_number, current_type, rover_dist):
 
         if ntypes > 1:
             while partners[i, 1] == current_type:  # Do not suggest same type if there are multiple
-                partners[i, 1] = random.randint(0, (ntypes-1))
+                partners[i, 1] = float(random.randint(0, (ntypes-1)))
 
     return partners

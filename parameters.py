@@ -7,9 +7,9 @@ location for convenience.
 class Parameters:
 
     # Run Parameters
-    stat_runs = 1
-    generations = 100  # Number of generations for CCEA in each stat run
-    visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
+    stat_runs = 5
+    generations = 800  # Number of generations for CCEA in each stat run
+    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'heterogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
