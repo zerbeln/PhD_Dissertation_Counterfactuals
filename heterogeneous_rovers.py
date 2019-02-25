@@ -27,6 +27,8 @@ def init_rover_positions_random():  # Randomly set rovers on map
             rover_positions[r_id, 1] = random.uniform(0, p.y_dim-1)  # Rover Y-Coordinate
             rover_positions[r_id, 2] = t  # Rover type
 
+    return rover_positions
+
 
 def init_poi_positions_random():  # Randomly set POI on the map
     poi_positions = np.zeros((p.num_pois, 2))
