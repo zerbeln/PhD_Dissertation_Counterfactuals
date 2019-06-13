@@ -41,12 +41,13 @@ cpdef calc_hetero_global(rover_path, poi_values, poi_positions):
                     observer_distances[rtype, rover_id] = distance
 
                     # Check if agent observes poi
-                    if distance <= act_dist: # Rover is in observation range
-                        types_in_range.append(rtype)
+                    if distance <= act_dist and rtype == poi_id: # Rover is in observation range
+                        # types_in_range.append(rtype)
+                        observer_count += 1  # Temporary for testing suggestions
 
-            for t in range(ntypes):  # Assumes coupling is one of each type
-                if t in types_in_range:  # If a rover of a given type is in range, count increases
-                    observer_count += 1
+            # for t in range(ntypes):  # Assumes coupling is one of each type
+            #     if t in types_in_range:  # If a rover of a given type is in range, count increases
+            #         observer_count += 1
 
             if observer_count >= coupling:  # If coupling satisfied, compute reward
                 for t in range(coupling):
@@ -111,14 +112,15 @@ cpdef calc_hetero_difference(rover_path, poi_values, poi_positions):
                                     distance = min_dist
                                 observer_distances[other_type, other_rov] = distance
 
-                                if distance <= act_dist:  # Track what rover types are observing
-                                    types_in_range.append(other_type)
+                                if distance <= act_dist and other_type == poi_id:  # Track what rover types are observing
+                                    # types_in_range.append(other_type)
+                                    observer_count += 1  # Temporary for testing suggestions
                             else:
                                 observer_distances[current_type, current_rov] = inf  # Ignore self
 
-                    for t in range(ntypes):
-                        if t in types_in_range:  # If a rover of a given type is in range, count increases
-                            observer_count += 1
+                    # for t in range(ntypes):
+                    #     if t in types_in_range:  # If a rover of a given type is in range, count increases
+                    #         observer_count += 1
 
                     if observer_count >= coupling:  # If coupling satisfied, compute reward
                         for t in range(coupling):
@@ -194,16 +196,17 @@ cpdef calc_hetero_dpp(rover_path, poi_values, poi_positions):
                                 observer_distances[other_type].append(distance)
 
                                 if distance <= act_dist:  # Track rover types currently observing
-                                    types_in_range.append(other_type)
+                                    # types_in_range.append(other_type)
+                                    observer_count += 1  # Temporary for testing suggestions
 
                         if self_dist <= act_dist:  # Add counterfactual partners if in range (more of me)
                             for c in range(c_count):
                                 observer_distances[rtype].append(self_dist)
                                 types_in_range.append(rtype)
 
-                        for t in range(ntypes):
-                            if t in types_in_range:  # If a rover of a given type is in range, count increases
-                                observer_count += 1
+                        # for t in range(ntypes):
+                        #     if t in types_in_range:  # If a rover of a given type is in range, count increases
+                        #         observer_count += 1
 
                         if observer_count >= coupling:  # If coupling satisfied, compute reward
                             for t in range(coupling):
@@ -283,15 +286,20 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
                                 observer_distances[other_type].append(distance)
 
                                 if distance <= act_dist:  # Rover type appended to observer list
-                                    types_in_range.append(other_type)
+                                    # types_in_range.append(other_type)  # Temporary for testing suggestions
+                                    observer_count += 1
 
                         #  Add counterfactuals
                         if self_dist <= act_dist:  # Don't add partners unless self in range
-                            rov_partners = one_of_each_type(c_count, rtype, self_dist)  # Get counterfactual partners
-
-                            for rv in range(c_count):
-                                observer_distances[rv].append(rov_partners[rv, 0])
-                                observer_count += 1
+                            #rov_partners = one_of_each_type(c_count, rtype, self_dist)  # Get counterfactual partners
+                            if rtype == poi_id:
+                                for rv in range(c_count):
+                                    #observer_distances[rv].append(rov_partners[rv, 0])
+                                    observer_distances[rv].append(self_dist)
+                                    observer_count += 1
+                            else:
+                                for rv in range(c_count):
+                                    observer_count -= 1
 
                         if observer_count >= coupling:  # If coupling satisfied, compute reward
                             for t in range(coupling):

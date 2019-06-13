@@ -39,6 +39,16 @@ def init_poi_positions_random():  # Randomly set POI on the map
 
     return poi_positions
 
+def init_poi_positions_two_poi():
+    assert(p.num_pois == 2)
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = p.y_dim/2
+    poi_positions[1, 0] = (p.x_dim-1); poi_positions[1, 1] = p.y_dim/2
+
+    return poi_positions
+
 
 def init_poi_positions_four_corners():  # Statically set 4 POI (one in each corner)
     assert(p.num_pois == 4)  # There must only be 4 POI for this initialization
