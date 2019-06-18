@@ -205,6 +205,11 @@ def run_homogeneous_rovers():
                     for pop_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[pop_id, team_number])
                         cc.fitness[pop_id, policy_id] = reward[pop_id]
+                elif rtype == 3:
+                    reward = homr.calc_sdpp(rd.rover_path, rd.poi_value, rd.poi_pos)
+                    for pop_id in range(rd.num_agents):
+                        policy_id = int(cc.team_selection[pop_id, team_number])
+                        cc.fitness[pop_id, policy_id] = reward[pop_id]
                 else:
                     sys.exit('Incorrect Reward Type for Homogeneous Teams')
 
