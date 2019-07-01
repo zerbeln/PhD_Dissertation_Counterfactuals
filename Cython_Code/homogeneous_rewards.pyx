@@ -52,7 +52,8 @@ cpdef calc_global(rover_path, poi_values, poi_positions):
             else:
                 temp_reward = 0.0
 
-            current_poi_reward += temp_reward
+            if temp_reward > current_poi_reward:
+                current_poi_reward = temp_reward
 
         g_reward += (current_poi_reward/p.num_steps)
 
