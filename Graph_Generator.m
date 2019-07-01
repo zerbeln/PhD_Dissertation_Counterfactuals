@@ -18,10 +18,10 @@ dpp_reward_data = open('Output_Data/DPP_Reward.csv');
 
 %% Data Analysis
 
-g_fitness = g_reward_data.data;
-d_fitness = d_reward_data.data;
-dpp_fitness = dpp_reward_data.data;
-%sdpp_fitness = sdpp_reward_data.data;
+g_fitness = mean(g_reward_data.data);
+d_fitness = mean(d_reward_data.data);
+dpp_fitness = mean(dpp_reward_data.data);
+%sdpp_fitness = mean(sdpp_reward_data.data);
 
 %% Graph Generator
 

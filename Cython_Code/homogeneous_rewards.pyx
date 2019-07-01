@@ -180,7 +180,7 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
                     if self_dist <= act_dist:  # Another me only works if self in range
                         for c in range(c_count):
                             observer_distances.append(self_dist)
-                        observer_count += c_count
+                    observer_count += c_count
 
                     if observer_count >= coupling:  # If coupling satisfied, compute reward
                         for rv in range(coupling):
@@ -262,7 +262,7 @@ cpdef calc_sdpp(rover_path, poi_values, poi_positions):
                             if npois == 4:
                                 observer_distances.append(four_corners_case_study(rover_id, poi_id, self_dist))
 
-                        observer_count += c_count
+                    observer_count += c_count
 
                     if observer_count >= coupling:  # If coupling satisfied, compute reward
                         for rv in range(coupling):
