@@ -52,8 +52,7 @@ cpdef calc_global(rover_path, poi_values, poi_positions):
             else:
                 temp_reward = 0.0
 
-            if temp_reward > current_poi_reward:
-                current_poi_reward = temp_reward
+            current_poi_reward += temp_reward
 
         g_reward += (current_poi_reward/p.num_steps)
 
@@ -192,14 +191,14 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
                     else:
                         temp_reward = 0.0
 
-                    current_poi_reward = temp_reward
+                    current_poi_reward += temp_reward
 
-                g_with_counterfactuals += current_poi_reward
+                g_with_counterfactuals += current_poi_reward/p.num_steps
 
             temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
 
             if temp_dpp_reward > dplusplus_reward[rover_id]:
-                dplusplus_reward[rover_id] = (temp_dpp_reward/p.num_steps)
+                dplusplus_reward[rover_id] = temp_dpp_reward
 
     return dplusplus_reward
 
