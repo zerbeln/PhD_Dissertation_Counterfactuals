@@ -8,8 +8,8 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 100  # Number of generations for CCEA in each stat run
-    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
+    generations = 50  # Number of generations for CCEA in each stat run
+    visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'homogeneous'  # Use 'homogeneous' for uniform rovers, and 'heterogeneous' for non-uniform rovers
@@ -17,7 +17,7 @@ class Parameters:
     num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     num_types = 1  # How many types of rovers are on the map
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 10  # Number of POIs on map
+    num_pois = 12  # Number of POIs on map
     num_steps = 50  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
@@ -32,6 +32,6 @@ class Parameters:
     num_outputs = 2
 
     # CCEA parameters
-    mutation_rate = 0.2
+    mutation_rate = 0.6
     epsilon = 0.1
     pop_size = 20

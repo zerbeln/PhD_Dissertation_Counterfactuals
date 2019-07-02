@@ -48,13 +48,14 @@ cpdef calc_global(rover_path, poi_values, poi_positions):
                     summed_distances += min(observer_distances)
                     od_index = observer_distances.index(min(observer_distances))
                     observer_distances[od_index] = inf
-                temp_reward = poi_values[poi_id]/summed_distances
+                temp_reward = poi_values[poi_id]/(2*summed_distances)
             else:
                 temp_reward = 0.0
 
-            current_poi_reward += temp_reward
+            if temp_reward > current_poi_reward:
+                current_poi_reward = temp_reward
 
-        g_reward += (current_poi_reward/p.num_steps)
+        g_reward += current_poi_reward
 
     return g_reward
 
@@ -111,7 +112,7 @@ cpdef calc_difference(rover_path, poi_values, poi_positions):
                         summed_distances += min(observer_distances)
                         od_index = observer_distances.index(min(observer_distances))
                         observer_distances[od_index] = inf
-                    temp_reward = poi_values[poi_id]/summed_distances
+                    temp_reward = poi_values[poi_id]/(2*summed_distances)
                 else:
                     temp_reward = 0.0
 
@@ -187,7 +188,7 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
                             summed_distances += min(observer_distances)
                             od_index = observer_distances.index(min(observer_distances))
                             observer_distances[od_index] = inf
-                        temp_reward = poi_values[poi_id]/summed_distances
+                        temp_reward = poi_values[poi_id]/(2*summed_distances)
                     else:
                         temp_reward = 0.0
 
