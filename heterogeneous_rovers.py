@@ -1,4 +1,5 @@
 from parameters import Parameters as p
+from PositionReader import readPos
 import numpy as np
 import random
 
@@ -61,6 +62,18 @@ def init_poi_positions_four_corners():  # Statically set 4 POI (one in each corn
     poi_positions[3, 0] = (p.x_dim - 1.0); poi_positions[3, 1] = (p.y_dim - 1.0)  # Top right
 
     return poi_positions
+
+def init_poi_positions_txt_file():
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    prevPos = readPos()
+
+    for ii in range(p.num_pois):
+        poi_positions[ii, 0] = prevPos[ii, 0]
+        poi_positions[ii, 1] = prevPos[ii, 1]
+
+    return poi_positions
+
 
 
 def init_poi_values_random():  # POI values randomly assigned 1-10

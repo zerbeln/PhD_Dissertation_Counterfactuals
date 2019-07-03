@@ -52,10 +52,9 @@ cpdef calc_global(rover_path, poi_values, poi_positions):
             else:
                 temp_reward = 0.0
 
-            if temp_reward > current_poi_reward:
-                current_poi_reward = temp_reward
+            current_poi_reward += temp_reward
 
-        g_reward += current_poi_reward
+        g_reward += (current_poi_reward/p.num_steps)
 
     return g_reward
 
@@ -181,7 +180,7 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
                     if self_dist <= act_dist:  # Another me only works if self in range
                         for c in range(c_count):
                             observer_distances.append(self_dist)
-                    observer_count += c_count
+                        observer_count += c_count
 
                     if observer_count >= coupling:  # If coupling satisfied, compute reward
                         for rv in range(coupling):
@@ -194,7 +193,7 @@ cpdef calc_dpp(rover_path, poi_values, poi_positions):
 
                     current_poi_reward += temp_reward
 
-                g_with_counterfactuals += current_poi_reward/p.num_steps
+                g_with_counterfactuals += (current_poi_reward/p.num_steps)
 
             temp_dpp_reward = (g_with_counterfactuals - g_reward)/(1 + c_count)
 
