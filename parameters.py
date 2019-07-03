@@ -7,8 +7,8 @@ location for convenience.
 class Parameters:
 
     # Run Parameters
-    stat_runs = 15
-    generations = 100  # Number of generations for CCEA in each stat run
+    stat_runs = 1
+    generations = 50  # Number of generations for CCEA in each stat run
     visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
@@ -32,6 +32,6 @@ class Parameters:
     num_outputs = 2
 
     # CCEA parameters
-    mutation_rate = 0.6
+    mutation_rate = 0.1
     epsilon = 0.1
     pop_size = 20
