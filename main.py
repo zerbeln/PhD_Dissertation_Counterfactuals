@@ -215,6 +215,9 @@ def run_homogeneous_rovers():
                                 if dpp_reward > temp_reward:
                                     temp_reward = dpp_reward
                             cc.fitness[rover_id, policy_id] = temp_reward
+                        else:
+                            policy_id = int(cc.team_selection[rover_id, team_number])
+                            cc.fitness[rover_id, policy_id] = d_reward
                 else:
                     sys.exit('Incorrect Reward Type for Homogeneous Teams')
 
