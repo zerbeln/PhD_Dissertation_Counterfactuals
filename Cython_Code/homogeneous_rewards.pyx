@@ -166,10 +166,15 @@ cpdef calc_dpp(rov_id, rover_path, poi_values, poi_positions, gr, counter_num):
                 if distance <= act_dist:
                     observer_count += 1
 
+
+            for c in range(c_count):
+                observer_distances[nrovers+c] = self_dist
+
             if self_dist <= act_dist:  # Add counterfactual partners if rover is in range
-                for c in range(c_count):
-                    observer_distances[nrovers+c] = self_dist
                 observer_count += c_count
+
+            for c in range(nrovers+c_count):
+                assert(observer_distances[c] > 0)
 
             if observer_count >= coupling:  # If coupling satisfied, compute reward
                 for rv in range(coupling):

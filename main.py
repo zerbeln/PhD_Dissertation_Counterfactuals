@@ -1,9 +1,8 @@
-import ccea
-import neural_network
+import Python_Code.ccea as ccea
+import Python_Code.neural_net as neural_network
 from parameters import Parameters as p
 from rover_domain_python import RoverDomain
-import homogeneous_rewards as homr
-# import heterogeneous_rewards as hetr
+import Python_Code.homogen_rewards as homr
 import csv; import os; import sys
 from visualizer import visualize
 
@@ -99,7 +98,7 @@ def run_homogeneous_rovers():
                 joint_state = rd.get_joint_state()
                 while not done:
                     for rover_id in range(rd.num_agents):
-                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        policy_id = int(cc.team_selection[rover_id][team_number])
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     joint_state, done = rd.step(nn.out_layer)
 
@@ -107,28 +106,27 @@ def run_homogeneous_rovers():
                 if rtype == 0:
                     reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for rover_id in range(rd.num_agents):
-                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        policy_id = int(cc.team_selection[rover_id][team_number])
                         cc.fitness[rover_id, policy_id] = reward
                 elif rtype == 1:
                     g_reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for rover_id in range(rd.num_agents):
                         d_reward = homr.calc_difference(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward)
-                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        policy_id = int(cc.team_selection[rover_id][team_number])
                         cc.fitness[rover_id, policy_id] = d_reward
                 elif rtype == 2:
                     g_reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for rover_id in range(rd.num_agents):
                         d_reward = homr.calc_difference(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward)
-                        dpp_reward = homr.calc_dpp(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward, p.coupling)
+                        dpp_reward = homr.calc_dpp(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward, p.coupling-1)
 
                         if d_reward > dpp_reward:
-                            policy_id = int(cc.team_selection[rover_id, team_number])
+                            policy_id = int(cc.team_selection[rover_id][team_number])
                             cc.fitness[rover_id, policy_id] = d_reward
-
                         else:
                             temp_reward = 0.0
-                            policy_id = int(cc.team_selection[rover_id, team_number])
-                            for c_count in range(p.coupling):
+                            policy_id = int(cc.team_selection[rover_id][team_number])
+                            for c_count in range(p.coupling-1):
                                 dpp_reward = homr.calc_dpp(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward,
                                                            c_count)
                                 if dpp_reward > temp_reward:
