@@ -37,7 +37,7 @@ def visualize(rd, episode_reward):
     background = pygame.image.load('./background.png')
     greenflag = pygame.image.load('./greenflag.png')
     redflag = pygame.image.load('./redflag.png')
-    color_array = generate_color_array(p.num_rovers * p.num_types)
+    color_array = generate_color_array(p.num_rovers)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
     poi_status = [False for _ in range(p.num_pois)]
@@ -48,35 +48,29 @@ def visualize(rd, episode_reward):
             poi_x = int(rd.poi_pos[poi_id, 0] * scale_factor-width) + image_adjust
             poi_y = int(rd.poi_pos[poi_id, 1] * scale_factor-width) + image_adjust
 
-            types_in_range = []; observer_count = 0
-            for rover_id in range(p.num_types*p.num_rovers):
+            observer_count = 0
+            for rover_id in range(p.num_rovers):
                 x_dist = rd.poi_pos[poi_id, 0] - rd.rover_path[tstep, rover_id, 0]
                 y_dist = rd.poi_pos[poi_id, 1] - rd.rover_path[tstep, rover_id, 1]
-                rover_type = rd.rover_path[tstep, rover_id, 2]
                 dist = math.sqrt((x_dist**2) + (y_dist**2))
 
-                if p.team_types == "heterogeneous" and dist <= p.activation_dist:
-                    types_in_range.append(rover_type)
-                elif p.team_types == "homogeneous" and dist <= p.activation_dist:
+                if dist <= p.activation_dist:
                     observer_count += 1
 
-            if p.team_types == "heterogeneous":
-                for t in range(p.num_types):
-                    if t in types_in_range:
-                        observer_count += 1
 
             if observer_count >= p.coupling:
                 poi_status[poi_id] = True
+
             if poi_status[poi_id]:
                 draw(game_display, greenflag, poi_x, poi_y)  # POI observed
             else:
                 draw(game_display, redflag, poi_x, poi_y)  # POI not observed
-            textsurface = myfont.render(str(rd.poi_value[poi_id]), False, (0, 0, 0))
+            textsurface = myfont.render(str(rd.poi_values[poi_id]), False, (0, 0, 0))
             target_x = int(rd.poi_pos[poi_id, 0]*scale_factor-scale_factor/3) + image_adjust
             target_y = int(rd.poi_pos[poi_id, 1]*scale_factor-width) + image_adjust
             draw(game_display, textsurface, target_x, target_y)
 
-        for rov_id in range(p.num_rovers * p.num_types):  # Draw all rovers and their trajectories
+        for rov_id in range(p.num_rovers):  # Draw all rovers and their trajectories
             rover_x = int(rd.rover_path[tstep, rov_id, 0]*scale_factor) + image_adjust
             rover_y = int(rd.rover_path[tstep, rov_id, 1]*scale_factor) + image_adjust
             draw(game_display, robot_image, rover_x, rover_y)

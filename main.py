@@ -18,7 +18,7 @@ def save_reward_history(reward_history, file_name):
 
 def save_world_configuration(rover_positions, poi_positions, poi_vals):
     dir_name = 'Output_Data/'  # Intended directory for output files
-    nrovers = p.num_rovers * p.num_types
+    nrovers = p.num_rovers
 
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
@@ -53,7 +53,7 @@ def save_world_configuration(rover_positions, poi_positions, poi_vals):
 
 def save_rover_path(rover_path):  # Save path rovers take using best policy found
     dir_name = 'Output_Data/'  # Intended directory for output files
-    nrovers = p.num_rovers * p.num_types
+    nrovers = p.num_rovers
 
     rpath_name = os.path.join(dir_name, 'Rover_Paths.txt')
 
@@ -86,13 +86,15 @@ def run_homogeneous_rovers():
         nn.reset_nn()  # Initialize NN architecture
         rd.reset()  # Re-initialize world
 
-        save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_value)
+        save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
             print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
+
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
+                global_reward = 0.0; global_max = 0.0
 
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
@@ -100,39 +102,26 @@ def run_homogeneous_rovers():
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id][team_number])
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
-                    joint_state, done = rd.step(nn.out_layer)
+                    joint_state, done, global_reward = rd.step(nn.out_layer)
+
+                    if global_reward > global_max:
+                        global_max = global_reward
 
                 # Update fitness of policies using reward information
                 if rtype == 0:
-                    reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id][team_number])
-                        cc.fitness[rover_id, policy_id] = reward
+                        cc.fitness[rover_id, policy_id] = global_max
                 elif rtype == 1:
-                    g_reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
-                    for rover_id in range(rd.num_agents):
-                        d_reward = homr.calc_difference(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward)
+                    d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id][team_number])
-                        cc.fitness[rover_id, policy_id] = d_reward
+                        cc.fitness[rover_id, policy_id] = d_reward[rover_id]
                 elif rtype == 2:
-                    g_reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
-                    for rover_id in range(rd.num_agents):
-                        d_reward = homr.calc_difference(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward)
-                        dpp_reward = homr.calc_dpp(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward, p.coupling-1)
-
-                        if d_reward > dpp_reward:
-                            policy_id = int(cc.team_selection[rover_id][team_number])
-                            cc.fitness[rover_id, policy_id] = d_reward
-                        else:
-                            temp_reward = 0.0
-                            policy_id = int(cc.team_selection[rover_id][team_number])
-                            for c_count in range(p.coupling-1):
-                                dpp_reward = homr.calc_dpp(rover_id, rd.rover_path, rd.poi_value, rd.poi_pos, g_reward,
-                                                           c_count)
-                                if dpp_reward > temp_reward:
-                                    temp_reward = dpp_reward
-                            cc.fitness[rover_id, policy_id] = temp_reward
-
+                    dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(cc.team_selection[rover_id][team_number])
+                        cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
                 else:
                     sys.exit('Incorrect Reward Type for Homogeneous Teams')
 
@@ -140,20 +129,23 @@ def run_homogeneous_rovers():
 
             # Testing Phase
             rd.reset_to_init()  # Reset rovers to initial positions
+            global_reward = 0.0; global_max = 0.0
             done = False; rd.istep = 0
             joint_state = rd.get_joint_state()
             while not done:
                 for rover_id in range(rd.num_agents):
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
-                joint_state, done = rd.step(nn.out_layer)
+                joint_state, done, global_reward = rd.step(nn.out_layer)
 
-            reward = homr.calc_global(rd.rover_path, rd.poi_value, rd.poi_pos)
-            reward_history.append(reward)
+                if global_reward > global_max:
+                    global_max = global_reward
+
+            reward_history.append(global_max)
 
             if gen == (p.generations-1):  # Save path at end of final generation
                 save_rover_path(rd.rover_path)
                 if p.visualizer_on:
-                    visualize(rd, reward)
+                    visualize(rd, global_max)
 
         if rtype == 0:
             save_reward_history(reward_history, "Global_Reward.csv")

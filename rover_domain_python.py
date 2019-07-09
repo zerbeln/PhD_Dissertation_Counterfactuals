@@ -1,5 +1,4 @@
-import random, sys
-import numpy as np
+import sys
 import math
 from heterogeneous_rovers import *
 from parameters import Parameters as p
@@ -8,7 +7,7 @@ from parameters import Parameters as p
 class RoverDomain:
 
     def __init__(self):
-        self.num_agents = p.num_rovers * p.num_types
+        self.num_agents = p.num_rovers
         self.obs_radius = p.activation_dist
 
         #Gym compatible attributes
@@ -17,58 +16,58 @@ class RoverDomain:
 
         # Initialize POI containers tha track POI position
         self.poi_pos = init_poi_positions_random()
-        self.poi_value = init_poi_values_random()
+        self.poi_values = init_poi_values_fixed()
 
         # Initialize rover position container
         self.rover_pos = init_rover_positions_fixed()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
         #Rover path trace for trajectory-wide global reward computation and vizualization purposes
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 2))
 
     def reset(self):  # Resets entire world (For new stat run)
         self.rover_pos = init_rover_positions_fixed()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
         self.poi_pos = init_poi_positions_random()
-        self.poi_value = init_poi_values_random()
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+        self.poi_values = init_poi_values_fixed()
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 2))
         self.istep = 0
 
         for rover_id in range(self.num_agents):  # Record intial positions
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
-            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]  # Tracks rover type
 
     def reset_to_init(self):
         self.rover_pos = self.rover_initial_pos.copy()
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 2))
         self.istep = 0
 
         for rover_id in range(self.num_agents):  # Record initial positions
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
-            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]  # Tracks rover type
 
     def step(self, joint_action):
         self.istep += 1
 
+        # Update rover positions
         for rover_id in range(self.num_agents):
             self.rover_pos[rover_id, 0] += joint_action[rover_id, 0]
             self.rover_pos[rover_id, 1] += joint_action[rover_id, 1]
 
 
-        #Append rover path
+        # Update rover path
         for rover_id in range(self.num_agents):
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
-            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]  # Tracks rover type
 
-        #Compute done
+        # Computes done
         done = int(self.istep >= p.num_steps)
 
         joint_state = self.get_joint_state()
 
-        return joint_state, done
+        g_reward = self.calc_global()
+
+        return joint_state, done, g_reward
 
     def get_joint_state(self):
         joint_state = []
@@ -81,19 +80,22 @@ class RoverDomain:
             temp_poi_dist_list = [[] for _ in range(int(360 / p.angle_resolution))]
             temp_rover_dist_list = [[] for _ in range(int(360 / p.angle_resolution))]
 
-            # Log all distance into brackets for POIs
-            for loc, value in zip(self.poi_pos, self.poi_value):
+            # Log POI distances into brackets
+            for loc, value in zip(self.poi_pos, self.poi_values):
 
                 angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
+
                 if dist >= self.obs_radius:
                     continue  # Observability radius
 
                 bracket = int(angle / p.angle_resolution)
+
                 if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
                     dist = p.min_distance
+
                 temp_poi_dist_list[bracket].append((value/dist))
 
-            # Log all distance into brackets for other drones
+            # Log rover distances into brackets
             for id, loc in enumerate(self.rover_pos):
                 if id == rover_id:
                     continue  # Ignore self
@@ -102,13 +104,14 @@ class RoverDomain:
                 if dist >= self.obs_radius:
                     continue  # Observability radius
 
-                if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
+                if dist < p.min_distance:  # Clip distance to not overwhelm sigmoid in NN
                     dist = p.min_distance
+
                 bracket = int(angle / p.angle_resolution)
-                temp_rover_dist_list[bracket].append((1/dist))
+                temp_rover_dist_list[bracket].append(1/dist)
 
 
-            ####Encode the information onto the state
+            # Encode the information into the state vector
             for bracket in range(int(360 / p.angle_resolution)):
                 # POIs
                 num_poi = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
@@ -120,7 +123,7 @@ class RoverDomain:
                     else:
                         sys.exit('Incorrect sensor model')
                 else:
-                    poi_state[bracket] = 0.0
+                    poi_state[bracket] = -1.0
 
                 # Rovers
                 num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
@@ -132,7 +135,7 @@ class RoverDomain:
                     else:
                         sys.exit('Incorrect sensor model')
                 else:
-                    rover_state[bracket] = 0.0
+                    rover_state[bracket] = -1.0
 
             state = rover_state + poi_state  # Append rover and poi to form the full state
 
@@ -140,90 +143,56 @@ class RoverDomain:
 
         return joint_state
 
+
     def get_angle_dist(self, x1, y1, x2, y2):  # Computes angles and distance between two predators relative to (1,0) vector (x-axis)
         v1 = x2 - x1; v2 = y2 - y1
         angle = np.rad2deg(np.arctan2(v1, v2))
         if angle < 0:
             angle += 360
 
+        if math.isnan(angle):
+            angle = 0.0
+
         dist = (v1 * v1) + (v2 * v2)
         dist = math.sqrt(dist)
 
         return angle, dist
 
-    # def reset_poi_pos(self):
-    #
-    #     if self.args.unit_test == 1: #Unit_test
-    #         self.poi_pos[0] = [0,1]
-    #         return
-    #
-    #     if self.args.unit_test == 2: #Unit_test
-    #         if random.random() < 0.5:
-    #             self.poi_pos[0] = [4,0]
-    #         else:
-    #             self.poi_pos[0] = [4,9]
-    #         return
-    #
-    #     start = 0.0; end = self.args.dim_x - 1.0
-    #     rad = int(self.args.dim_x / math.sqrt(3) / 2.0)
-    #     center = int((start + end) / 2.0)
-    #
-    #     if self.args.poi_rand: #Random
-    #         for i in range(self.args.num_poi):
-    #             if i % 3 == 0:
-    #                 x = randint(start, center - rad - 1)
-    #                 y = randint(start, end)
-    #             elif i % 3 == 1:
-    #                 x = randint(center + rad + 1, end)
-    #                 y = randint(start, end)
-    #             elif i % 3 == 2:
-    #                 x = randint(center - rad, center + rad)
-    #                 if random.random()<0.5:
-    #                     y = randint(start, center - rad - 1)
-    #                 else:
-    #                     y = randint(center + rad + 1, end)
-    #
-    #             self.poi_pos[i] = [x, y]
-    #
-    #     else: #Not_random
-    #         for i in range(self.args.num_poi):
-    #             if i % 4 == 0:
-    #                 x = start + int(i/4) #randint(start, center - rad - 1)
-    #                 y = start + int(i/3)
-    #             elif i % 4 == 1:
-    #                 x = end - int(i/4) #randint(center + rad + 1, end)
-    #                 y = start + int(i/4)#randint(start, end)
-    #             elif i % 4 == 2:
-    #                 x = start+ int(i/4) #randint(center - rad, center + rad)
-    #                 y = end - int(i/4) #randint(start, center - rad - 1)
-    #             else:
-    #                 x = end - int(i/4) #randint(center - rad, center + rad)
-    #                 y = end - int(i/4) #randint(center + rad + 1, end)
-    #             self.poi_pos[i] = [x, y]
 
+    def calc_global(self):
+        number_agents = p.num_rovers
+        number_pois = p.num_pois
+        min_obs_distance = p.activation_dist
+        inf = 1000.00
+        global_reward = 0.0
 
-    # def reset_rover_pos(self):
-    #     start = 1.0; end = self.args.dim_x - 1.0
-    #     rad = int(self.args.dim_x / math.sqrt(3) / 2.0)
-    #     center = int((start + end) / 2.0)
-    #
-    #     if self.args.unit_test == 1: #Unit test
-    #         self.rover_pos[0] = [end, 0]
-    #         return
-    #
-    #     for rover_id in range(self.args.num_agents):
-    #             quadrant = rover_id % 4
-    #             if quadrant == 0:
-    #                 x = center - 1 - (rover_id / 4) % (center - rad)
-    #                 y = center - (rover_id / (4 * center - rad)) % (center - rad)
-    #             if quadrant == 1:
-    #                 x = center + (rover_id / (4 * center - rad)) % (center - rad)-1
-    #                 y = center - 1 + (rover_id / 4) % (center - rad)
-    #             if quadrant == 2:
-    #                 x = center + 1 + (rover_id / 4) % (center - rad)
-    #                 y = center + (rover_id / (4 * center - rad)) % (center - rad)
-    #             if quadrant == 3:
-    #                 x = center - (rover_id / (4 * center - rad)) % (center - rad)
-    #                 y = center + 1 - (rover_id / 4) % (center - rad)
-    #             self.rover_pos[rover_id] = [x, y]
+        for poi_id in range(number_pois):
+            observer_distances = [0.0 for i in range(number_agents)]
+            observer_count = 0
+            summed_observer_distances = 0.0
 
+            for agent_id in range(number_agents):
+                # Calculate distance between agent and POI
+                x_distance = self.poi_pos[poi_id, 0] - self.rover_pos[agent_id, 0]
+                y_distance = self.poi_pos[poi_id, 1] - self.rover_pos[agent_id, 1]
+                distance = math.sqrt((x_distance * x_distance) + (y_distance * y_distance))
+
+                if distance < p.min_distance:
+                    distance = p.min_distance
+
+                observer_distances[agent_id] = distance
+
+                # Check if agent observes poi and update observer count if true
+                if distance < min_obs_distance:
+                    observer_count += 1
+
+            # Update global reward if POI is observed
+            if observer_count >= p.coupling:
+                for observer_id in range(p.coupling):
+                    summed_observer_distances += min(observer_distances)
+                    od_index = observer_distances.index(min(observer_distances))
+                    observer_distances[od_index] = inf
+
+                global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
+
+        return global_reward
