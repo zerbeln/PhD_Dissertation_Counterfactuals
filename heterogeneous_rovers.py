@@ -6,21 +6,23 @@ import random
 
 def init_rover_positions_fixed():  # Set rovers to fixed starting position
     nrovers = p.num_rovers
-    rover_positions = np.zeros((nrovers, 2))
+    rover_positions = np.zeros((nrovers, 3))
 
     for rov_id in range(p.num_rovers):
         rover_positions[rov_id, 0] = 0.5*p.x_dim  # Rover X-Coordinate
         rover_positions[rov_id, 1] = 0.5*p.y_dim  # Rover Y-Coordinate
+        rover_positions[rov_id, 2] = 0.0  # Rover orientation
 
     return rover_positions
 
 def init_rover_positions_random():  # Randomly set rovers on map
     nrovers = p.num_rovers
-    rover_positions = np.zeros((nrovers, 2))
+    rover_positions = np.zeros((nrovers, 3))
 
     for rov_id in range(p.num_rovers):
         rover_positions[rov_id, 0] = random.uniform(0, p.x_dim-1)  # Rover X-Coordinate
         rover_positions[rov_id, 1] = random.uniform(0, p.y_dim-1)  # Rover Y-Coordinate
+        rover_positions[rov_id, 2] = 0.0  # Rover orientation
 
     return rover_positions
 
@@ -74,7 +76,7 @@ def init_poi_values_random():  # POI values randomly assigned 1-10
     poi_vals = [0.0 for _ in range(p.num_pois)]
 
     for poi_id in range(p.num_pois):
-        poi_vals[poi_id] = random.randint(1, 5)
+        poi_vals[poi_id] = random.randint(1, 10)
 
     return poi_vals
 

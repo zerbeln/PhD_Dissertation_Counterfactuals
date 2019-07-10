@@ -23,42 +23,60 @@ class RoverDomain:
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
         #Rover path trace for trajectory-wide global reward computation and vizualization purposes
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 2))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
 
     def reset(self):  # Resets entire world (For new stat run)
         self.rover_pos = init_rover_positions_fixed()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
         self.poi_pos = init_poi_positions_random()
         self.poi_values = init_poi_values_random()
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 2))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
         for rover_id in range(self.num_agents):  # Record intial positions
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
+            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
     def reset_to_init(self):
         self.rover_pos = self.rover_initial_pos.copy()
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 2))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
         for rover_id in range(self.num_agents):  # Record initial positions
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
+            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
     def step(self, joint_action):
         self.istep += 1
 
         # Update rover positions
         for rover_id in range(self.num_agents):
-            self.rover_pos[rover_id, 0] += joint_action[rover_id, 0]
-            self.rover_pos[rover_id, 1] += joint_action[rover_id, 1]
+            magnitude = 0.5 * (joint_action[rover_id, 0] + 1)  # [-1,1] --> [0,1]
+
+            joint_action[rover_id, 1] /= 2.0  # Theta (bearing constrained to be within 90 degree turn from heading)
+            theta = joint_action[rover_id, 1] * 180 + self.rover_pos[rover_id, 2]
+            if theta > 360: theta -= 360
+            if theta < 0: theta += 360
+            self.rover_pos[rover_id, 2] = theta
+
+            # Update position
+            x = magnitude * math.cos(math.radians(theta))
+            y = magnitude * math.sin(math.radians(theta))
+
+            self.rover_pos[rover_id, 0] += x
+            self.rover_pos[rover_id, 1] += y
+
+            # self.rover_pos[rover_id, 0] += joint_action[rover_id, 0]
+            # self.rover_pos[rover_id, 1] += joint_action[rover_id, 1]
 
 
         # Update rover path
         for rover_id in range(self.num_agents):
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
+            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
         # Computes done
         done = int(self.istep >= p.num_steps)
@@ -73,7 +91,7 @@ class RoverDomain:
         joint_state = []
 
         for rover_id in range(self.num_agents):
-            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]
+            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]; self_orient = self.rover_pos[rover_id][2]
 
             rover_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
             poi_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
@@ -85,8 +103,10 @@ class RoverDomain:
 
                 angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
 
-                if dist >= self.obs_radius:
-                    continue  # Observability radius
+                if dist >= self.obs_radius: continue  # Observability radius
+
+                angle -= self_orient
+                if angle < 0: angle += 360
 
                 bracket = int(angle / p.angle_resolution)
 
@@ -97,12 +117,14 @@ class RoverDomain:
 
             # Log rover distances into brackets
             for id, loc in enumerate(self.rover_pos):
-                if id == rover_id:
-                    continue  # Ignore self
+                if id == rover_id: continue  # Ignore self
 
                 angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
-                if dist >= self.obs_radius:
-                    continue  # Observability radius
+
+                if dist >= self.obs_radius: continue  # Observability radius
+
+                angle -= self_orient
+                if angle < 0: angle += 360
 
                 if dist < p.min_distance:  # Clip distance to not overwhelm sigmoid in NN
                     dist = p.min_distance

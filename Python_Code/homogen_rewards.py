@@ -44,11 +44,12 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
                         observer_distances[other_agent_id] = inf  # Ignore self
 
 
-                # update closest distance only if poi is observed
+                # Update reward if coupling is satisfied
                 if observer_count >= p.coupling:
                     for observer_id in range(p.coupling):
                         summed_observer_distances += min(observer_distances)
                         od_index = observer_distances.index(min(observer_distances))
+                        # assert (od_index != agent_id)
                         observer_distances[od_index] = inf
                     counterfactual_global_reward += poi_values[poi_id] / ((1/p.coupling)*summed_observer_distances)
 
@@ -71,7 +72,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     dpp_rewards = [0.0 for i in range(number_agents)]
 
     # Calculate Dpp Reward with (TotalAgents - 1) Counterfactuals
-    n_counters = p.coupling-1
+    n_counters = p.coupling
     for agent_id in range(number_agents):
 
         for step_index in range(total_steps):
@@ -122,10 +123,10 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
 
         if dpp_rewards[agent_id] > difference_rewards[agent_id]:
             for n_counters in range(p.coupling):
-                if n_counters == 0: continue
 
                 for step_index in range(total_steps):
                     counterfactual_global_reward = 0.0
+
                     for poi_id in range(number_pois):
 
                         # Count how many agents observe poi, update closest distance if necessary
@@ -150,12 +151,13 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                         # Add in counterfactual partners
                         for partner_id in range(n_counters):
                             observer_distances[number_agents + partner_id] = observer_distances[agent_id]
-                            if observer_distances[agent_id] < min_obs_distance:
+                            if observer_distances[number_agents + partner_id] < min_obs_distance:
                                 observer_count += 1
 
                         # update closest distance only if poi is observed
                         if observer_count >= p.coupling:
                             for observer_id in range(p.coupling):
+                                # assert(min(observer_distances) >= p.min_distance)
                                 summed_observer_distances += min(observer_distances)
                                 od_index = observer_distances.index(min(observer_distances))
                                 observer_distances[od_index] = inf
