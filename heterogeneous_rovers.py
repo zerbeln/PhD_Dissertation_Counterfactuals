@@ -74,7 +74,7 @@ def init_poi_values_random():  # POI values randomly assigned 1-10
     poi_vals = [0.0 for _ in range(p.num_pois)]
 
     for poi_id in range(p.num_pois):
-        poi_vals[poi_id] = random.randint(1, 10)
+        poi_vals[poi_id] = random.randint(1, 5)
 
     return poi_vals
 
