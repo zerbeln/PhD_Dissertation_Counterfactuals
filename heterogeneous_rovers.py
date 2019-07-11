@@ -22,7 +22,7 @@ def init_rover_positions_random():  # Randomly set rovers on map
     for rov_id in range(p.num_rovers):
         rover_positions[rov_id, 0] = random.uniform(0, p.x_dim-1)  # Rover X-Coordinate
         rover_positions[rov_id, 1] = random.uniform(0, p.y_dim-1)  # Rover Y-Coordinate
-        rover_positions[rov_id, 2] = 0.0  # Rover orientation
+        rover_positions[rov_id, 2] = random.uniform(0, 360)  # Rover orientation
 
     return rover_positions
 

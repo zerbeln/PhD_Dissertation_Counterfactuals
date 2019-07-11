@@ -78,7 +78,7 @@ def run_homogeneous_rovers():
     rtype = p.reward_type
 
     for srun in range(p.stat_runs):  # Perform statistical runs
-        print("Run: %i" % srun)
+        # print("Run: %i" % srun)
         reward_history = []
 
         # Reset CCEA, NN, and world for new stat run
@@ -89,7 +89,7 @@ def run_homogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            # print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
 
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams

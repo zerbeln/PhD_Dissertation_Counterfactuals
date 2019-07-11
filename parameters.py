@@ -7,8 +7,8 @@ location for convenience.
 class Parameters:
 
     # Run Parameters
-    stat_runs = 10
-    generations = 100  # Number of generations for CCEA in each stat run
+    stat_runs = 50
+    generations = 60  # Number of generations for CCEA in each stat run
     visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
@@ -16,7 +16,7 @@ class Parameters:
     reward_type = 2  # 0 for global, 1 for difference, 2 for d++, 3 for s-d++
     num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     num_types = 1  # How many types of rovers are on the map
-    coupling = 3  # Number of rovers required to view a POI for credit
+    coupling = 6  # Number of rovers required to view a POI for credit
     num_pois = 10  # Number of POIs on map
     num_steps = 30  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
