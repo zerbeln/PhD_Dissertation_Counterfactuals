@@ -89,7 +89,7 @@ def run_homogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            # print("Gen: %i" % gen)
+            print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
 
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
@@ -122,6 +122,11 @@ def run_homogeneous_rovers():
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id][team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
+                elif rtype == "SDPP":
+                    sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(cc.team_selection[rover_id][team_number])
+                        cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
                 else:
                     sys.exit('Incorrect Reward Type for Homogeneous Teams')
 
@@ -153,6 +158,8 @@ def run_homogeneous_rovers():
             save_reward_history(reward_history, "Difference_Reward.csv")
         if rtype == 'DPP':
             save_reward_history(reward_history, "DPP_Reward.csv")
+        if rtype == "SDPP":
+            save_reward_history(reward_history, "SDPP_Reward.csv")
 
 
 def main():

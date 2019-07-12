@@ -30,5 +30,5 @@ plot(X_axis, g_fitness)
 hold on
 plot(X_axis, d_fitness)
 plot(X_axis, dpp_fitness)
-%Plot(X_axis, sdpp_fitness)
+%plot(X_axis, sdpp_fitness)
 legend('Global', 'Differnece', 'DPP')
