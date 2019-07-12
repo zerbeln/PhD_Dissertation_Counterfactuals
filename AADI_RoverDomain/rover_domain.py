@@ -8,7 +8,7 @@ class RoverDomain:
 
     def __init__(self):
         self.num_agents = p.num_rovers
-        self.obs_radius = p.activation_dist
+        self.obs_radius = p.min_observation_dist
 
         #Gym compatible attributes
         self.observation_space = np.zeros((1, int(2*360 / p.angle_resolution)))
@@ -215,7 +215,6 @@ class RoverDomain:
         """
         number_agents = p.num_rovers
         number_pois = p.num_pois
-        min_obs_distance = p.activation_dist
         inf = 1000.00
         global_reward = 0.0
 
@@ -236,7 +235,7 @@ class RoverDomain:
                 rover_distances[agent_id] = distance
 
                 # Check if agent observes poi and update observer count if true
-                if distance < min_obs_distance:
+                if distance < self.obs_radius:
                     observer_count += 1
 
             # Update global reward if POI is observed

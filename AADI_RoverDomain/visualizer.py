@@ -54,7 +54,7 @@ def visualize(rd, episode_reward):
                 y_dist = rd.poi_pos[poi_id, 1] - rd.rover_path[tstep, rover_id, 1]
                 dist = math.sqrt((x_dist**2) + (y_dist**2))
 
-                if dist <= p.activation_dist:
+                if dist <= p.min_observation_dist:
                     observer_count += 1
 
 

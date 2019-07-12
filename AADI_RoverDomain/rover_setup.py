@@ -1,5 +1,4 @@
 from AADI_RoverDomain.parameters import Parameters as p
-from PositionReader import readPos
 import numpy as np
 import random
 

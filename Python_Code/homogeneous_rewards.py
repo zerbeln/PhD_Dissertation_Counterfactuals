@@ -8,7 +8,7 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
     number_agents = p.num_rovers
     number_pois = p.num_pois
     total_steps = p.num_steps + 1
-    min_obs_distance = p.activation_dist
+    min_obs_distance = p.min_observation_dist
     inf = 1000.00
 
     difference_rewards = [0.0 for i in range(number_agents)]
@@ -64,7 +64,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     number_agents = p.num_rovers
     number_pois = p.num_pois
     total_steps = p.num_steps + 1
-    min_obs_distance = p.activation_dist
+    min_obs_distance = p.min_observation_dist
     inf = 1000.00
 
     difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward)
