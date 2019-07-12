@@ -1,10 +1,10 @@
 import Python_Code.ccea as ccea
 import Python_Code.neural_net as neural_network
-from parameters import Parameters as p
-from rover_domain_python import RoverDomain
-import Python_Code.homogen_rewards as homr
+from AADI_RoverDomain.parameters import Parameters as p
+from AADI_RoverDomain.rover_domain import RoverDomain
+import Python_Code.homogeneous_rewards as homr
 import csv; import os; import sys
-from visualizer import visualize
+from AADI_RoverDomain.visualizer import visualize
 
 
 def save_reward_history(reward_history, file_name):
@@ -84,7 +84,7 @@ def run_homogeneous_rovers():
         # Reset CCEA, NN, and world for new stat run
         cc.reset_populations()  # Randomly initialize ccea populations
         nn.reset_nn()  # Initialize NN architecture
-        rd.reset()  # Re-initialize world
+        rd.reset_world()  # Re-initialize world
 
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 

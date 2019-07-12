@@ -1,5 +1,5 @@
 import numpy as np
-from parameters import Parameters as p
+from AADI_RoverDomain.parameters import Parameters as p
 
 
 class NeuralNetwork:
