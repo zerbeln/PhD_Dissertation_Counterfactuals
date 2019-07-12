@@ -78,7 +78,7 @@ def run_homogeneous_rovers():
     rtype = p.reward_type
 
     for srun in range(p.stat_runs):  # Perform statistical runs
-        # print("Run: %i" % srun)
+        print("Run: %i" % srun)
         reward_history = []
 
         # Reset CCEA, NN, and world for new stat run

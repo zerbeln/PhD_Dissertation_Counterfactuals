@@ -50,6 +50,7 @@ class RoverDomain:
 
     def step(self, joint_action):
         self.istep += 1
+        joint_action = joint_action.clip(-1.0, 1.0)
 
         # Update rover positions
         for rover_id in range(self.num_agents):
@@ -91,7 +92,7 @@ class RoverDomain:
         joint_state = []
 
         for rover_id in range(self.num_agents):
-            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]; self_orient = self.rover_pos[rover_id][2]
+            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]; self_orient = self.rover_pos[rover_id, 2]
 
             rover_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
             poi_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
@@ -109,11 +110,13 @@ class RoverDomain:
                 if angle < 0: angle += 360
 
                 bracket = int(angle / p.angle_resolution)
-
+                if bracket >= len(temp_poi_dist_list):
+                    print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
+                    bracket = len(temp_poi_dist_list) - 1
                 if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
                     dist = p.min_distance
 
-                temp_poi_dist_list[bracket].append((value/dist))
+                temp_poi_dist_list[bracket].append(value/dist)
 
             # Log rover distances into brackets
             for id, loc in enumerate(self.rover_pos):
@@ -130,6 +133,9 @@ class RoverDomain:
                     dist = p.min_distance
 
                 bracket = int(angle / p.angle_resolution)
+                if bracket >= len(temp_rover_dist_list):
+                    print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
+                    bracket = len(temp_rover_dist_list) - 1
                 temp_rover_dist_list[bracket].append(1/dist)
 
 
@@ -189,7 +195,7 @@ class RoverDomain:
         global_reward = 0.0
 
         for poi_id in range(number_pois):
-            observer_distances = [0.0 for i in range(number_agents)]
+            rover_distances = [0.0 for i in range(number_agents)]
             observer_count = 0
             summed_observer_distances = 0.0
 
@@ -202,7 +208,7 @@ class RoverDomain:
                 if distance < p.min_distance:
                     distance = p.min_distance
 
-                observer_distances[agent_id] = distance
+                rover_distances[agent_id] = distance
 
                 # Check if agent observes poi and update observer count if true
                 if distance < min_obs_distance:
@@ -210,10 +216,12 @@ class RoverDomain:
 
             # Update global reward if POI is observed
             if observer_count >= p.coupling:
-                for observer_id in range(p.coupling):
-                    summed_observer_distances += min(observer_distances)
-                    od_index = observer_distances.index(min(observer_distances))
-                    observer_distances[od_index] = inf
+                for observer in range(p.coupling):
+                    # assert(min(rover_distances) >= p.min_distance)
+                    # assert(min(rover_distances) < min_obs_distance)
+                    summed_observer_distances += min(rover_distances)
+                    od_index = rover_distances.index(min(rover_distances))
+                    rover_distances[od_index] = inf
 
                 global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
 
