@@ -1,5 +1,6 @@
-This repository contains code for Rover Domain with Heterogeneous rover teams. Rover domain uses AADI lab code base which
-has been modified to support heterogeneous rovers.
+This repository contains code for the AADI Lab rover domain. Code is currently implemented in python.
+A primitive rover domain visualizer is implemented alongside the rover domain code, but it is currently a work in progress.
 
-run_test is a script which compiles cython files into c files. To run your test
-use the command ./run_test
+Currently main.py is setup to run the rover domain code using a CCEA to train the Neural Networks.
+
+To run the code use: python3 main.py
