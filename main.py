@@ -108,16 +108,16 @@ def run_homogeneous_rovers():
                         global_max = global_reward
 
                 # Update fitness of policies using reward information
-                if rtype == 0:
+                if rtype == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id][team_number])
                         cc.fitness[rover_id, policy_id] = global_max
-                elif rtype == 1:
+                elif rtype == "Difference":
                     d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id][team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
-                elif rtype == 2:
+                elif rtype == "DPP":
                     dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id][team_number])
@@ -147,11 +147,11 @@ def run_homogeneous_rovers():
                 if p.visualizer_on:
                     visualize(rd, global_max)
 
-        if rtype == 0:
+        if rtype == "Global":
             save_reward_history(reward_history, "Global_Reward.csv")
-        if rtype == 1:
+        if rtype == "Difference":
             save_reward_history(reward_history, "Difference_Reward.csv")
-        if rtype == 2:
+        if rtype == 'DPP':
             save_reward_history(reward_history, "DPP_Reward.csv")
 
 
