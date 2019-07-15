@@ -138,3 +138,19 @@ def init_poi_values_fixed():
         poi_vals[poi_id] = poi_vals[poi_id] * 5
 
     return poi_vals
+
+def init_poi_values_high_value_target():
+    """
+    POI values set to fixed value
+    :return: poi_vals: array of size(npoi)
+    """
+
+    poi_vals = [1.0 for _ in range(p.num_pois)]
+
+    for poi_id in range(p.num_pois):
+        if poi_id == 0:
+            poi_vals[poi_id] *= 100
+        else:
+            poi_vals[poi_id] *= 10
+
+    return poi_vals

@@ -89,12 +89,12 @@ def run_homogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            # print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
 
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
-                global_reward = 0.0; global_max = 0.0
+                global_reward = 0.0
 
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
@@ -104,31 +104,28 @@ def run_homogeneous_rovers():
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     joint_state, done, global_reward = rd.step(nn.out_layer)
 
-                    if global_reward > global_max:
-                        global_max = global_reward
-
-                # Update fitness of policies using reward information
-                if rtype == "Global":
-                    for rover_id in range(rd.num_agents):
-                        policy_id = int(cc.team_selection[rover_id][team_number])
-                        cc.fitness[rover_id, policy_id] = global_max
-                elif rtype == "Difference":
-                    d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
-                    for rover_id in range(p.num_rovers):
-                        policy_id = int(cc.team_selection[rover_id][team_number])
-                        cc.fitness[rover_id, policy_id] = d_reward[rover_id]
-                elif rtype == "DPP":
-                    dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
-                    for rover_id in range(p.num_rovers):
-                        policy_id = int(cc.team_selection[rover_id][team_number])
-                        cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
-                elif rtype == "SDPP":
-                    sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
-                    for rover_id in range(p.num_rovers):
-                        policy_id = int(cc.team_selection[rover_id][team_number])
-                        cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
-                else:
-                    sys.exit('Incorrect Reward Type for Homogeneous Teams')
+                    # Update fitness of policies using reward information
+                    if rtype == "Global":
+                        for rover_id in range(rd.num_agents):
+                            policy_id = int(cc.team_selection[rover_id][team_number])
+                            cc.fitness[rover_id, policy_id] += global_reward
+                    elif rtype == "Difference":
+                        d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, rd.istep)
+                        for rover_id in range(p.num_rovers):
+                            policy_id = int(cc.team_selection[rover_id][team_number])
+                            cc.fitness[rover_id, policy_id] += d_reward[rover_id]
+                    elif rtype == "DPP":
+                        dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, rd.istep)
+                        for rover_id in range(p.num_rovers):
+                            policy_id = int(cc.team_selection[rover_id][team_number])
+                            cc.fitness[rover_id, policy_id] += dpp_reward[rover_id]
+                    elif rtype == "SDPP":
+                        sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, rd.istep)
+                        for rover_id in range(p.num_rovers):
+                            policy_id = int(cc.team_selection[rover_id][team_number])
+                            cc.fitness[rover_id, policy_id] += sdpp_reward[rover_id]
+                    else:
+                        sys.exit('Incorrect Reward Type for Homogeneous Teams')
 
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
@@ -142,8 +139,8 @@ def run_homogeneous_rovers():
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
                 joint_state, done, global_reward = rd.step(nn.out_layer)
 
-                if global_reward > global_max:
-                    global_max = global_reward
+
+                global_max += global_reward
 
             reward_history.append(global_max)
 
