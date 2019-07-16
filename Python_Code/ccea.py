@@ -83,6 +83,7 @@ class Ccea:
 
         self.epsilon_greedy_select()  # Select parents for offspring population
         self.mutate()  # Mutate offspring population
+        self.fitness = np.zeros((self.n_populations, self.population_size))
 
     def print_best_policies(self):
         #print(self.pops[0, 0])
