@@ -208,7 +208,7 @@ def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_index)
             # Add in counterfactual partners
             self_x = rover_paths[step_index, agent_id, 0]
             self_y = rover_paths[step_index, agent_id, 1]
-            suggested_partners = partner_distance(n_counters, self_x, self_y, agent_id, poi_id, poi_positions, poi_values)
+            suggested_partners = partner_distance(n_counters, observer_distances[agent_id], agent_id, poi_id, poi_values)
             for partner_id in range(n_counters):
                 # partner_x_dist = poi_positions[poi_id, 0] - suggested_partners[partner_id, 0]
                 # partner_y_dist = poi_positions[poi_id, 1] - suggested_partners[partner_id, 1]
@@ -261,7 +261,7 @@ def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_index)
                     # Add in counterfactual partners
                     self_x = rover_paths[step_index, agent_id, 0]
                     self_y = rover_paths[step_index, agent_id, 1]
-                    suggested_partners = partner_distance(n_counters, self_x, self_y, agent_id, poi_id, poi_positions, poi_values)
+                    suggested_partners = partner_distance(n_counters, observer_distances[agent_id], agent_id, poi_id, poi_values)
                     for partner_id in range(n_counters):
                         # partner_x_dist = poi_positions[poi_id, 0] - suggested_partners[partner_id, 0]
                         # partner_y_dist = poi_positions[poi_id, 1] - suggested_partners[partner_id, 1]

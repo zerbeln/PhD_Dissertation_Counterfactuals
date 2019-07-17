@@ -34,6 +34,21 @@ def init_rover_positions_random():  # Randomly set rovers on map
 
     return rover_positions
 
+def init_rover_positions_random_concentrated():
+    """
+        Rovers given random starting positions and orientations
+        :return: rover_positions: np array of size (nrovers, 3)
+        """
+    nrovers = p.num_rovers
+    rover_positions = np.zeros((nrovers, 3))
+
+    for rov_id in range(p.num_rovers):
+        rover_positions[rov_id, 0] = random.uniform(p.x_dim/4, 3*p.x_dim/4)  # Rover X-Coordinate
+        rover_positions[rov_id, 1] = random.uniform(p.y_dim/4, 3*p.y_dim/4)  # Rover Y-Coordinate
+        rover_positions[rov_id, 2] = random.uniform(0, 360)  # Rover orientation
+
+    return rover_positions
+
 ### POI SETUP FUNCTIONS ###########################################################
 
 def init_poi_positions_random():  # Randomly set POI on the map

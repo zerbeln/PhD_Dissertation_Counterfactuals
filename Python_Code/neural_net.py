@@ -51,7 +51,7 @@ class NeuralNetwork:
             count += 1
 
         for i in range(self.n_nodes):  # Pass through sigmoid
-            self.hid_layer[rov_id, i] = self.sigmoid(self.hid_layer[rov_id, i])
+            self.hid_layer[rov_id, i] = self.tanh(self.hid_layer[rov_id, i])
 
         for i in range(self.n_nodes):  # Pass from hidden layer to output layer
             for j in range(self.n_outputs):

@@ -23,7 +23,7 @@ class Ccea:
         for pop_index in range(self.n_populations):
             for policy_index in range(self.population_size):
                 for w in range(self.policy_size):
-                    self.pops[pop_index, policy_index, w] = random.uniform(-1, 1)
+                    self.pops[pop_index, policy_index, w] = np.random.normal(0, 1)
 
     def select_policy_teams(self):  # Create policy teams for testing
         self.team_selection = [[-1 for _ in range(self.population_size)] for _ in range(self.n_populations)]
@@ -52,7 +52,7 @@ class Ccea:
                 rnum = random.uniform(0, 1)
                 if rnum <= self.mut_prob:
                     target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
-                    self.pops[pop_index, policy_index, target] = random.uniform(-1, 1)
+                    self.pops[pop_index, policy_index, target] = np.random.normal(0, 1)
                 policy_index += 1
 
     def epsilon_greedy_select(self):  # Choose K successors

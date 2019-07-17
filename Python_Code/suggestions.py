@@ -39,14 +39,14 @@ def high_reward_four_corner_suggestions(npartners, rx, ry, rover_id, poi_id, poi
 
     return partners
 
-def partner_distance(npartners, rx, ry, rover_id, poi_id, poi_positions, poi_values):
+def partner_distance(npartners, rover_dist, rover_id, poi_id, poi_values):
     partners = np.zeros(npartners)
 
-    if poi_values[poi_id] == 100:
+    if poi_values[poi_id] > 10.0 and rover_dist < p.min_observation_dist:
         for partner_id in range(npartners):
             partners[partner_id] = p.min_distance
     else:
         for partner_id in range(npartners):
-            partners[partner_id] = 100.00
+            partners[partner_id] = 1000.00
 
     return partners

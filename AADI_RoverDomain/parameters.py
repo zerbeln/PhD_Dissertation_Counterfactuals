@@ -11,7 +11,7 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 30
+    stat_runs = 50
     generations = 100  # Number of generations for CCEA in each stat run
     visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
@@ -36,7 +36,7 @@ class Parameters:
     # CCEA parameters
     mutation_rate = 0.1
     epsilon = 0.1
-    pop_size = 15
+    pop_size = 20
 
     # User specific parameters
-    reward_type = "DPP"  # Switch between reward functions
+    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
