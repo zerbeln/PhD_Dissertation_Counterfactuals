@@ -11,20 +11,20 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 50
-    generations = 100  # Number of generations for CCEA in each stat run
-    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
+    stat_runs = 1
+    generations = 80  # Number of generations for CCEA in each stat run
+    visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
-    num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+    num_rovers = 6  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 10  # Number of POIs on map
+    num_pois = 4  # Number of POIs on map
     num_steps = 30  # Number of steps rovers take each episode
-    min_distance = 0.5  # Minimum distance which may appear in the denominator of credit eval functions
+    min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
     y_dim = 30  # Y-Dimension of the rover map
-    min_observation_dist = 4.0  # Minimum distance rovers must be to observe POIs
+    min_observation_dist = 10.0  # Minimum distance rovers must be to observe POIs
     angle_resolution = 90  # Resolution of sensors (determines number of sectors)
     sensor_model = "closest"  # Should either be "density" or "closest"
 
@@ -39,4 +39,4 @@ class Parameters:
     pop_size = 20
 
     # User specific parameters
-    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"

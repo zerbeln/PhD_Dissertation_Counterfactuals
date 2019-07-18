@@ -88,10 +88,10 @@ def init_poi_positions_four_corners():  # Statically set 4 POI (one in each corn
 
     poi_positions = np.zeros((p.num_pois, 2))
 
-    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = 0.0  # Bottom left
-    poi_positions[1, 0] = 0.0; poi_positions[1, 1] = (p.y_dim - 1.0)  # Top left
-    poi_positions[2, 0] = (p.x_dim - 1.0); poi_positions[2, 1] = 0.0  # Bottom right
-    poi_positions[3, 0] = (p.x_dim - 1.0); poi_positions[3, 1] = (p.y_dim - 1.0)  # Top right
+    poi_positions[0, 0] = 3.0; poi_positions[0, 1] = 3.0  # Bottom left
+    poi_positions[1, 0] = 3.0; poi_positions[1, 1] = (p.y_dim - 3.0)  # Top left
+    poi_positions[2, 0] = (p.x_dim - 3.0); poi_positions[2, 1] = 3.0  # Bottom right
+    poi_positions[3, 0] = (p.x_dim - 3.0); poi_positions[3, 1] = (p.y_dim - 3.0)  # Top right
 
     return poi_positions
 

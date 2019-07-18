@@ -39,20 +39,28 @@ class Ccea:
                     k += 1
                 self.team_selection[pop_id][j] = rpol  # Assign policy to team
 
-    def mutate(self):
+    def mutate(self):  # Mutate policy based on probability
         half_pop_length = int(self.population_size/2)
 
         for pop_index in range(self.n_populations):
             policy_index = half_pop_length
-            mutate_n = int(p.mutation_rate*self.policy_size)
             while policy_index < self.population_size:
-                # for w in range(mutate_n):
-                #     target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
-                #     self.pops[pop_index, policy_index, target] = random.uniform(-1, 1)
                 rnum = random.uniform(0, 1)
                 if rnum <= self.mut_prob:
                     target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
                     self.pops[pop_index, policy_index, target] = np.random.normal(0, 1)
+                policy_index += 1
+
+    def mutate_percent(self):  # Mutate percentage of policy every generation
+        half_pop_length = int(self.population_size / 2)
+
+        for pop_index in range(self.n_populations):
+            policy_index = half_pop_length
+            mutate_n = int(p.mutation_rate * self.policy_size)
+            while policy_index < self.population_size:
+                for w in range(mutate_n):
+                    target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
+                    self.pops[pop_index, policy_index, target] = random.uniform(-1, 1)
                 policy_index += 1
 
     def epsilon_greedy_select(self):  # Choose K successors
@@ -82,7 +90,7 @@ class Ccea:
                     k += 1
 
         self.epsilon_greedy_select()  # Select parents for offspring population
-        self.mutate()  # Mutate offspring population
+        self.mutate_percent()  # Mutate offspring population
         self.fitness = np.zeros((self.n_populations, self.population_size))
 
     def print_best_policies(self):
