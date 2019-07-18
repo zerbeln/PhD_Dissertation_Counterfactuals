@@ -18,6 +18,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward, ste
     cdef double counterfactual_global_reward = 0.0
 
     cdef double [:] difference_rewards = np.zeros(number_agents)
+    cdef double [:] observer_distances
 
     for agent_id in range(number_agents):
 
@@ -26,7 +27,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward, ste
         for poi_id in range(number_pois):
             # Count how many agents observe poi, update closest distance if necessary
             observer_count = 0
-            observer_distances = [0.0 for i in range(number_agents)]
+            observer_distances = np.zeros(number_agents)
             summed_observer_distances = 0.0
 
             for other_agent_id in range(number_agents):
@@ -53,7 +54,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward, ste
             if observer_count >= cpling:
                 for observer_id in range(cpling):
                     summed_observer_distances += min(observer_distances)
-                    od_index = observer_distances.index(min(observer_distances))
+                    od_index = np.argmin(observer_distances)
                     observer_distances[od_index] = inf
                 counterfactual_global_reward += poi_values[poi_id] / ((1/cple)*summed_observer_distances)
 
@@ -79,6 +80,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index
 
     cdef double [:] difference_rewards = np.zeros(number_agents)
     cdef double [:] dpp_rewards = np.zeros(number_agents)
+    cdef double [:] observer_distances
 
     difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward, step_index)
 
@@ -92,7 +94,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index
             # Count how many agents observe poi, update closest distance if necessary
             observer_count = 0
             summed_observer_distances = 0.0
-            observer_distances = [0.0 for i in range(number_agents + n_counters)]
+            observer_distances = np.zeros(number_agents + n_counters)
 
             for other_agent_id in range(number_agents):
                 # Calculate separation distance between poi and agent
@@ -118,7 +120,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index
             if observer_count >= cpling:
                 for observer_id in range(cpling):
                     summed_observer_distances += min(observer_distances)
-                    od_index = observer_distances.index(min(observer_distances))
+                    od_index = np.argmin(observer_distances)
                     observer_distances[od_index] = inf
                 counterfactual_global_reward += poi_values[poi_id] / ((1 / cple) * summed_observer_distances)
 
@@ -136,7 +138,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index
                     # Count how many agents observe poi, update closest distance if necessary
                     observer_count = 0
                     summed_observer_distances = 0.0
-                    observer_distances = [0.0 for i in range(number_agents + n_counters)]
+                    observer_distances = np.zeros(number_agents + n_counters)
 
                     for other_agent_id in range(number_agents):
                         # Calculate separation distance between poi and agent
@@ -162,7 +164,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index
                     if observer_count >= cpling:
                         for observer_id in range(cpling):
                             summed_observer_distances += min(observer_distances)
-                            od_index = observer_distances.index(min(observer_distances))
+                            od_index = np.argmin(observer_distances)
                             observer_distances[od_index] = inf
                         counterfactual_global_reward += poi_values[poi_id] / ((1/cple) * summed_observer_distances)
 
@@ -192,6 +194,7 @@ cpdef calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_inde
     cdef double [:] difference_rewards = np.zeros(number_agents)
     cdef double [:] dpp_rewards = np.zeros(number_agents)
     cdef double [:] suggested_partners
+    cdef double [:] observer_distances
 
     difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward, step_index)
 
@@ -206,7 +209,7 @@ cpdef calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_inde
             # Count how many agents observe poi, update closest distance if necessary
             observer_count = 0
             summed_observer_distances = 0.0
-            observer_distances = [0.0 for i in range(number_agents + n_counters)]
+            observer_distances = np.zeros(number_agents + n_counters)
 
             for other_agent_id in range(number_agents):
                 # Calculate separation distance between poi and agent
@@ -233,7 +236,7 @@ cpdef calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_inde
             if observer_count >= cpling:
                 for observer_id in range(cpling):
                     summed_observer_distances += min(observer_distances)
-                    od_index = observer_distances.index(min(observer_distances))
+                    od_index = np.argmin(observer_distances)
                     observer_distances[od_index] = inf
                 if summed_observer_distances == 0:
                     summed_observer_distances = -1
@@ -253,7 +256,7 @@ cpdef calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_inde
                     # Count how many agents observe poi, update closest distance if necessary
                     observer_count = 0
                     summed_observer_distances = 0.0
-                    observer_distances = [0.0 for i in range(number_agents + n_counters)]
+                    observer_distances = np.zeros(number_agents + n_counters)
 
                     for other_agent_id in range(number_agents):
                         # Calculate separation distance between poi and agent
@@ -280,7 +283,7 @@ cpdef calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_inde
                     if observer_count >= cpling:
                         for observer_id in range(cpling):
                             summed_observer_distances += min(observer_distances)
-                            od_index = observer_distances.index(min(observer_distances))
+                            od_index = np.argmin(observer_distances)
                             observer_distances[od_index] = inf
                         if summed_observer_distances == 0:
                             summed_observer_distances = -1
