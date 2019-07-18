@@ -16,17 +16,17 @@ class Ccea:
         self.policy_size = (n_inputs + 1)*n_nodes + (n_nodes + 1) * n_outputs  # Number of weights for NN
         self.pops = np.zeros((self.n_populations, self.population_size, self.policy_size))
         self.fitness = np.zeros((self.n_populations, self.population_size))
-        self.team_selection = [[-1 for _ in range(self.population_size)] for _ in range(self.n_populations)]
+        self.team_selection = np.ones((self.n_populations, self.population_size)) * (-1)
 
     def reset_populations(self):  # Re-initializes CCEA populations for new run
-        self.team_selection = [[-1 for _ in range(self.population_size)] for _ in range(self.n_populations)]
+        self.team_selection = np.ones((self.n_populations, self.population_size)) * (-1)
         for pop_index in range(self.n_populations):
             for policy_index in range(self.population_size):
                 for w in range(self.policy_size):
                     self.pops[pop_index, policy_index, w] = np.random.normal(0, 1)
 
     def select_policy_teams(self):  # Create policy teams for testing
-        self.team_selection = [[-1 for _ in range(self.population_size)] for _ in range(self.n_populations)]
+        self.team_selection = np.ones((self.n_populations, self.population_size)) * (-1)
 
         for pop_id in range(self.n_populations):
             for j in range(self.population_size):
@@ -60,7 +60,7 @@ class Ccea:
             while policy_index < self.population_size:
                 for w in range(mutate_n):
                     target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
-                    self.pops[pop_index, policy_index, target] = random.uniform(-1, 1)
+                    self.pops[pop_index, policy_index, target] = np.random.normal(0, 1)
                 policy_index += 1
 
     def epsilon_greedy_select(self):  # Choose K successors

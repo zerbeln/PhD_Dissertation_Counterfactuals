@@ -1,14 +1,13 @@
 import numpy as np
 import math
 from AADI_RoverDomain.parameters import Parameters as p
-from Python_Code.suggestions import *
+from Python_Code.suggestions import partner_distance
 
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
 def calc_difference(rover_paths, poi_values, poi_positions, global_reward, step_index):
     number_agents = p.num_rovers
     number_pois = p.num_pois
-    total_steps = p.num_steps + 1
     min_obs_distance = p.min_observation_dist
     inf = 1000.00
 
@@ -63,7 +62,6 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward, step_
 def calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index):
     number_agents = p.num_rovers
     number_pois = p.num_pois
-    total_steps = p.num_steps + 1
     min_obs_distance = p.min_observation_dist
     inf = 1000.00
 
@@ -168,7 +166,6 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index):
 def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_index):
     number_agents = p.num_rovers
     number_pois = p.num_pois
-    total_steps = p.num_steps + 1
     min_obs_distance = p.min_observation_dist
     inf = 1000.00
 
