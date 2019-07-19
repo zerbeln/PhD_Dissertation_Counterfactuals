@@ -15,7 +15,7 @@ def init_rover_positions_fixed():  # Set rovers to fixed starting position
     for rov_id in range(p.num_rovers):
         rover_positions[rov_id, 0] = 0.5*p.x_dim  # Rover X-Coordinate
         rover_positions[rov_id, 1] = 0.5*p.y_dim  # Rover Y-Coordinate
-        rover_positions[rov_id, 2] = 0.0  # Rover orientation
+        rover_positions[rov_id, 2] = random.uniform(0, 360)  # Rover orientation
 
     return rover_positions
 

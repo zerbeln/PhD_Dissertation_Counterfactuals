@@ -25,30 +25,28 @@ def homogeneous_partner_suggestions(npartners, rx, ry, rover_id, poi_id, poi_pos
 
     return partners
 
-def partner_distance(npartners, rover_dist, rover_id, poi_id, poi_values):
-    partners = np.zeros(npartners)
+def partner_distance(nobservers, rover_dist, rover_id, poi_id, poi_values):
 
-    n_added = 0
+    npartners = p.coupling - nobservers
+    if npartners > 0:
+        partners = np.zeros(npartners)
 
-    if rover_id%2 == 0:
-        if poi_values[poi_id] > 5.0:
-            for partner_id in range(npartners):
-                partners[partner_id] = rover_dist
-                if rover_dist < p.min_observation_dist:
-                    n_added += 1
+        if rover_id%2 == 0:
+            if poi_values[poi_id] > 5.0:
+                for partner_id in range(npartners):
+                    partners[partner_id] = rover_dist
+            else:
+                for partner_id in range(npartners):
+                    partners[partner_id] = 100.0
         else:
-            for partner_id in range(npartners):
-                partners[partner_id] = 100.0
-                n_added -= 1
+            if poi_values[poi_id] <= 5.0:
+                for partner_id in range(npartners):
+                    partners[partner_id] = rover_dist
+            else:
+                for partner_id in range(npartners):
+                    partners[partner_id] = 100.0
     else:
-        if poi_values[poi_id] <= 5.0:
-            for partner_id in range(npartners):
-                partners[partner_id] = rover_dist
-                if rover_dist < p.min_observation_dist:
-                    n_added += 1
-        else:
-            for partner_id in range(npartners):
-                partners[partner_id] = 100.0
-                n_added -= 1
+        partners = 0
+        npartners = 0
 
-    return partners, n_added
+    return partners, npartners

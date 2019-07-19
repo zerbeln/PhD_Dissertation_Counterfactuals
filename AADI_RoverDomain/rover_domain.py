@@ -16,10 +16,10 @@ class RoverDomain:
 
         # Initialize POI containers tha track POI position
         self.poi_pos = init_poi_positions_random()
-        self.poi_values = init_poi_values_random()
+        self.poi_values = init_poi_values_high_value_target()
 
         # Initialize rover position container
-        self.rover_pos = init_rover_positions_random_concentrated()
+        self.rover_pos = init_rover_positions_random()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
         #Rover path trace for trajectory-wide global reward computation and vizualization purposes
@@ -30,10 +30,10 @@ class RoverDomain:
         Changes rovers' starting positions and POI positions and values according to specified functions
         :return: none
         """
-        self.rover_pos = init_rover_positions_random_concentrated()
+        self.rover_pos = init_rover_positions_random()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
         self.poi_pos = init_poi_positions_random()
-        self.poi_values = init_poi_values_random()
+        self.poi_values = init_poi_values_high_value_target()
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
@@ -219,7 +219,7 @@ class RoverDomain:
         global_reward = 0.0
 
         for poi_id in range(number_pois):
-            rover_distances = [0.0 for i in range(number_agents)]
+            rover_distances = np.zeros(p.num_rovers)
             observer_count = 0
             summed_observer_distances = 0.0
 
@@ -242,7 +242,7 @@ class RoverDomain:
             if observer_count >= p.coupling:
                 for observer in range(p.coupling):
                     summed_observer_distances += min(rover_distances)
-                    od_index = rover_distances.index(min(rover_distances))
+                    od_index = np.argmin(rover_distances)
                     rover_distances[od_index] = inf
 
                 global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)

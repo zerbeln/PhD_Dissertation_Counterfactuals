@@ -89,7 +89,7 @@ def run_homogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            # print("Gen: %i" % gen)
+            print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
 
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
@@ -125,7 +125,7 @@ def run_homogeneous_rovers():
                             policy_id = int(cc.team_selection[rover_id, team_number])
                             cc.fitness[rover_id, policy_id] += sdpp_reward[rover_id]
                     else:
-                        sys.exit('Incorrect Reward Type for Homogeneous Teams')
+                        sys.exit('Incorrect Reward Type')
 
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
@@ -139,8 +139,8 @@ def run_homogeneous_rovers():
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
                 joint_state, done, global_reward = rd.step(nn.out_layer)
 
-
-                global_max += global_reward
+                if global_max < global_reward:
+                    global_max = global_reward
 
             reward_history.append(global_max)
 
