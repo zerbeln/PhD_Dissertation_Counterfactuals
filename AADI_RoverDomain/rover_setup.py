@@ -163,9 +163,9 @@ def init_poi_values_high_value_target():
     poi_vals = [1.0 for _ in range(p.num_pois)]
 
     for poi_id in range(p.num_pois):
-        if poi_id == 0:
-            poi_vals[poi_id] *= 100
+        if poi_id%2 == 0:
+            poi_vals[poi_id] *= 10.0
         else:
-            poi_vals[poi_id] *= 10
+            poi_vals[poi_id] *= 5.0
 
     return poi_vals

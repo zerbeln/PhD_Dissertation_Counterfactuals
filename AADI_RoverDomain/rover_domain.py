@@ -62,7 +62,7 @@ class RoverDomain:
         :return: Joint state of rovers (NN inputs), Done, and Global Reward
         """
         self.istep += 1
-        joint_action = joint_action.clip(-1.0, 1.0)
+        joint_action = np.clip(joint_action, -1.0, 1.0)
 
         # Update rover positions
         for rover_id in range(self.num_agents):

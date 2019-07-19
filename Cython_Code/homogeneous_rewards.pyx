@@ -15,7 +15,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward, ste
     cdef double inf = 1000.00
     cdef int agent_id, poi_id, other_agent_id, observer_count, od_index, observer_id
     cdef double x_distance, y_distance, distance, summed_observer_distances, temp_difference_reward
-    cdef double counterfactual_global_reward = 0.0
+    cdef double counterfactual_global_reward
 
     cdef double [:] difference_rewards = np.zeros(number_agents)
     cdef double [:] observer_distances
@@ -76,7 +76,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward, step_index
     cdef double inf = 1000.00
     cdef int agent_id, poi_id, other_agent_id, observer_count, od_index, observer_id, n_counters, partner_id
     cdef double x_distance, y_distance, distance, summed_observer_distances, temp_dpp_reward
-    cdef double counterfactual_global_reward = 0.0
+    cdef double counterfactual_global_reward
 
     cdef double [:] difference_rewards = np.zeros(number_agents)
     cdef double [:] dpp_rewards = np.zeros(number_agents)
@@ -189,7 +189,7 @@ cpdef calc_sdpp(rover_paths, poi_values, poi_positions, global_reward, step_inde
     cdef double inf = 1000.00
     cdef int agent_id, poi_id, other_agent_id, observer_count, od_index, observer_id, n_counters, partner_id, added_partners
     cdef double x_distance, y_distance, distance, summed_observer_distances, temp_dpp_reward, self_x, self_y
-    cdef double counterfactual_global_reward = 0.0
+    cdef double counterfactual_global_reward
 
     cdef double [:] difference_rewards = np.zeros(number_agents)
     cdef double [:] dpp_rewards = np.zeros(number_agents)
