@@ -1,6 +1,7 @@
 from AADI_RoverDomain.parameters import Parameters as p
 import numpy as np
 import random
+import math
 
 ### ROVER SETUP FUNCTIONS ######################################################
 
@@ -64,6 +65,24 @@ def init_poi_positions_random():  # Randomly set POI on the map
 
     return poi_positions
 
+def init_poi_positions_circle():
+    radius = 8.0
+    interval = 360/p.num_pois
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    x = p.x_dim/2
+    y = p.y_dim/2
+    theta = 0.0
+
+    for poi_id in range(p.num_pois):
+        poi_positions[poi_id, 0] = x + radius*math.cos(theta*math.pi/180)
+        poi_positions[poi_id, 1] = y + radius*math.sin(theta*math.pi/180)
+        theta += interval
+
+
+    return poi_positions
+
 def init_poi_positions_two_poi():
     """
     Sets two POI on the map, one on the left, one on the right at Y-Dimension/2
@@ -88,10 +107,10 @@ def init_poi_positions_four_corners():  # Statically set 4 POI (one in each corn
 
     poi_positions = np.zeros((p.num_pois, 2))
 
-    poi_positions[0, 0] = 3.0; poi_positions[0, 1] = 3.0  # Bottom left
-    poi_positions[1, 0] = 3.0; poi_positions[1, 1] = (p.y_dim - 3.0)  # Top left
-    poi_positions[2, 0] = (p.x_dim - 3.0); poi_positions[2, 1] = 3.0  # Bottom right
-    poi_positions[3, 0] = (p.x_dim - 3.0); poi_positions[3, 1] = (p.y_dim - 3.0)  # Top right
+    poi_positions[0, 0] = 5.0; poi_positions[0, 1] = 5.0  # Bottom left
+    poi_positions[1, 0] = 5.0; poi_positions[1, 1] = (p.y_dim - 5.0)  # Top left
+    poi_positions[2, 0] = (p.x_dim - 5.0); poi_positions[2, 1] = 5.0  # Bottom right
+    poi_positions[3, 0] = (p.x_dim - 5.0); poi_positions[3, 1] = (p.y_dim - 5.0)  # Top right
 
     return poi_positions
 
@@ -147,14 +166,14 @@ def init_poi_values_fixed():
     POI values set to fixed value
     :return: poi_vals: array of size(npoi)
     """
-    poi_vals = [1.0 for _ in range(p.num_pois)]
+    poi_vals = np.zeros(p.num_pois)
 
     for poi_id in range(p.num_pois):
-        poi_vals[poi_id] = poi_vals[poi_id] * 5
+        poi_vals[poi_id] = poi_id + 1
 
     return poi_vals
 
-def init_poi_values_high_value_target():
+def init_poi_values_half_and_half():
     """
     POI values set to fixed value
     :return: poi_vals: array of size(npoi)

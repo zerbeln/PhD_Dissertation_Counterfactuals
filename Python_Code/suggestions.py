@@ -31,7 +31,7 @@ def partner_distance(nobservers, rover_dist, rover_id, poi_id, poi_values):
     if npartners > 0:
         partners = np.zeros(npartners)
 
-        if rover_id%2 == 0:
+        if rover_id < p.num_rovers/2:
             if poi_values[poi_id] > 5.0:
                 for partner_id in range(npartners):
                     partners[partner_id] = rover_dist

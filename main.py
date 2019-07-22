@@ -27,7 +27,7 @@ def save_world_configuration(rover_positions, poi_positions, poi_vals):
     pcoords_name = os.path.join(dir_name, 'POI_Positions.txt')
     pvals_name = os.path.join(dir_name, 'POI_Values.txt')
 
-    rov_coords = open(rcoords_name, 'a')
+    rov_coords = open(rcoords_name, 'w')
     for r_id in range(nrovers):  # Record initial rover positions to txt file
         rov_coords.write('%f' % rover_positions[r_id, 0])
         rov_coords.write('\t')
@@ -36,8 +36,8 @@ def save_world_configuration(rover_positions, poi_positions, poi_vals):
     rov_coords.write('\n')
     rov_coords.close()
 
-    poi_coords = open(pcoords_name, 'a')
-    poi_values = open(pvals_name, 'a')
+    poi_coords = open(pcoords_name, 'w')
+    poi_values = open(pvals_name, 'w')
     for p_id in range(p.num_pois):  # Record POI positions and values
         poi_coords.write('%f' % poi_positions[p_id, 0])
         poi_coords.write('\t')
@@ -89,7 +89,7 @@ def run_homogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            # print("Gen: %i" % gen)
             cc.select_policy_teams()  # Selects which policies will be grouped into which teams
 
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
