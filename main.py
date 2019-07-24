@@ -112,28 +112,23 @@ def run_homogeneous_rovers():
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_max
+                elif rtype == "Difference":
+                    d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        cc.fitness[rover_id, policy_id] = d_reward[rover_id]
+                elif rtype == "DPP":
+                    dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
+                elif rtype == "SDPP":
+                    sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
                 else:
-                    for step_id in range(p.num_steps):
-                        if rtype == "Difference":
-                            d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_max, step_id)
-                            for rover_id in range(p.num_rovers):
-                                policy_id = int(cc.team_selection[rover_id, team_number])
-                                if cc.fitness[rover_id, policy_id] < d_reward[rover_id]:
-                                    cc.fitness[rover_id, policy_id] = d_reward[rover_id]
-                        elif rtype == "DPP":
-                            dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max, step_id)
-                            for rover_id in range(p.num_rovers):
-                                policy_id = int(cc.team_selection[rover_id, team_number])
-                                if cc.fitness[rover_id, policy_id] < dpp_reward[rover_id]:
-                                    cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
-                        elif rtype == "SDPP":
-                            sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max, step_id)
-                            for rover_id in range(p.num_rovers):
-                                policy_id = int(cc.team_selection[rover_id, team_number])
-                                if cc.fitness[rover_id, policy_id] < sdpp_reward[rover_id]:
-                                    cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
-                        else:
-                            sys.exit('Incorrect Reward Type')
+                    sys.exit('Incorrect Reward Type')
 
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
