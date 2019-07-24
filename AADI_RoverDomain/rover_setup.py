@@ -66,7 +66,7 @@ def init_poi_positions_random():  # Randomly set POI on the map
     return poi_positions
 
 def init_poi_positions_circle():
-    radius = 8.0
+    radius = 12.0
     interval = 360/p.num_pois
 
     poi_positions = np.zeros((p.num_pois, 2))
