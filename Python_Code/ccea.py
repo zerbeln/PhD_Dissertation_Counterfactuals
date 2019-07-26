@@ -9,7 +9,9 @@ class Ccea:
         self.mut_prob = p.mutation_rate
         self.epsilon = p.epsilon
         self.n_populations = p.num_rovers  # One population for each rover
-        self.population_size = p.pop_size * 2  # Number of policies in each pop
+        self.parent_pop_size = p.parent_pop_size
+        self.offspring_pop_size = p.offspring_pop_size
+        self.population_size = p.parent_pop_size + p.offspring_pop_size  # Number of policies in each pop
         n_inputs = p.num_inputs
         n_outputs = p.num_outputs
         n_nodes = p.num_nodes  # Number of nodes in hidden layer
@@ -40,10 +42,8 @@ class Ccea:
                 self.team_selection[pop_id][j] = rpol  # Assign policy to team
 
     def mutate(self):  # Mutate policy based on probability
-        half_pop_length = int(self.population_size/2)
-
         for pop_index in range(self.n_populations):
-            policy_index = half_pop_length
+            policy_index = self.parent_pop_size
             while policy_index < self.population_size:
                 rnum = random.uniform(0, 1)
                 if rnum <= self.mut_prob:
@@ -52,10 +52,8 @@ class Ccea:
                 policy_index += 1
 
     def mutate_percent(self):  # Mutate percentage of policy every generation
-        half_pop_length = int(self.population_size / 2)
-
         for pop_index in range(self.n_populations):
-            policy_index = half_pop_length
+            policy_index = self.parent_pop_size
             mutate_n = int(p.mutation_rate * self.policy_size)
             while policy_index < self.population_size:
                 for w in range(mutate_n):

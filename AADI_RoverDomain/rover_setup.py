@@ -5,9 +5,9 @@ import math
 
 ### ROVER SETUP FUNCTIONS ######################################################
 
-def init_rover_positions_fixed():  # Set rovers to fixed starting position
+def init_rover_positions_fixed_middle():  # Set rovers to fixed starting position
     """
-    Rovers all start out in the middle of the map at an orientation of 0 degrees.
+    Rovers all start out in the middle of the map at random orientations
     :return: rover_positions: np array of size (nrovers, 3)
     """
     nrovers = p.num_rovers
@@ -37,9 +37,9 @@ def init_rover_positions_random():  # Randomly set rovers on map
 
 def init_rover_positions_random_concentrated():
     """
-        Rovers given random starting positions and orientations
+        Rovers given random starting positions within a radius of the center. Starting orientations are random
         :return: rover_positions: np array of size (nrovers, 3)
-        """
+    """
     nrovers = p.num_rovers
     rover_positions = np.zeros((nrovers, 3))
 
@@ -49,6 +49,17 @@ def init_rover_positions_random_concentrated():
         rover_positions[rov_id, 2] = random.uniform(0, 360)  # Rover orientation
 
     return rover_positions
+
+def init_rover_pos_twelve_grid():
+    rover_positions = np.zeros((p.num_rovers, 3))
+
+    for rover_id in range(p.num_rovers):
+        rover_positions[rover_id, 0] = p.x_dim - 1
+        rover_positions[rover_id, 1] = random.uniform((p.y_dim / 2) - 5, (p.y_dim / 2) + 5)
+        rover_positions[rover_id, 2] = random.uniform(0, 360)  # Rover orientation
+
+    return rover_positions
+
 
 ### POI SETUP FUNCTIONS ###########################################################
 
@@ -66,6 +77,10 @@ def init_poi_positions_random():  # Randomly set POI on the map
     return poi_positions
 
 def init_poi_positions_circle():
+    """
+        POI positions are set in a circle around the center of the map at a specified radius.
+        :return: poi_positions: np array of size (npoi, 2)
+    """
     radius = 12.0
     interval = 360/p.num_pois
 
@@ -100,7 +115,7 @@ def init_poi_positions_two_poi():
 
 def init_poi_positions_four_corners():  # Statically set 4 POI (one in each corner)
     """
-    Sets 4 POI on the map, one in each corner
+    Sets 4 POI on the map in a box formation around the center
     :return: poi_positions: np array of size (npoi, 2)
     """
     assert(p.num_pois == 4)  # There must only be 4 POI for this initialization
@@ -161,15 +176,27 @@ def init_poi_values_random():
     return poi_vals
 
 
-def init_poi_values_fixed():
+def init_poi_values_fixed_ascending():
     """
-    POI values set to fixed value
+    POI values set to fixed, ascending values based on POI ID
     :return: poi_vals: array of size(npoi)
     """
     poi_vals = np.zeros(p.num_pois)
 
     for poi_id in range(p.num_pois):
         poi_vals[poi_id] = poi_id + 1
+
+    return poi_vals
+
+def init_poi_values_fixed_identical():
+    """
+        POI values set to fixed, identical value
+        :return: poi_vals: array of size(npoi)
+        """
+    poi_vals = np.zeros(p.num_pois)
+
+    for poi_id in range(p.num_pois):
+        poi_vals[poi_id] = 5.0
 
     return poi_vals
 
@@ -186,5 +213,101 @@ def init_poi_values_half_and_half():
             poi_vals[poi_id] *= 10.0
         else:
             poi_vals[poi_id] *= 5.0
+
+    return poi_vals
+
+def init_poi_pos_random_inner_square_outer():
+    num_pois = p.num_pois
+    num_outer_pois = 4
+    num_inner_pois = num_pois - num_outer_pois
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = 0.0  # Bottom left
+    poi_positions[1, 0] = 0.0; poi_positions[1, 1] = (p.y_dim - 1.0)  # Top left
+    poi_positions[2, 0] = (p.x_dim - 1.0); poi_positions[2, 1] = 0.0  # Bottom right
+    poi_positions[3, 0] = (p.x_dim - 1.0); poi_positions[3, 1] = (p.y_dim - 1.0)  # Top right
+
+    for i in range(4, num_pois):
+        poi_positions[i, 0] = random.uniform(p.x_dim / 4, 3 * p.x_dim / 4)
+        poi_positions[i, 1] = random.uniform(p.y_dim / 4, 3 * p.y_dim / 4)
+
+    return poi_positions
+
+def init_poi_val_random_inner_square_outer():
+    poi_vals = np.zeros(p.num_pois)
+
+    for poi_id in range(4):
+        poi_vals[poi_id] = 100
+
+    for poi_id in range(4, p.num_pois):
+        poi_vals[poi_id] = 5.0
+
+    return poi_vals
+
+
+def init_poi_pos_twelve_grid():
+
+    assert(p.num_pois == 12)
+
+    poi_positions = np.zeros((p.num_pois, 2))
+    poi_id = 0
+
+    for i in range(4):
+        for j in range(3):
+            poi_positions[poi_id, 0] = j * ((p.x_dim - 10) / 2)
+            poi_positions[poi_id, 1] = i * (p.y_dim / 3)
+
+            poi_id += 1
+
+    return poi_positions
+
+
+def init_poi_concentric_squares_pos():
+
+    assert(p.num_pois == 8)
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    poi_positions[0, 0] = (p.x_dim / 2) - 5
+    poi_positions[0, 1] = (p.y_dim / 2) - 5
+
+    poi_positions[1, 0] = (p.x_dim / 2) + 5
+    poi_positions[1, 1] = (p.y_dim / 2) - 5
+
+    poi_positions[2, 0] = (p.x_dim / 2) - 5
+    poi_positions[2, 1] = (p.y_dim / 2) + 5
+
+    poi_positions[3, 0] = (p.x_dim / 2) + 5
+    poi_positions[3, 1] = (p.y_dim / 2) + 5
+
+    poi_positions[4, 0] = (p.x_dim / 2) - 10
+    poi_positions[4, 1] = (p.y_dim / 2) - 10
+
+    poi_positions[5, 0] = (p.x_dim / 2) + 10
+    poi_positions[5, 1] = (p.y_dim / 2) - 10
+
+    poi_positions[6, 0] = (p.x_dim / 2) - 10
+    poi_positions[6, 1] = (p.y_dim / 2) + 10
+
+    poi_positions[7, 0] = (p.x_dim / 2) + 10
+    poi_positions[7, 1] = (p.y_dim / 2) + 10
+
+    return poi_positions
+
+def init_poi_concentric_squares_vals():
+
+    assert(p.num_pois == 8)
+    poi_vals = np.zeros(p.num_pois)
+
+    poi_vals[0] = 4
+    poi_vals[1] = 4
+    poi_vals[2] = 4
+    poi_vals[3] = 4
+
+    poi_vals[4] = 20
+    poi_vals[5] = 20
+    poi_vals[6] = 20
+    poi_vals[7] = 20
 
     return poi_vals
