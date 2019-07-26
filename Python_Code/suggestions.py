@@ -95,8 +95,11 @@ def negative_distances(rover_dist, poi_id, poi_values):
     if poi_values[poi_id] > 5:
         for partner_id in range(npartners):
             partners[partner_id] = rover_dist
-    else:
+    elif rover_dist < p.min_observation_dist:
         for partner_id in range(npartners):
             partners[partner_id] = -10.0
+    else:
+        for partner_id in range(npartners):
+            partners[partner_id] = 100.00
 
     return partners, npartners
