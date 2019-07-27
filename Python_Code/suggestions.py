@@ -1,7 +1,7 @@
 import numpy as np
 from AADI_RoverDomain.parameters import Parameters as p
 
-def low_high_split(nobservers, rover_dist, rover_id, poi_id, poi_values):
+def low_high_split(rover_dist, rover_id, poi_id, poi_values):
     npartners = p.coupling - 1
 
     if npartners <= 0:
@@ -58,7 +58,7 @@ def high_value_only(rover_dist, poi_id, poi_values):
 
     return partners, npartners
 
-def low_value_pois(nobservers, rover_dist, poi_id, poi_values):
+def low_value_pois(rover_dist, poi_id, poi_values):
     npartners = p.coupling - 1
 
     if npartners <= 0:
