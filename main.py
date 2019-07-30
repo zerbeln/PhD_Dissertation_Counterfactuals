@@ -113,17 +113,17 @@ def run_homogeneous_rovers():
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_max
                 elif rtype == "Difference":
-                    d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    d_reward = homr.calc_difference_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
                 elif rtype == "DPP":
-                    dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    dpp_reward = homr.calc_dpp_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
                 elif rtype == "SDPP":
-                    sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
+                    sdpp_reward = homr.calc_sdpp_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_max)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
