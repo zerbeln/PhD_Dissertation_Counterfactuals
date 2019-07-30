@@ -13,7 +13,7 @@ class Parameters:
     # Run Parameters
     stat_runs = 1
     generations = 500  # Number of generations for CCEA in each stat run
-    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
+    visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
@@ -40,4 +40,4 @@ class Parameters:
     offspring_pop_size = 3
 
     # User specific parameters
-    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"

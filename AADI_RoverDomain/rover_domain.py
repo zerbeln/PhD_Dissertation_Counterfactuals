@@ -19,6 +19,7 @@ class RoverDomain:
         self.poi_values = init_poi_values_fixed_ascending()
         self.poi_observers = np.ones((p.num_pois, p.num_rovers))*100.00
         self.poi_observed = np.zeros(p.num_pois)
+        self.poi_rewards = np.zeros(p.num_pois)
 
         # Initialize rover positions
         self.rover_pos = init_rover_positions_fixed_middle()
@@ -39,6 +40,7 @@ class RoverDomain:
         self.poi_values = init_poi_values_fixed_ascending()
         self.poi_observers = np.ones((p.num_pois, p.num_rovers))*100.00
         self.poi_observed = np.zeros(p.num_pois)
+        self.poi_rewards = np.zeros(p.num_pois)
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
@@ -54,6 +56,7 @@ class RoverDomain:
         """
         self.poi_observers = np.ones((p.num_pois, p.num_rovers))*100.00
         self.poi_observed = np.zeros(p.num_pois)
+        self.poi_rewards = np.zeros(p.num_pois)
         self.rover_pos = self.rover_initial_pos.copy()
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
@@ -262,8 +265,9 @@ class RoverDomain:
         :return: global_reward
         """
 
+        global_reward = 0.0
         for poi_id in range(p.num_pois):
-            observer_count = 0
+            observer_count = 0; observer_distances = np.zeros(p.num_rovers)
 
             for agent_id in range(p.num_rovers):
                 # Calculate distance between agent and POI
@@ -274,8 +278,7 @@ class RoverDomain:
                 if distance < p.min_distance:
                     distance = p.min_distance
 
-                if distance < self.poi_observers[poi_id, agent_id]:
-                    self.poi_observers[poi_id, agent_id] = distance
+                observer_distances[agent_id] = distance
 
                 # Check if agent observes poi and update observer count if true
                 if distance < self.obs_radius:
@@ -283,15 +286,15 @@ class RoverDomain:
 
             # Update global reward if POI is observed
             if observer_count >= p.coupling:
-                self.poi_observed[poi_id] = 1
-
-        global_reward = 0.0
-        for poi_id in range(p.num_pois):
-            index_list = np.argpartition(self.poi_observers[poi_id], p.coupling)
-            if self.poi_observed[poi_id] > 0:
                 summed_observer_distances = 0.0
+                index_list = np.argpartition(observer_distances, p.coupling)
                 for observer in range(p.coupling):
-                    summed_observer_distances += self.poi_observers[poi_id, index_list[observer]]
-                global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
+                    summed_observer_distances += observer_distances[index_list[observer]]
+                temp_poi_reward = self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
+
+                if temp_poi_reward > self.poi_rewards[poi_id]:
+                    self.poi_rewards[poi_id] = temp_poi_reward
+
+            global_reward += self.poi_rewards[poi_id]
 
         return global_reward
