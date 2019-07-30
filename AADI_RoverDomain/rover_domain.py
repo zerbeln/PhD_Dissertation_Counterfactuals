@@ -261,16 +261,11 @@ class RoverDomain:
         Calculates global reward for current world state.
         :return: global_reward
         """
-        number_agents = p.num_rovers
-        number_pois = p.num_pois
-        inf = 1000.00
-        global_reward = 0.0
 
-        for poi_id in range(number_pois):
-            rover_distances = np.zeros(p.num_rovers)
+        for poi_id in range(p.num_pois):
             observer_count = 0
 
-            for agent_id in range(number_agents):
+            for agent_id in range(p.num_rovers):
                 # Calculate distance between agent and POI
                 x_distance = self.poi_pos[poi_id, 0] - self.rover_pos[agent_id, 0]
                 y_distance = self.poi_pos[poi_id, 1] - self.rover_pos[agent_id, 1]
@@ -279,7 +274,6 @@ class RoverDomain:
                 if distance < p.min_distance:
                     distance = p.min_distance
 
-                rover_distances[agent_id] = distance
                 if distance < self.poi_observers[poi_id, agent_id]:
                     self.poi_observers[poi_id, agent_id] = distance
 
@@ -291,10 +285,11 @@ class RoverDomain:
             if observer_count >= p.coupling:
                 self.poi_observed[poi_id] = 1
 
-        summed_observer_distances = 0.0
-        for poi_id in range(number_pois):
+        global_reward = 0.0
+        for poi_id in range(p.num_pois):
             index_list = np.argpartition(self.poi_observers[poi_id], p.coupling)
             if self.poi_observed[poi_id] > 0:
+                summed_observer_distances = 0.0
                 for observer in range(p.coupling):
                     summed_observer_distances += self.poi_observers[poi_id, index_list[observer]]
                 global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
