@@ -11,10 +11,10 @@ coupling = 3;
 
 %% Input from Text Files
 
-g_reward_data = open('Global/Output_Data/Global_Reward.csv');
-d_reward_data = open('Difference/Output_Data/Difference_Reward.csv');
-dpp_reward_data = open('D++/Output_Data/DPP_Reward.csv');
-sdpp_reward_data = open('SD++/Output_Data/SDPP_Reward.csv');
+g_reward_data = importdata('Global/Output_Data/Global_Reward.csv');
+d_reward_data = importdata('Difference/Output_Data/Difference_Reward.csv');
+dpp_reward_data = importdata('D++/Output_Data/DPP_Reward.csv');
+sdpp_reward_data = importdata('SD++/Output_Data/SDPP_Reward.csv');
 
 %% Data Analysis
 

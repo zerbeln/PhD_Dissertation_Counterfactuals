@@ -438,17 +438,15 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                         summed_observer_distances += observer_distances[index_list[observer]]
                     if summed_observer_distances == 0:
                         summed_observer_distances = -1.0
-                    temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
+                    temp_poi_reward = poi_values[poi_id] / ((1/p.coupling) * summed_observer_distances)
                     if temp_poi_reward > poi_rewards[poi_id]:
                         poi_rewards[poi_id] = temp_poi_reward
 
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
             counterfactual_global_reward += poi_rewards[poi_id]
-        temp_dpp_reward = (counterfactual_global_reward - global_reward)/(1 + n_observers)
-        if temp_dpp_reward > difference_rewards[agent_id]:
-            dpp_rewards[agent_id] = temp_dpp_reward
-        else:
+        dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward)/(1 + n_observers)
+        if dpp_rewards[agent_id] < difference_rewards[agent_id]:
             dpp_rewards[agent_id] = difference_rewards[agent_id]
 
     return dpp_rewards

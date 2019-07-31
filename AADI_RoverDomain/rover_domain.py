@@ -17,8 +17,6 @@ class RoverDomain:
         # Initialize POI positions and values
         self.poi_pos = init_poi_positions_circle()
         self.poi_values = init_poi_values_fixed_ascending()
-        self.poi_observers = np.ones((p.num_pois, p.num_rovers))*100.00
-        self.poi_observed = np.zeros(p.num_pois)
         self.poi_rewards = np.zeros(p.num_pois)
 
         # Initialize rover positions
@@ -38,8 +36,6 @@ class RoverDomain:
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
         self.poi_pos = init_poi_positions_circle()
         self.poi_values = init_poi_values_fixed_ascending()
-        self.poi_observers = np.ones((p.num_pois, p.num_rovers))*100.00
-        self.poi_observed = np.zeros(p.num_pois)
         self.poi_rewards = np.zeros(p.num_pois)
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
@@ -54,8 +50,6 @@ class RoverDomain:
         Resets rovers to starting positions (does not alter the starting positions)
         :return: none
         """
-        self.poi_observers = np.ones((p.num_pois, p.num_rovers))*100.00
-        self.poi_observed = np.zeros(p.num_pois)
         self.poi_rewards = np.zeros(p.num_pois)
         self.rover_pos = self.rover_initial_pos.copy()
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
