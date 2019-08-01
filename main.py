@@ -90,23 +90,24 @@ def run_homogeneous_rovers():
 
         for gen in range(p.generations):
             print("Gen: %i" % gen)
-            cc.select_policy_teams()  # Selects which policies will be grouped into which teams
-
+            cc.reset_fitness_array()
+            cc.select_policy_teams()
             for team_number in range(cc.population_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
-                global_reward = 0.0; done = False; rd.istep = 0
+                done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
                 while not done:
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
-                    joint_state, done, global_reward = rd.step(nn.out_layer)
+                    joint_state, done = rd.step(nn.out_layer)
 
                 # Update fitness of policies using reward information
+                global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
                 if rtype == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
-                        cc.fitness[rover_id, policy_id] = global_reward
+                        cc.fitness[rover_id, policy_id] += global_reward
                 elif rtype == "Difference":
                     d_reward = homr.calc_difference_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
@@ -125,16 +126,22 @@ def run_homogeneous_rovers():
                 else:
                     sys.exit('Incorrect Reward Type')
 
+            for pop_id in range(p.num_rovers):
+                for policy_id in range(cc.population_size):
+                    cc.fitness[pop_id, policy_id] /= 5
             cc.down_select()  # Perform down_selection after each policy has been evaluated
 
             # Testing Phase
             rd.reset_to_init()  # Reset rovers to initial positions
-            global_reward = 0.0; done = False; rd.istep = 0
+            done = False; rd.istep = 0
             joint_state = rd.get_joint_state()
             while not done:
                 for rover_id in range(rd.num_agents):
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
-                joint_state, done, global_reward = rd.step(nn.out_layer)
+                joint_state, done = rd.step(nn.out_layer)
+
+            global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
+            print(global_reward)
 
             reward_history.append(global_reward)
 

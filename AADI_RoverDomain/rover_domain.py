@@ -97,9 +97,9 @@ class RoverDomain:
 
         joint_state = self.get_joint_state()
 
-        g_reward = self.calc_global_reward_alpha()
+        # g_reward = self.calc_global_reward_alpha()
 
-        return joint_state, done, g_reward
+        return joint_state, done
 
     def get_joint_state(self):
         """
@@ -258,7 +258,7 @@ class RoverDomain:
         Calculates global reward for current world state.
         :return: global_reward
         """
-
+        inf = 1000.00
         global_reward = 0.0
         for poi_id in range(p.num_pois):
             observer_count = 0; observer_distances = np.zeros(p.num_rovers)
@@ -281,9 +281,10 @@ class RoverDomain:
             # Update global reward if POI is observed
             if observer_count >= p.coupling:
                 summed_observer_distances = 0.0
-                index_list = np.argpartition(observer_distances, p.coupling)
                 for observer in range(p.coupling):
-                    summed_observer_distances += observer_distances[index_list[observer]]
+                    summed_observer_distances += min(observer_distances)
+                    od_index = np.argmin(observer_distances)
+                    observer_distances[od_index] = inf
                 temp_poi_reward = self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
 
                 if temp_poi_reward > self.poi_rewards[poi_id]:

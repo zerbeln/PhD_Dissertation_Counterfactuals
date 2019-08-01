@@ -3,6 +3,51 @@ import math
 from AADI_RoverDomain.parameters import Parameters as p
 from Python_Code.suggestions import *
 
+# GLOBAL REWARDS ------------------------------------------------------------------------------------------------------
+def calc_global_alpha(rover_paths, poi_values, poi_positions):
+    total_steps = p.num_steps + 1
+    inf = 1000.00
+    global_reward = 0.0
+
+    poi_rewards = np.zeros(p.num_pois)
+    for step_index in range(total_steps):
+        for poi_id in range(p.num_pois):
+            observer_count = 0; observer_distances = np.zeros(p.num_rovers)
+
+            for agent_id in range(p.num_rovers):
+                # Calculate distance between agent and POI
+                x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, agent_id, 0]
+                y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, agent_id, 1]
+                distance = math.sqrt((x_distance * x_distance) + (y_distance * y_distance))
+
+                if distance < p.min_distance:
+                    distance = p.min_distance
+
+                observer_distances[agent_id] = distance
+
+                # Check if agent observes poi and update observer count if true
+                if distance < p.min_observation_dist:
+                    observer_count += 1
+
+            # Update global reward if POI is observed
+            temp_poi_reward = 0.0
+            if observer_count >= p.coupling:
+                summed_observer_distances = 0.0
+                for observer in range(p.coupling):
+                    summed_observer_distances += min(observer_distances)
+                    od_index = np.argmin(observer_distances)
+                    observer_distances[od_index] = inf
+                temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
+
+            if temp_poi_reward > poi_rewards[poi_id]:
+                poi_rewards[poi_id] = temp_poi_reward
+
+    for poi_id in range(p.num_pois):
+        global_reward += poi_rewards[poi_id]
+
+    return global_reward
+
+
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
 def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
@@ -43,7 +88,6 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
                             observer_count += 1
                     else:
                         observer_distances[other_agent_id] = inf  # Ignore self
-
 
                 # Update reward if coupling is satisfied
                 if observer_count >= p.coupling:
@@ -94,15 +138,18 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
                         observer_distances[agent_id] = inf  # Ignore self
 
                 # Determine if coupling is satisfied
+                temp_poi_reward = 0.0
                 if observer_count >= p.coupling:
-                    index_list = np.argpartition(observer_distances, p.coupling)
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        summed_observer_distances += observer_distances[index_list[observer]]
+                        assert(observer_distances[agent_id] != min(observer_distances))
+                        summed_observer_distances += min(observer_distances)
+                        od_index = np.argmin(observer_distances)
+                        observer_distances[od_index] = inf
                     temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
 
-                    if temp_poi_reward > poi_rewards[poi_id]:
-                        poi_rewards[poi_id] = temp_poi_reward
+                if temp_poi_reward > poi_rewards[poi_id]:
+                    poi_rewards[poi_id] = temp_poi_reward
 
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
@@ -260,14 +307,17 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                         observer_count += 1
 
                 # Update whether or not POI has been observed
+                temp_poi_reward = 0.0
                 if observer_count >= p.coupling:
-                    index_list = np.argpartition(observer_distances, p.coupling)
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        summed_observer_distances += observer_distances[index_list[observer]]
+                        summed_observer_distances += min(observer_distances)
+                        od_index = np.argmin(observer_distances)
+                        observer_distances[od_index] = inf
                     temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
-                    if temp_poi_reward > poi_rewards[poi_id]:
-                        poi_rewards[poi_id] = temp_poi_reward
+
+                if temp_poi_reward > poi_rewards[poi_id]:
+                    poi_rewards[poi_id] = temp_poi_reward
 
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
@@ -305,14 +355,17 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                                 observer_count += 1
 
                         # Determine if coupling has been satisfied
+                        temp_poi_reward = 0.0
                         if observer_count >= p.coupling:
-                            index_list = np.argpartition(observer_distances, p.coupling)
                             summed_observer_distances = 0.0
                             for observer in range(p.coupling):
-                                summed_observer_distances += observer_distances[index_list[observer]]
+                                summed_observer_distances += min(observer_distances)
+                                od_index = np.argmin(observer_distances)
+                                observer_distances[od_index] = inf
                             temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
-                            if temp_poi_reward > poi_rewards[poi_id]:
-                                poi_rewards[poi_id] = temp_poi_reward
+
+                        if temp_poi_reward > poi_rewards[poi_id]:
+                            poi_rewards[poi_id] = temp_poi_reward
 
                 counterfactual_global_reward = 0.0
                 for poi_id in range(p.num_pois):
@@ -430,17 +483,20 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                         observer_count += 1
 
                 # Determine if coupling has been satisfied
+                temp_poi_reward = 0.0
                 if observer_count >= p.coupling:
-                    index_list = np.argpartition(observer_distances, p.coupling)
                     n_observers = added_observers
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        summed_observer_distances += observer_distances[index_list[observer]]
+                        summed_observer_distances += min(observer_distances)
+                        od_index = np.argmin(observer_distances)
+                        observer_distances[od_index] = inf
                     if summed_observer_distances == 0:
                         summed_observer_distances = -1.0
                     temp_poi_reward = poi_values[poi_id] / ((1/p.coupling) * summed_observer_distances)
-                    if temp_poi_reward > poi_rewards[poi_id]:
-                        poi_rewards[poi_id] = temp_poi_reward
+
+                if temp_poi_reward > poi_rewards[poi_id]:
+                    poi_rewards[poi_id] = temp_poi_reward
 
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
