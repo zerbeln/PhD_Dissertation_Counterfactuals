@@ -476,7 +476,7 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
 
                 # Add in counterfactual partners
                 self_x = rover_paths[step_index, agent_id, 0]; self_y = rover_paths[step_index, agent_id, 1]
-                suggested_partners, added_observers = negative_distances(observer_distances[agent_id], poi_id, poi_values)
+                suggested_partners, added_observers = high_value_only(observer_distances[agent_id], poi_id, poi_values)
                 for partner_id in range(added_observers):
                     np.append(observer_distances, suggested_partners[partner_id])
                     if suggested_partners[partner_id] < p.min_observation_dist:

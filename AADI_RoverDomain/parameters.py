@@ -11,16 +11,16 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 1
-    generations = 50  # Number of generations for CCEA in each stat run
+    stat_runs = 3
+    generations = 300  # Number of generations for CCEA in each stat run
     visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
     num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
-    coupling = 1  # Number of rovers required to view a POI for credit
+    coupling = 3  # Number of rovers required to view a POI for credit
     num_pois = 12  # Number of POIs on map
-    num_steps = 20  # Number of steps rovers take each episode
+    num_steps = 30  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
     y_dim = 30  # Y-Dimension of the rover map
@@ -36,8 +36,8 @@ class Parameters:
     # CCEA parameters
     mutation_rate = 0.1
     epsilon = 0.1
-    parent_pop_size = 20
-    offspring_pop_size = 20
+    parent_pop_size = 15
+    offspring_pop_size = 15
 
     # User specific parameters
-    reward_type = "Difference"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
