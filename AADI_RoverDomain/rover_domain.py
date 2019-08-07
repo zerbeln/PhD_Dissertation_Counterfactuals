@@ -20,7 +20,7 @@ class RoverDomain:
         self.poi_rewards = np.zeros(p.num_pois)
 
         # Initialize rover positions
-        self.rover_pos = init_rover_positions_fixed_middle()
+        self.rover_pos = init_rover_positions_random_concentrated()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
         # Rover path trace for trajectory-wide global reward computation and vizualization purposes
@@ -32,7 +32,7 @@ class RoverDomain:
         Changes rovers' starting positions and POI positions and values according to specified functions
         :return: none
         """
-        self.rover_pos = init_rover_positions_fixed_middle()
+        self.rover_pos = init_rover_positions_random_concentrated()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
         self.poi_pos = init_poi_positions_circle()
         self.poi_values = init_poi_values_fixed_ascending()

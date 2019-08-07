@@ -42,10 +42,19 @@ def init_rover_positions_random_concentrated():
     """
     nrovers = p.num_rovers
     rover_positions = np.zeros((nrovers, 3))
+    radius = 4.0; center_x = p.x_dim/2; center_y = p.y_dim/2
 
     for rov_id in range(p.num_rovers):
-        rover_positions[rov_id, 0] = random.uniform(p.x_dim/4, 3*p.x_dim/4)  # Rover X-Coordinate
-        rover_positions[rov_id, 1] = random.uniform(p.y_dim/4, 3*p.y_dim/4)  # Rover Y-Coordinate
+        x = random.uniform(0, p.x_dim)  # Rover X-Coordinate
+        y = random.uniform(0, p.y_dim)  # Rover Y-Coordinate
+
+        while x > (center_x + radius) or x < (center_x - radius):
+            x = random.uniform(0, p.x_dim)  # Rover X-Coordinate
+        while y > (center_y + radius) or y < (center_y - radius):
+            y = random.uniform(0, p.y_dim)  # Rover Y-Coordinate
+
+        rover_positions[rov_id, 0] = x  # Rover X-Coordinate
+        rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
         rover_positions[rov_id, 2] = random.uniform(0, 360)  # Rover orientation
 
     return rover_positions

@@ -11,21 +11,22 @@ class Ccea:
         self.n_populations = p.num_rovers  # One population for each rover
         self.parent_pop_size = p.parent_pop_size
         self.offspring_pop_size = p.offspring_pop_size
-        self.population_size = p.parent_pop_size + p.offspring_pop_size  # Number of policies in each pop
+        self.total_pop_size = p.parent_pop_size + p.offspring_pop_size  # Number of policies in each pop
         n_inputs = p.num_inputs; n_outputs = p.num_outputs; n_nodes = p.num_nodes
         self.policy_size = (n_inputs + 1)*n_nodes + (n_nodes + 1) * n_outputs  # Number of weights for NN
-        self.pops = np.zeros((self.n_populations, self.population_size, self.policy_size))
+        self.pops = np.zeros((self.n_populations, self.total_pop_size, self.policy_size))
         self.parent_pop = np.zeros((self.n_populations, self.parent_pop_size, self.policy_size))
         self.offspring_pop = np.zeros((self.n_populations, self.offspring_pop_size, self.policy_size))
-        self.fitness = np.zeros((self.n_populations, self.population_size))
+        self.fitness = np.zeros((self.n_populations, self.total_pop_size))
         self.team_selection = np.ones((self.n_populations, self.parent_pop_size)) * (-1)
 
     def reset_populations(self):  # Re-initializes CCEA populations for new run
-        self.pops = np.zeros((self.n_populations, self.population_size, self.policy_size))
+        self.pops = np.zeros((self.n_populations, self.total_pop_size, self.policy_size))
         self.parent_pop = np.zeros((self.n_populations, self.parent_pop_size, self.policy_size))
         self.offspring_pop = np.zeros((self.n_populations, self.offspring_pop_size, self.policy_size))
-        self.fitness = np.zeros((self.n_populations, self.population_size))
+        self.fitness = np.zeros((self.n_populations, self.total_pop_size))
         self.team_selection = np.ones((self.n_populations, self.parent_pop_size)) * (-1)
+
         for pop_index in range(self.n_populations):
             for policy_index in range(self.parent_pop_size):
                 for w in range(self.policy_size):
@@ -35,27 +36,29 @@ class Ccea:
                     self.offspring_pop[pop_index, policy_index, w] = np.random.normal(0, 1)
 
     def select_policy_teams(self, gen):  # Create policy teams for testing
-        self.team_selection = np.ones((self.n_populations, self.population_size)) * (-1)
+        self.team_selection = np.ones((self.n_populations, self.total_pop_size)) * (-1)
 
         for pop_id in range(self.n_populations):
-            for j in range(self.population_size):
-                rpol = random.randint(0, (self.population_size - 1))  # Select a random policy from pop
+            for policy_id in range(self.total_pop_size):
+                rpol = random.randint(0, (self.total_pop_size - 1))  # Select a random policy from pop
                 k = 0
-                while k < j:  # Check for duplicates
-                    if rpol == self.team_selection[pop_id][k]:
-                        rpol = random.randint(0, (self.population_size - 1))
+                while k < policy_id:  # Check for duplicates
+                    if rpol == self.team_selection[pop_id, k]:
+                        rpol = random.randint(0, (self.total_pop_size - 1))
                         k = -1
                     k += 1
-                self.team_selection[pop_id][j] = rpol  # Assign policy to team
+                self.team_selection[pop_id, policy_id] = rpol  # Assign policy to team
 
     def mutate(self):  # Mutate policy based on probability
         for pop_index in range(self.n_populations):
             policy_index = 0
+            mutate_n = int(p.percentage_mut * self.policy_size)
             while policy_index < self.offspring_pop_size:
                 rnum = random.uniform(0, 1)
                 if rnum <= self.mut_prob:
-                    target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
-                    self.offspring_pop[pop_index, policy_index, target] = np.random.normal(0, 1)
+                    for w in range(mutate_n):
+                        target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
+                        self.offspring_pop[pop_index, policy_index, target] = np.random.normal(0, 1)
                 policy_index += 1
 
     def mutate_percent(self):  # Mutate percentage of policy every generation
@@ -85,16 +88,16 @@ class Ccea:
     def down_select(self):  # Create a new offspring population using parents from top 50% of policies
         # Reorder populations in terms of fitness (top half = best policies)
         for pop_id in range(self.n_populations):
-            for j in range(self.population_size):
-                k = j + 1
-                while k < self.population_size:
-                    if self.fitness[pop_id, j] < self.fitness[pop_id, k]:
-                        self.fitness[pop_id, j], self.fitness[pop_id, k] = self.fitness[pop_id, k], self.fitness[pop_id, j]
-                        self.pops[pop_id, j], self.pops[pop_id, k] = self.pops[pop_id, k], self.pops[pop_id, j]
+            for policy_id in range(self.total_pop_size):
+                k = policy_id + 1
+                while k < self.total_pop_size:
+                    if self.fitness[pop_id, policy_id] < self.fitness[pop_id, k]:
+                        self.fitness[pop_id, policy_id], self.fitness[pop_id, k] = self.fitness[pop_id, k], self.fitness[pop_id, policy_id]
+                        self.pops[pop_id, policy_id], self.pops[pop_id, k] = self.pops[pop_id, k], self.pops[pop_id, policy_id]
                     k += 1
-            for pol_id in range(self.parent_pop_size): # Keep most fit parents
+            for policy_id in range(self.parent_pop_size): # Keep most fit parents
                 for w in range(self.policy_size):
-                    self.parent_pop[pop_id, pol_id, w] = self.pops[pop_id, pol_id, w]
+                    self.parent_pop[pop_id, policy_id, w] = self.pops[pop_id, policy_id, w]
 
         self.offspring_pop = np.zeros((self.n_populations, self.offspring_pop_size, self.policy_size))
         self.epsilon_greedy_select()  # Select parents for offspring population
@@ -102,12 +105,12 @@ class Ccea:
         self.combine_pops()
 
     def reset_fitness_array(self):
-        self.fitness = np.zeros((self.n_populations, self.population_size))
+        self.fitness = np.zeros((self.n_populations, self.total_pop_size))
 
     def combine_pops(self):
         for pop_id in range(self.n_populations):
             off_pol_id = 0
-            for pol_id in range(self.population_size):
+            for pol_id in range(self.total_pop_size):
                 if pol_id < self.parent_pop_size:
                     for w in range(self.policy_size):
                         self.pops[pop_id, pol_id, w] = self.parent_pop[pop_id, pol_id, w]
