@@ -42,8 +42,8 @@ def satisfy_coupling_high_value_incentive(rover_dist, poi_id, poi_values):
 
     return partners, npartners
 
-def high_value_only(rover_dist, poi_id, poi_values):
-    npartners = p.coupling - 1
+def high_value_only(rover_dist, poi_id, poi_values, n_observers):
+    npartners = p.coupling - n_observers -1
 
     if npartners <= 0:
         npartners = 1

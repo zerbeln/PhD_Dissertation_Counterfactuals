@@ -142,7 +142,6 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
                 if observer_count >= p.coupling:
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        assert(observer_distances[agent_id] != min(observer_distances))
                         summed_observer_distances += min(observer_distances)
                         od_index = np.argmin(observer_distances)
                         observer_distances[od_index] = inf
@@ -155,6 +154,7 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
         for poi_id in range(p.num_pois):
             counterfactual_global_reward += poi_rewards[poi_id]
         difference_rewards[agent_id] = global_reward - counterfactual_global_reward
+    #print(difference_rewards)
 
     return difference_rewards
 
@@ -277,7 +277,7 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
     dpp_rewards = np.zeros(p.num_rovers)
 
     # Calculate Dpp Reward with (TotalAgents - 1) Counterfactuals
-    n_counters = p.coupling-1
+    n_counters = p.coupling - 1
     for agent_id in range(p.num_rovers):
         poi_rewards = np.zeros(p.num_pois)
 
@@ -452,8 +452,7 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
     dpp_rewards = np.zeros(p.num_rovers)
 
     for agent_id in range(p.num_rovers):
-        poi_rewards = np.zeros(p.num_pois)
-        n_observers = 0
+        poi_rewards = np.zeros(p.num_pois); n_observers = 0
 
         for step_index in range(total_steps):
             for poi_id in range(p.num_pois):
@@ -476,7 +475,7 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
 
                 # Add in counterfactual partners
                 self_x = rover_paths[step_index, agent_id, 0]; self_y = rover_paths[step_index, agent_id, 1]
-                suggested_partners, added_observers = high_value_only(observer_distances[agent_id], poi_id, poi_values)
+                suggested_partners, added_observers = high_value_only(observer_distances[agent_id], poi_id, poi_values, observer_count)
                 for partner_id in range(added_observers):
                     np.append(observer_distances, suggested_partners[partner_id])
                     if suggested_partners[partner_id] < p.min_observation_dist:
