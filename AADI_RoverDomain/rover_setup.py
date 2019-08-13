@@ -72,7 +72,7 @@ def init_rover_pos_twelve_grid():
 
 ### POI SETUP FUNCTIONS ###########################################################
 
-def init_poi_positions_random():  # Randomly set POI on the map
+def init_poi_positions_random(rover_positions):  # Randomly set POI on the map
     """
     POI positions set randomly across the map
     :return: poi_positions: np array of size (npoi, 2)
@@ -80,8 +80,27 @@ def init_poi_positions_random():  # Randomly set POI on the map
     poi_positions = np.zeros((p.num_pois, 2))
 
     for poi_id in range(p.num_pois):
-        poi_positions[poi_id, 0] = random.uniform(0, p.x_dim-1)
-        poi_positions[poi_id, 1] = random.uniform(0, p.y_dim-1)
+        x = random.uniform(0, p.x_dim-1)
+        y = random.uniform(0, p.y_dim-1)
+
+        rover_id = 0
+        while rover_id < p.num_rovers:
+            rovx = rover_positions[rover_id, 0]; rovy = rover_positions[rover_id, 1]
+            xdist = x - rovx; ydist = y - rovy
+            distance = math.sqrt((xdist**2) + (ydist**2))
+
+            while distance < p.min_observation_dist:
+                x = random.uniform(0, p.x_dim - 1)
+                y = random.uniform(0, p.y_dim - 1)
+                rovx = rover_positions[rover_id, 0]; rovy = rover_positions[rover_id, 1]
+                xdist = x - rovx; ydist = y - rovy
+                distance = math.sqrt((xdist ** 2) + (ydist ** 2))
+                rover_id = -1
+
+            rover_id += 1
+
+        poi_positions[poi_id, 0] = x
+        poi_positions[poi_id, 1] = y
 
     return poi_positions
 

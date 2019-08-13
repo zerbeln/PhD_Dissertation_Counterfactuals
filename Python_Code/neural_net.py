@@ -24,11 +24,12 @@ class NeuralNetwork:
         self.out_layer = np.zeros((self.n_rovers, self.n_outputs), dtype=np.float64)
 
     def get_inputs(self, state_vec, rov_id):  # Get inputs from state-vector
-        for i in range(p.num_inputs):
+        for i in range(self.n_inputs):
             self.in_layer[rov_id, i] = state_vec[i]
 
     def get_weights(self, nn_weights, rov_id):  # Get weights from CCEA population
-        self.weights[rov_id] = nn_weights.copy()
+        for w in range(self.n_weights):
+            self.weights[rov_id, w] = nn_weights[w]
 
     def reset_layers(self, rov_id):  # Clear hidden layers and output layers
         for i in range(self.n_nodes):

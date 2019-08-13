@@ -90,6 +90,7 @@ def run_homogeneous_rovers():
 
         for gen in range(p.generations):
             print("Gen: %i" % gen)
+            cc.select_policy_teams()
             for team_number in range(cc.offspring_pop_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
                 done = False; rd.istep = 0
@@ -136,7 +137,6 @@ def run_homogeneous_rovers():
                 joint_state, done = rd.step(nn.out_layer)
 
             global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
-            #print(global_reward)
             reward_history.append(global_reward)
 
             if gen == (p.generations-1):  # Save path at end of final generation

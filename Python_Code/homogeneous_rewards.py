@@ -42,6 +42,7 @@ def calc_global_alpha(rover_paths, poi_values, poi_positions):
             if temp_poi_reward > poi_rewards[poi_id]:
                 poi_rewards[poi_id] = temp_poi_reward
 
+    # print(poi_rewards)
     for poi_id in range(p.num_pois):
         global_reward += poi_rewards[poi_id]
 

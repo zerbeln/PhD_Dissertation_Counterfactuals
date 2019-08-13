@@ -14,17 +14,17 @@ class RoverDomain:
         self.observation_space = np.zeros((1, int(2*360 / p.angle_resolution)))
         self.istep = 0  # Current Step counter
 
-        # Initialize POI positions and values
-        self.poi_pos = init_poi_positions_random()
-        self.poi_values = init_poi_values_random()
-        self.poi_rewards = np.zeros(p.num_pois)
-
         # Initialize rover positions
         self.rover_pos = init_rover_positions_random_concentrated()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
         # Rover path trace for trajectory-wide global reward computation and vizualization purposes
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+
+        # Initialize POI positions and values
+        self.poi_pos = init_poi_positions_txt_file()
+        self.poi_values = init_poi_values_random()
+        self.poi_rewards = np.zeros(p.num_pois)
 
 
     def reset_world(self):
@@ -34,7 +34,7 @@ class RoverDomain:
         """
         self.rover_pos = init_rover_positions_random_concentrated()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
-        self.poi_pos = init_poi_positions_random()
+        self.poi_pos = init_poi_positions_txt_file()
         self.poi_values = init_poi_values_random()
         self.poi_rewards = np.zeros(p.num_pois)
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
@@ -66,7 +66,7 @@ class RoverDomain:
         :return: Joint state of rovers (NN inputs), Done, and Global Reward
         """
         self.istep += 1
-        joint_action = np.clip(joint_action, -1.0, 1.0)
+        # joint_action = np.clip(joint_action, -1.0, 1.0)
 
         # Update rover positions
         for rover_id in range(self.num_agents):

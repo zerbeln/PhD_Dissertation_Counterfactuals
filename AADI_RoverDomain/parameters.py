@@ -35,7 +35,7 @@ class Parameters:
 
     # CCEA parameters
     mutation_rate = 0.1
-    percentage_mut = 0.01
+    percentage_mut = 0.1
     epsilon = 0.1
     parent_pop_size = 15
     offspring_pop_size = 15

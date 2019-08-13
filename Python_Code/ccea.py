@@ -37,7 +37,7 @@ class Ccea:
 
         self.combine_pops()
 
-    def select_policy_teams(self, gen):  # Create policy teams for testing
+    def select_policy_teams(self):  # Create policy teams for testing
         self.team_selection = np.ones((self.n_populations, self.total_pop_size)) * (-1)
 
         for pop_id in range(self.n_populations):
