@@ -11,9 +11,9 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 3
-    generations = 500  # Number of generations for CCEA in each stat run
-    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
+    stat_runs = 1
+    generations = 200  # Number of generations for CCEA in each stat run
+    visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
@@ -24,7 +24,7 @@ class Parameters:
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
     y_dim = 30  # Y-Dimension of the rover map
-    min_observation_dist = 2.0  # Minimum distance rovers must be to observe POIs
+    min_observation_dist = 4.0  # Minimum distance rovers must be to observe POIs
     angle_resolution = 90  # Resolution of sensors (determines number of sectors)
     sensor_model = "closest"  # Should either be "density" or "closest"
 
@@ -35,10 +35,10 @@ class Parameters:
 
     # CCEA parameters
     mutation_rate = 0.1
-    percentage_mut = 0.05
+    percentage_mut = 0.01
     epsilon = 0.1
-    parent_pop_size = 25
-    offspring_pop_size = 25
+    parent_pop_size = 15
+    offspring_pop_size = 15
 
     # User specific parameters
-    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "Global"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"

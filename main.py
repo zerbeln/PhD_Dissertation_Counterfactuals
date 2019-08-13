@@ -89,7 +89,7 @@ def run_homogeneous_rovers():
         save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            # print("Gen: %i" % gen)
+            print("Gen: %i" % gen)
             for team_number in range(cc.offspring_pop_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
                 done = False; rd.istep = 0

@@ -15,8 +15,8 @@ class RoverDomain:
         self.istep = 0  # Current Step counter
 
         # Initialize POI positions and values
-        self.poi_pos = init_poi_positions_circle()
-        self.poi_values = init_poi_values_fixed_ascending()
+        self.poi_pos = init_poi_positions_random()
+        self.poi_values = init_poi_values_random()
         self.poi_rewards = np.zeros(p.num_pois)
 
         # Initialize rover positions
@@ -34,8 +34,8 @@ class RoverDomain:
         """
         self.rover_pos = init_rover_positions_random_concentrated()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
-        self.poi_pos = init_poi_positions_circle()
-        self.poi_values = init_poi_values_fixed_ascending()
+        self.poi_pos = init_poi_positions_random()
+        self.poi_values = init_poi_values_random()
         self.poi_rewards = np.zeros(p.num_pois)
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
