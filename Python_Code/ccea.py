@@ -67,7 +67,7 @@ class Ccea:
 
     def epsilon_greedy_select(self):  # Choose K successors
         for pop_id in range(self.n_populations):
-            policy_id = p.parent_pop_size
+            policy_id = 0
             while policy_id < self.offspring_pop_size:
                 rnum = random.uniform(0, 1)
                 if rnum >= self.epsilon:  # Choose best policy
@@ -88,7 +88,7 @@ class Ccea:
                         self.fitness[pop_id, policy_id], self.fitness[pop_id, k] = self.fitness[pop_id, k], self.fitness[pop_id, policy_id]
                         self.pops[pop_id, policy_id], self.pops[pop_id, k] = self.pops[pop_id, k], self.pops[pop_id, policy_id]
                     k += 1
-            for policy_id in range(self.parent_pop_size): # Keep most fit parents
+            for policy_id in range(self.parent_pop_size):  # Keep most fit parents (top half of pop)
                 self.parent_pop[pop_id, policy_id] = self.pops[pop_id, policy_id].copy()
 
         self.offspring_pop = np.zeros((self.n_populations, self.offspring_pop_size, self.policy_size))

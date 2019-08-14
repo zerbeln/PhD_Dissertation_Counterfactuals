@@ -74,7 +74,7 @@ def init_rover_pos_twelve_grid():
 
 def init_poi_positions_random(rover_positions):  # Randomly set POI on the map
     """
-    POI positions set randomly across the map
+    POI positions set randomly across the map (but not in range of any rover)
     :return: poi_positions: np array of size (npoi, 2)
     """
     poi_positions = np.zeros((p.num_pois, 2))
@@ -189,6 +189,23 @@ def init_poi_positions_txt_file():
 
     return poi_positions
 
+def init_poi_values_txt_file():
+
+    poi_vals = np.zeros(p.num_pois)
+
+    poi_val_file = open('Output_Data/POI_Values.txt', 'r')
+
+    value_mat = []
+    for line in poi_val_file:
+        for v in line.split('\t'):
+            if v != '\n':
+                value_mat.append(float(v))
+
+    values = np.reshape(value_mat, p.num_pois)
+    for poi_id in range(p.num_pois):
+        poi_vals[poi_id] = values[poi_id]
+
+    return poi_vals
 
 
 def init_poi_values_random():
@@ -196,7 +213,7 @@ def init_poi_values_random():
     POI values randomly assigned 1-10
     :return: poi_vals: array of size(npoi)
     """
-    poi_vals = [0.0 for _ in range(p.num_pois)]
+    poi_vals = np.zeros(p.num_pois)
 
     for poi_id in range(p.num_pois):
         poi_vals[poi_id] = random.randint(1, 10)
@@ -234,7 +251,7 @@ def init_poi_values_half_and_half():
     :return: poi_vals: array of size(npoi)
     """
 
-    poi_vals = [1.0 for _ in range(p.num_pois)]
+    poi_vals = np.ones(p.num_pois)
 
     for poi_id in range(p.num_pois):
         if poi_id%2 == 0:

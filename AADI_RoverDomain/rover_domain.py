@@ -15,6 +15,23 @@ class RoverDomain:
         self.istep = 0  # Current Step counter
 
         # Initialize rover positions
+        self.rover_pos = np.zeros((p.num_rovers, 3))
+        self.rover_initial_pos = np.zeros((p.num_rovers, 3))
+
+        # Rover path trace for trajectory-wide global reward computation and vizualization purposes
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+
+        # Initialize POI positions and values
+        self.poi_pos = np.zeros((p.num_pois, 2))
+        self.poi_values = np.zeros(p.num_pois)
+        self.poi_rewards = np.zeros(p.num_pois)
+
+    def reset_world(self):
+        """
+        Changes rovers' starting positions and POI positions and values according to specified functions
+        :return: none
+        """
+        # Initialize rover positions
         self.rover_pos = init_rover_positions_random_concentrated()
         self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
@@ -23,21 +40,9 @@ class RoverDomain:
 
         # Initialize POI positions and values
         self.poi_pos = init_poi_positions_txt_file()
-        self.poi_values = init_poi_values_random()
+        self.poi_values = init_poi_values_txt_file()
         self.poi_rewards = np.zeros(p.num_pois)
 
-
-    def reset_world(self):
-        """
-        Changes rovers' starting positions and POI positions and values according to specified functions
-        :return: none
-        """
-        self.rover_pos = init_rover_positions_random_concentrated()
-        self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
-        self.poi_pos = init_poi_positions_txt_file()
-        self.poi_values = init_poi_values_random()
-        self.poi_rewards = np.zeros(p.num_pois)
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
         for rover_id in range(self.num_agents):  # Record intial positions

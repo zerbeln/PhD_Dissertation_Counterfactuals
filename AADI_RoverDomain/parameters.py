@@ -12,7 +12,7 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 1
-    generations = 200  # Number of generations for CCEA in each stat run
+    generations = 500  # Number of generations for CCEA in each stat run
     visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
@@ -35,10 +35,10 @@ class Parameters:
 
     # CCEA parameters
     mutation_rate = 0.1
-    percentage_mut = 0.1
+    percentage_mut = 0.01
     epsilon = 0.1
     parent_pop_size = 15
     offspring_pop_size = 15
 
     # User specific parameters
-    reward_type = "Global"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
