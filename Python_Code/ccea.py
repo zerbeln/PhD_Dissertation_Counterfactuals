@@ -65,38 +65,24 @@ class Ccea:
                         self.offspring_pop[pop_index, policy_index, target] = np.random.normal(0, 1)
                 policy_index += 1
 
-    def epsilon_greedy_select(self):  # Choose K successors
+    def epsilon_greedy_select(self):  # Choose K solutions
         for pop_id in range(self.n_populations):
             policy_id = 0
-            while policy_id < self.offspring_pop_size:
+            while policy_id < self.parent_pop_size:
                 rnum = random.uniform(0, 1)
                 if rnum >= self.epsilon:  # Choose best policy
-                    self.offspring_pop[pop_id, policy_id] = self.parent_pop[pop_id, 0].copy()
+                    pol_index = np.argmax(self.fitness[pop_id])
+                    self.parent_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
                 else:
-                    parent = random.randint(0, (self.parent_pop_size-1))  # Choose a random parent
-                    self.offspring_pop[pop_id, policy_id] = self.parent_pop[pop_id, parent].copy()
+                    parent = random.randint(0, (self.total_pop_size-1))  # Choose a random parent
+                    self.parent_pop[pop_id, policy_id] = self.pops[pop_id, parent].copy()
                 policy_id += 1
 
     def down_select(self):  # Create a new offspring population using parents from top 50% of policies
-        # Reorder populations in terms of fitness (top half = best policies)
-        self.combine_pops()
-        for pop_id in range(self.n_populations):
-            for policy_id in range(self.total_pop_size):
-                k = policy_id + 1
-                while k < self.total_pop_size:
-                    if self.fitness[pop_id, policy_id] < self.fitness[pop_id, k]:
-                        self.fitness[pop_id, policy_id], self.fitness[pop_id, k] = self.fitness[pop_id, k], self.fitness[pop_id, policy_id]
-                        self.pops[pop_id, policy_id], self.pops[pop_id, k] = self.pops[pop_id, k], self.pops[pop_id, policy_id]
-                    k += 1
-            for policy_id in range(self.parent_pop_size):  # Keep most fit parents (top half of pop)
-                self.parent_pop[pop_id, policy_id] = self.pops[pop_id, policy_id].copy()
-
-        self.offspring_pop = np.zeros((self.n_populations, self.offspring_pop_size, self.policy_size))
-        self.epsilon_greedy_select()  # Select parents for offspring population
+        self.epsilon_greedy_select()  # Select K solutions using epsilon greedy
+        self.offspring_pop = self.parent_pop.copy()  # Produce K offspring
         self.mutate()  # Mutate offspring population
-
-    def reset_fitness_array(self):
-        self.fitness = np.zeros((self.n_populations, self.total_pop_size))
+        self.combine_pops()
 
     def combine_pops(self):
         for pop_id in range(self.n_populations):

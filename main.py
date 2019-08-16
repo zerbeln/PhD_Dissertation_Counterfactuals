@@ -5,6 +5,7 @@ from AADI_RoverDomain.rover_domain import RoverDomain
 import Python_Code.homogeneous_rewards as homr
 import csv; import os; import sys
 from AADI_RoverDomain.visualizer import visualize
+import numpy as np
 
 
 def save_reward_history(reward_history, file_name):
@@ -91,7 +92,8 @@ def run_homogeneous_rovers():
         for gen in range(p.generations):
             print("Gen: %i" % gen)
             cc.select_policy_teams()
-            for team_number in range(cc.offspring_pop_size):  # Each policy in CCEA is tested in teams
+
+            for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
@@ -125,7 +127,6 @@ def run_homogeneous_rovers():
                 else:
                     sys.exit('Incorrect Reward Type')
 
-            cc.down_select()  # Perform down_selection after each policy has been evaluated
 
             # Testing Phase
             rd.reset_to_init()  # Reset rovers to initial positions
@@ -133,16 +134,20 @@ def run_homogeneous_rovers():
             joint_state = rd.get_joint_state()
             while not done:
                 for rover_id in range(rd.num_agents):
-                    nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, 0], rover_id)
+                    pol_index = np.argmax(cc.fitness[rover_id])
+                    nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
 
             global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
+            # print(global_reward)
             reward_history.append(global_reward)
 
             if gen == (p.generations-1):  # Save path at end of final generation
                 save_rover_path(rd.rover_path)
                 if p.visualizer_on:
                     visualize(rd, global_reward)
+
+            cc.down_select()  # Perform down_selection after each policy has been evaluated
 
         if rtype == "Global":
             save_reward_history(reward_history, "Global_Reward.csv")
