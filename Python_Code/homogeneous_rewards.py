@@ -34,7 +34,7 @@ def calc_global_alpha(rover_paths, poi_values, poi_positions):
             if observer_count >= p.coupling:
                 summed_observer_distances = 0.0
                 for observer in range(p.coupling):
-                    assert(min(rover_distances) < p.min_observation_dist)
+                    # assert(min(rover_distances) < p.min_observation_dist)
                     summed_observer_distances += min(rover_distances)
                     od_index = np.argmin(rover_distances)
                     rover_distances[od_index] = inf
@@ -114,16 +114,16 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
     difference_rewards = np.zeros(p.num_rovers)
 
     for agent_id in range(p.num_rovers):  # For each rover
-        poi_observer_distances = np.zeros((p.num_pois, total_steps))
+        poi_observer_distances = np.zeros((p.num_pois, total_steps))  # Tracks summed observer distances
 
-        for step_index in range(total_steps):  # Look at entire trajectory
-            for poi_id in range(p.num_pois):  # Look at each POI at current step
+        for step_index in range(total_steps):  # For each step in trajectory
+            for poi_id in range(p.num_pois):  # For each POI
                 observer_count = 0
-                rover_distances = np.zeros(p.num_rovers)
+                rover_distances = np.zeros(p.num_rovers)  # Track distances between rovers and POI
 
                 # Count how many agents observe poi, update closest distances
                 for other_agent_id in range(p.num_rovers):
-                    if agent_id != other_agent_id:  # Ignore self (Null Action)
+                    if agent_id != other_agent_id:  # Remove current rover's trajectory
                         # Calculate separation distance between poi and agent
                         x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
                         y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
@@ -144,7 +144,7 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
                 if observer_count >= p.coupling:
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        assert(min(rover_distances) < p.min_observation_dist)
+                        # assert(min(rover_distances) < p.min_observation_dist)
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
                         rover_distances[od_index] = inf
@@ -314,7 +314,7 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                 if observer_count >= p.coupling:
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        assert (min(rover_distances) < p.min_observation_dist)
+                        # assert (min(rover_distances) < p.min_observation_dist)
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
                         rover_distances[od_index] = inf
@@ -364,7 +364,7 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                         if observer_count >= p.coupling:
                             summed_observer_distances = 0.0
                             for observer in range(p.coupling):
-                                assert (min(rover_distances) < p.min_observation_dist)
+                                # assert (min(rover_distances) < p.min_observation_dist)
                                 summed_observer_distances += min(rover_distances)
                                 od_index = np.argmin(rover_distances)
                                 rover_distances[od_index] = inf
@@ -498,10 +498,10 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                     # temp_poi_reward = poi_values[poi_id] / min(observer_distances)
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        assert (min(observer_distances) < p.min_observation_dist)
+                        # assert (min(observer_distances) < p.min_observation_dist)
                         summed_observer_distances += min(observer_distances)
-                        od_index = np.argmin(observer_distances)
-                        observer_distances[od_index] = inf
+                        # od_index = np.argmin(observer_distances)
+                        # observer_distances[od_index] = inf
                     coupled_distances[poi_id, step_index] = summed_observer_distances
                     # temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
                 else:
@@ -558,8 +558,8 @@ def calc_sdpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                             for observer in range(p.coupling):
                                 assert (min(observer_distances) < p.min_observation_dist)
                                 summed_observer_distances += min(observer_distances)
-                                od_index = np.argmin(observer_distances)
-                                observer_distances[od_index] = inf
+                                # od_index = np.argmin(observer_distances)
+                                # observer_distances[od_index] = inf
                             coupled_distances[poi_id, step_index] = summed_observer_distances
                             #temp_poi_reward = poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
                         else:

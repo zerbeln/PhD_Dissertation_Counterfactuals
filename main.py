@@ -1,4 +1,4 @@
-import Python_Code.new_ccea as ccea
+import Python_Code.ccea as ccea
 import Python_Code.neural_net as neural_network
 from AADI_RoverDomain.parameters import Parameters as p
 from AADI_RoverDomain.rover_domain import RoverDomain
@@ -97,6 +97,8 @@ def run_homogeneous_rovers():
                 rd.reset_to_init()  # Resets rovers to initial configuration
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
+                # print("Team Number: ", team_number)
+                # print("Team: ", cc.team_selection[:, team_number])
                 while not done:
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
@@ -105,6 +107,7 @@ def run_homogeneous_rovers():
 
                 # Update fitness of policies using reward information
                 global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
+                # print("Global Reward Main: ", global_reward)
                 if rtype == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])

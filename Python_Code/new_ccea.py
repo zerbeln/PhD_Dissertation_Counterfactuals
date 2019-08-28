@@ -102,6 +102,9 @@ class Ccea:
             for pol_id in range(self.total_pop_size):
                 if pol_id < self.parent_pop_size:
                     self.pops[pop_id, pol_id] = self.parent_pop[pop_id, pol_id].copy()
+                    # print(self.pops[pop_id, pol_id])
+                    # print(self.parent_pop[pop_id, pol_id])
+                    # print('\n')
                 else:
                     self.pops[pop_id, pol_id] = self.offspring_pop[pop_id, off_pol_id].copy()
                     off_pol_id += 1
