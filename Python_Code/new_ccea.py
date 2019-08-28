@@ -12,7 +12,9 @@ class Ccea:
         self.offspring_pop_size = p.offspring_pop_size
         self.total_pop_size = p.parent_pop_size + p.offspring_pop_size  # Number of policies in each pop
         n_inputs = p.num_inputs; n_outputs = p.num_outputs; n_nodes = p.num_nodes
-        self.policy_size = (n_inputs + 1)*n_nodes + (n_nodes + 1) * n_outputs  # Number of weights for NN
+        n_weights = (n_inputs + 1)*n_nodes + (n_nodes + 1) * n_outputs
+        self.n_bits = p.n_bits  # Number of bits needed to express a NN weight
+        self.policy_size = n_weights*self.n_bits  # Number of weights for NN
         self.pops = np.zeros((self.n_populations, self.total_pop_size, self.policy_size))
         self.parent_pop = np.zeros((self.n_populations, self.parent_pop_size, self.policy_size))
         self.offspring_pop = np.zeros((self.n_populations, self.offspring_pop_size, self.policy_size))
@@ -29,10 +31,18 @@ class Ccea:
         for pop_index in range(self.n_populations):
             for policy_index in range(self.parent_pop_size):
                 for w in range(self.policy_size):
-                    self.parent_pop[pop_index, policy_index, w] = np.random.normal(0, 1)
+                    rnum = random.uniform(0, 1)
+                    if rnum < 0.5:
+                        self.parent_pop[pop_index, policy_index, w] = 0
+                    else:
+                        self.parent_pop[pop_index, policy_index, w] = 1
             for policy_index in range(self.offspring_pop_size):
                 for w in range(self.policy_size):
-                    self.offspring_pop[pop_index, policy_index, w] = np.random.normal(0, 1)
+                    rnum = random.uniform(0, 1)
+                    if rnum < 0.5:
+                        self.offspring_pop[pop_index, policy_index, w] = 0
+                    else:
+                        self.offspring_pop[pop_index, policy_index, w] = 1
 
         self.combine_pops()
 
@@ -61,7 +71,10 @@ class Ccea:
                 if rnum <= self.mut_prob:
                     for w in range(mutate_n):
                         target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
-                        self.offspring_pop[pop_index, policy_index, target] = np.random.normal(0, 1)
+                        if self.offspring_pop[pop_index, policy_index, target] == 0:
+                            self.offspring_pop[pop_index, policy_index, target] = 1
+                        else:
+                            self.offspring_pop[pop_index, policy_index, target] = 0
                 policy_index += 1
 
     def epsilon_greedy_select(self):  # Choose K solutions

@@ -71,7 +71,7 @@ class RoverDomain:
         :return: Joint state of rovers (NN inputs), Done, and Global Reward
         """
         self.istep += 1
-        # joint_action = np.clip(joint_action, -1.0, 1.0)
+        joint_action = np.clip(joint_action, -1.0, 1.0)
 
         # Update rover positions
         for rover_id in range(self.num_agents):
@@ -255,46 +255,5 @@ class RoverDomain:
                     rover_distances[od_index] = inf
 
                 global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
-
-        return global_reward
-
-    def calc_global_reward_alpha(self):
-        """
-        Calculates global reward for current world state.
-        :return: global_reward
-        """
-        inf = 1000.00
-        global_reward = 0.0
-        for poi_id in range(p.num_pois):
-            observer_count = 0; observer_distances = np.zeros(p.num_rovers)
-
-            for agent_id in range(p.num_rovers):
-                # Calculate distance between agent and POI
-                x_distance = self.poi_pos[poi_id, 0] - self.rover_pos[agent_id, 0]
-                y_distance = self.poi_pos[poi_id, 1] - self.rover_pos[agent_id, 1]
-                distance = math.sqrt((x_distance * x_distance) + (y_distance * y_distance))
-
-                if distance < p.min_distance:
-                    distance = p.min_distance
-
-                observer_distances[agent_id] = distance
-
-                # Check if agent observes poi and update observer count if true
-                if distance < self.obs_radius:
-                    observer_count += 1
-
-            # Update global reward if POI is observed
-            if observer_count >= p.coupling:
-                summed_observer_distances = 0.0
-                for observer in range(p.coupling):
-                    summed_observer_distances += min(observer_distances)
-                    od_index = np.argmin(observer_distances)
-                    observer_distances[od_index] = inf
-                temp_poi_reward = self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
-
-                if temp_poi_reward > self.poi_rewards[poi_id]:
-                    self.poi_rewards[poi_id] = temp_poi_reward
-
-            global_reward += self.poi_rewards[poi_id]
 
         return global_reward

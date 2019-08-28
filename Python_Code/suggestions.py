@@ -1,11 +1,8 @@
 import numpy as np
 from AADI_RoverDomain.parameters import Parameters as p
 
-def low_high_split(rover_dist, rover_id, poi_id, poi_values):
-    npartners = p.coupling - 1
-
-    if npartners <= 0:
-        npartners = 1
+def low_high_split(rover_dist, rover_id, poi_id, poi_values, n_counters):
+    npartners = n_counters
 
     partners = np.zeros(npartners)
 
@@ -26,11 +23,8 @@ def low_high_split(rover_dist, rover_id, poi_id, poi_values):
 
     return partners, npartners
 
-def satisfy_coupling_high_value_incentive(rover_dist, poi_id, poi_values):
-    npartners = p.coupling - 1
-
-    if npartners <= 0:
-        npartners = 1
+def satisfy_coupling_high_value_incentive(rover_dist, poi_id, poi_values, n_counters):
+    npartners = n_counters
 
     partners = np.zeros(npartners)
     if poi_values[poi_id] > 5.0:
@@ -42,11 +36,8 @@ def satisfy_coupling_high_value_incentive(rover_dist, poi_id, poi_values):
 
     return partners, npartners
 
-def high_value_only(rover_dist, poi_id, poi_values, n_observers):
-    npartners = p.coupling - n_observers -1
-
-    if npartners <= 0:
-        npartners = 1
+def high_value_only(rover_dist, poi_id, poi_values, n_counters):
+    npartners = n_counters
 
     partners = np.zeros(npartners)
     if poi_values[poi_id] > 5.0:
@@ -58,11 +49,8 @@ def high_value_only(rover_dist, poi_id, poi_values, n_observers):
 
     return partners, npartners
 
-def low_value_pois(rover_dist, poi_id, poi_values):
-    npartners = p.coupling - 1
-
-    if npartners <= 0:
-        npartners = 1
+def low_value_pois(rover_dist, poi_id, poi_values, n_counters):
+    npartners = n_counters
 
     partners = np.zeros(npartners)
     if poi_values[poi_id] <= 5.0:
@@ -74,11 +62,8 @@ def low_value_pois(rover_dist, poi_id, poi_values):
 
     return partners, npartners
 
-def position_based(nobservers, rover_dist, rx, ry, poi_id, poi_values):
-    npartners = p.coupling - 1
-
-    if npartners <= 0:
-        npartners = 1
+def position_based(nobservers, rover_dist, rx, ry, poi_id, poi_values, n_counters):
+    npartners = n_counters
 
     partners = np.zeros(npartners)
 
@@ -91,11 +76,8 @@ def position_based(nobservers, rover_dist, rx, ry, poi_id, poi_values):
 
     return partners, npartners
 
-def negative_distances(rover_dist, poi_id, poi_values):
-    npartners = p.coupling - 1
-
-    if npartners <= 0:
-        npartners = 1
+def negative_distances(rover_dist, poi_id, poi_values, n_counters):
+    npartners = n_counters
 
     partners = np.zeros(npartners)
 
