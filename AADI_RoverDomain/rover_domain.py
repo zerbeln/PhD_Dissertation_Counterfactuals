@@ -39,8 +39,8 @@ class RoverDomain:
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
 
         # Initialize POI positions and values
-        self.poi_pos = init_poi_positions_txt_file()
-        self.poi_values = init_poi_values_txt_file()
+        self.poi_pos = init_poi_positions_random(self.rover_pos)
+        self.poi_values = init_poi_values_random()
         self.poi_rewards = np.zeros(p.num_pois)
 
         self.istep = 0

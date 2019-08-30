@@ -10,8 +10,8 @@ def calc_global_alpha(rover_paths, poi_values, poi_positions):
     global_reward = 0.0
 
     poi_observer_distances = np.zeros((p.num_pois, total_steps))
-    for step_index in range(total_steps):
-        for poi_id in range(p.num_pois):
+    for poi_id in range(p.num_pois):
+        for step_index in range(total_steps):
             observer_count = 0
             rover_distances = np.zeros(p.num_rovers)
 
@@ -116,8 +116,8 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
     for agent_id in range(p.num_rovers):  # For each rover
         poi_observer_distances = np.zeros((p.num_pois, total_steps))  # Tracks summed observer distances
 
-        for step_index in range(total_steps):  # For each step in trajectory
-            for poi_id in range(p.num_pois):  # For each POI
+        for poi_id in range(p.num_pois):  # For each POI
+            for step_index in range(total_steps):  # For each step in trajectory
                 observer_count = 0
                 rover_distances = np.zeros(p.num_rovers)  # Track distances between rovers and POI
 
@@ -283,8 +283,8 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
     for agent_id in range(p.num_rovers):
         poi_observer_distances = np.zeros((p.num_pois, total_steps))
 
-        for step_index in range(total_steps):
-            for poi_id in range(p.num_pois):
+        for poi_id in range(p.num_pois):
+            for step_index in range(total_steps):
                 observer_count = 0
                 rover_distances = np.zeros(p.num_rovers+n_counters)
 
@@ -333,8 +333,8 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
             poi_observer_distances = np.zeros((p.num_pois, total_steps))
 
             for n_counters in range(p.coupling-1):
-                for step_index in range(total_steps):
-                    for poi_id in range(p.num_pois):
+                for poi_id in range(p.num_pois):
+                    for step_index in range(total_steps):
                         observer_count = 0
                         rover_distances = np.zeros(p.num_rovers + n_counters)
 
