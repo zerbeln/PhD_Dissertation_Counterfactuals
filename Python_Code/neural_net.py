@@ -46,6 +46,7 @@ class NeuralNetwork:
     def reset_layers(self, rov_id):  # Clear hidden layers and output layers
         for i in range(self.n_nodes):
             self.hid_layer[rov_id, i] = 0.0
+
         for j in range(self.n_outputs):
             self.out_layer[rov_id, j] = 0.0
 
@@ -77,8 +78,6 @@ class NeuralNetwork:
         for i in range(self.n_outputs):  # Pass through sigmoid
             self.out_layer[rov_id, i] = self.tanh(self.out_layer[rov_id, i])
 
-        # print(self.out_layer[rov_id])
-
     def tanh(self, inp):  # Tanh function as activation function
         tanh = (2/(1 + np.exp(-2*inp)))-1
         return tanh
@@ -87,7 +86,7 @@ class NeuralNetwork:
         sig = 1/(1 + np.exp(-inp))
         return sig
 
-    def run_neural_network(self, state_vec, weight_vec, rover_id):
-        self.get_inputs(state_vec, rover_id)
+    def run_neural_network(self, rover_input, weight_vec, rover_id):
+        self.get_inputs(rover_input, rover_id)
         self.get_weights(weight_vec, rover_id)
         self.get_outputs(rover_id)

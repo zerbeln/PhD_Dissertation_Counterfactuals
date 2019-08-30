@@ -11,8 +11,8 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 5
-    generations = 200  # Number of generations for CCEA in each stat run
+    stat_runs = 10
+    generations = 300  # Number of generations for CCEA in each stat run
     visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
 
     # Domain parameters
@@ -31,7 +31,7 @@ class Parameters:
     # Neural network parameters
     num_inputs = 8
     num_nodes = 9
-    num_outputs = 3
+    num_outputs = 2
 
     # CCEA parameters
     mutation_rate = 0.1
@@ -39,7 +39,7 @@ class Parameters:
     epsilon = 0.1
     parent_pop_size = 15
     offspring_pop_size = 15
-    n_bits = 10
+    n_bits = 11
 
     # User specific parameters
-    reward_type = "Difference"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"

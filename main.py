@@ -97,8 +97,7 @@ def run_homogeneous_rovers():
                 rd.reset_to_init()  # Resets rovers to initial configuration
                 done = False; rd.istep = 0
                 joint_state = rd.get_joint_state()
-                # print("Team Number: ", team_number)
-                # print("Team: ", cc.team_selection[:, team_number])
+
                 while not done:
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
