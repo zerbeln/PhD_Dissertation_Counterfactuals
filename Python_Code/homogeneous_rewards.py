@@ -34,7 +34,6 @@ def calc_global_alpha(rover_paths, poi_values, poi_positions):
             if observer_count >= p.coupling:
                 summed_observer_distances = 0.0
                 for observer in range(p.coupling):
-                    # assert(min(rover_distances) < p.min_observation_dist)
                     summed_observer_distances += min(rover_distances)
                     od_index = np.argmin(rover_distances)
                     rover_distances[od_index] = inf
@@ -88,7 +87,6 @@ def calc_difference_alpha(rover_paths, poi_values, poi_positions, global_reward)
                 if observer_count >= p.coupling:
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        # assert(min(rover_distances) < p.min_observation_dist)
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
                         rover_distances[od_index] = inf
@@ -149,7 +147,6 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                 if observer_count >= p.coupling:
                     summed_observer_distances = 0.0
                     for observer in range(p.coupling):
-                        # assert (min(rover_distances) < p.min_observation_dist)
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
                         rover_distances[od_index] = inf
@@ -199,7 +196,6 @@ def calc_dpp_alpha(rover_paths, poi_values, poi_positions, global_reward):
                         if observer_count >= p.coupling:
                             summed_observer_distances = 0.0
                             for observer in range(p.coupling):
-                                # assert (min(rover_distances) < p.min_observation_dist)
                                 summed_observer_distances += min(rover_distances)
                                 od_index = np.argmin(rover_distances)
                                 rover_distances[od_index] = inf

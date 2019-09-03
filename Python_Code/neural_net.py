@@ -31,7 +31,9 @@ class NeuralNetwork:
         # for w in range(self.n_weights):
         #     self.weights[rov_id, w] = nn_weights[w]
 
-        max_value = (2**p.n_bits) - 1
+        max_value = (2**(p.n_bits-1)) - 1  # Maximum number which can be expressed by binary string of n_bits
+        # The reason for -1 is because the final bit is used only to determine positive or negative
+
         for w in range(self.n_weights):
             num = 0
             for bit_id in range(p.n_bits):

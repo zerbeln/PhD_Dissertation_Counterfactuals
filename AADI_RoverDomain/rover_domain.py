@@ -1,5 +1,6 @@
 import sys
 import math
+import os
 from AADI_RoverDomain.rover_setup import *
 from AADI_RoverDomain.parameters import Parameters as p
 
@@ -25,6 +26,77 @@ class RoverDomain:
         self.poi_pos = np.zeros((p.num_pois, 2))
         self.poi_values = np.zeros(p.num_pois)
         self.poi_rewards = np.zeros(p.num_pois)
+
+    def inital_world_setup(self):
+        """
+        Changes rovers' starting positions and POI positions and values according to specified functions
+        :return: none
+        """
+
+        if p.new_world_config == True:
+            # Initialize rover positions
+            self.rover_pos = init_rover_positions_random_concentrated()
+            self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
+
+            # Initialize POI positions and values
+            self.poi_pos = init_poi_positions_random(self.rover_pos)
+            self.poi_values = init_poi_values_random()
+
+            self.save_world_configuration()
+        else:
+            # Initialize rover positions
+            self.rover_pos = init_rover_pos_txt_file()
+            self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
+
+            # Initialize POI positions and values
+            self.poi_pos = init_poi_positions_txt_file()
+            self.poi_values = init_poi_values_txt_file()
+
+        self.istep = 0
+        # Rover path trace for trajectory-wide global reward computation and vizualization purposes
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+        self.poi_rewards = np.zeros(p.num_pois)
+
+        for rover_id in range(self.num_agents):  # Record intial positions
+            self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
+            self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
+            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
+
+    def save_world_configuration(self):
+        dir_name = 'Output_Data/'  # Intended directory for output files
+        nrovers = p.num_rovers
+
+        if not os.path.exists(dir_name):  # If Data directory does not exist, create it
+            os.makedirs(dir_name)
+
+        rcoords_name = os.path.join(dir_name, 'Rover_Positions.txt')
+        pcoords_name = os.path.join(dir_name, 'POI_Positions.txt')
+        pvals_name = os.path.join(dir_name, 'POI_Values.txt')
+
+        rov_coords = open(rcoords_name, 'w')
+        for r_id in range(nrovers):  # Record initial rover positions to txt file
+            rov_coords.write('%f' % self.rover_pos[r_id, 0])
+            rov_coords.write('\t')
+            rov_coords.write('%f' % self.rover_pos[r_id, 1])
+            rov_coords.write('\t')
+            rov_coords.write('%f' % self.rover_pos[r_id, 2])
+            rov_coords.write('\t')
+        rov_coords.write('\n')
+        rov_coords.close()
+
+        poi_coords = open(pcoords_name, 'w')
+        poi_values = open(pvals_name, 'w')
+        for p_id in range(p.num_pois):  # Record POI positions and values
+            poi_coords.write('%f' % self.poi_pos[p_id, 0])
+            poi_coords.write('\t')
+            poi_coords.write('%f' % self.poi_pos[p_id, 1])
+            poi_coords.write('\t')
+            poi_values.write('%f' % self.poi_values[p_id])
+            poi_values.write('\t')
+        poi_coords.write('\n')
+        poi_values.write('\n')
+        poi_coords.close()
+        poi_values.close()
 
     def reset_world(self):
         """
@@ -75,21 +147,24 @@ class RoverDomain:
 
         # Update rover positions
         for rover_id in range(self.num_agents):
+            # Shaw's old code
             # magnitude = 0.5 * (joint_action[rover_id, 0] + 1)  # [-1,1] --> [0,1]
-            # joint_action[rover_id, 2] /= 2.0  # Theta (bearing constrained to be within 90 degree turn from heading)
+            # joint_action[rover_id, 1] /= 2.0  # Theta (bearing constrained to be within 90 degree turn from heading)
 
-            x = joint_action[rover_id, 0]
-            y = joint_action[rover_id, 1]
-            theta = math.atan(y/x) * (180/math.pi)
-            #theta = joint_action[rover_id, 2] * 180 + self.rover_pos[rover_id, 2]
-            if theta > 360: theta -= 360
-            if theta < 0: theta += 360
-            self.rover_pos[rover_id, 2] = theta
+            # theta = joint_action[rover_id, 2] * 180 + self.rover_pos[rover_id, 2]
 
             # Update position
             # x = magnitude * math.cos(math.radians(theta))
             # y = magnitude * math.sin(math.radians(theta))
 
+            x = joint_action[rover_id, 0]
+            y = joint_action[rover_id, 1]
+            theta = math.atan(y/x) * (180/math.pi)
+            if theta > 360: theta -= 360
+            if theta < 0: theta += 360
+            self.rover_pos[rover_id, 2] = theta
+
+            # Update rover position
             self.rover_pos[rover_id, 0] += x
             self.rover_pos[rover_id, 1] += y
 

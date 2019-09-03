@@ -1,4 +1,4 @@
-import Python_Code.new_ccea as ccea
+import Python_Code.binary_ccea as ccea
 import Python_Code.neural_net as neural_network
 from AADI_RoverDomain.parameters import Parameters as p
 from AADI_RoverDomain.rover_domain import RoverDomain
@@ -15,42 +15,6 @@ def save_reward_history(reward_history, file_name):
     with open(save_file_name, 'a+', newline='') as csvfile:  # Record reward history for each stat run
         writer = csv.writer(csvfile)
         writer.writerow(['Performance'] + reward_history)
-
-
-def save_world_configuration(rover_positions, poi_positions, poi_vals):
-    dir_name = 'Output_Data/'  # Intended directory for output files
-    nrovers = p.num_rovers
-
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    rcoords_name = os.path.join(dir_name, 'Rover_Positions.txt')
-    pcoords_name = os.path.join(dir_name, 'POI_Positions.txt')
-    pvals_name = os.path.join(dir_name, 'POI_Values.txt')
-
-    rov_coords = open(rcoords_name, 'w')
-    for r_id in range(nrovers):  # Record initial rover positions to txt file
-        rov_coords.write('%f' % rover_positions[r_id, 0])
-        rov_coords.write('\t')
-        rov_coords.write('%f' % rover_positions[r_id, 1])
-        rov_coords.write('\t')
-    rov_coords.write('\n')
-    rov_coords.close()
-
-    poi_coords = open(pcoords_name, 'w')
-    poi_values = open(pvals_name, 'w')
-    for p_id in range(p.num_pois):  # Record POI positions and values
-        poi_coords.write('%f' % poi_positions[p_id, 0])
-        poi_coords.write('\t')
-        poi_coords.write('%f' % poi_positions[p_id, 1])
-        poi_coords.write('\t')
-        poi_values.write('%f' % poi_vals[p_id])
-        poi_values.write('\t')
-    poi_coords.write('\n')
-    poi_values.write('\n')
-    poi_coords.close()
-    poi_values.close()
-
 
 def save_rover_path(rover_path):  # Save path rovers take using best policy found
     dir_name = 'Output_Data/'  # Intended directory for output files
@@ -77,20 +41,18 @@ def run_homogeneous_rovers():
     rd = RoverDomain()
 
     rtype = p.reward_type
+    rd.inital_world_setup()
 
     for srun in range(p.stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
         reward_history = []
 
-        # Reset CCEA, NN, and world for new stat run
+        # Reset CCEA and NN new stat run
         cc.reset_populations()  # Randomly initialize ccea populations
         nn.reset_nn()  # Initialize NN architecture
-        rd.reset_world()  # Re-initialize world
-
-        save_world_configuration(rd.rover_initial_pos, rd.poi_pos, rd.poi_values)
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            # print("Gen: %i" % gen)
             cc.select_policy_teams()
 
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
@@ -106,7 +68,6 @@ def run_homogeneous_rovers():
 
                 # Update fitness of policies using reward information
                 global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
-                # print("Global Reward Main: ", global_reward)
                 if rtype == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
@@ -141,7 +102,6 @@ def run_homogeneous_rovers():
                 joint_state, done = rd.step(nn.out_layer)
 
             global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
-            # print(global_reward)
             reward_history.append(global_reward)
 
             if gen == (p.generations-1):  # Save path at end of final generation

@@ -69,6 +69,35 @@ def init_rover_pos_twelve_grid():
 
     return rover_positions
 
+def init_rover_pos_txt_file():
+    rover_positions = np.zeros((p.num_rovers, 3))
+
+    with open('Output_Data/Rover_Positions.txt') as f:
+        for i, l in enumerate(f):
+            pass
+
+    line_count = i + 1
+
+    posFile = open('Output_Data/Rover_Positions.txt', 'r')
+
+    count = 1
+    coordMat = []
+
+    for line in posFile:
+        for coord in line.split('\t'):
+            if (coord != '\n') and (count == line_count):
+                coordMat.append(float(coord))
+        count += 1
+
+    prev_pos = np.reshape(coordMat, (p.num_rovers, 3))
+
+    for ii in range(p.num_rovers):
+        rover_positions[ii, 0] = prev_pos[ii, 0]
+        rover_positions[ii, 1] = prev_pos[ii, 1]
+        rover_positions[ii, 2] = prev_pos[ii, 2]
+
+    return rover_positions
+
 
 ### POI SETUP FUNCTIONS ###########################################################
 
