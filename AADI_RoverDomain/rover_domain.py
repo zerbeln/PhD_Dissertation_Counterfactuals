@@ -75,19 +75,20 @@ class RoverDomain:
 
         # Update rover positions
         for rover_id in range(self.num_agents):
-            magnitude = 0.5 * (joint_action[rover_id, 0] + 1)  # [-1,1] --> [0,1]
+            # magnitude = 0.5 * (joint_action[rover_id, 0] + 1)  # [-1,1] --> [0,1]
+            # joint_action[rover_id, 2] /= 2.0  # Theta (bearing constrained to be within 90 degree turn from heading)
 
-            joint_action[rover_id, 1] /= 2.0  # Theta (bearing constrained to be within 90 degree turn from heading)
-            theta = joint_action[rover_id, 1] * 180 + self.rover_pos[rover_id, 2]
+            x = joint_action[rover_id, 0]
+            y = joint_action[rover_id, 1]
+            theta = math.atan(y/x) * (180/math.pi)
+            #theta = joint_action[rover_id, 2] * 180 + self.rover_pos[rover_id, 2]
             if theta > 360: theta -= 360
             if theta < 0: theta += 360
             self.rover_pos[rover_id, 2] = theta
 
             # Update position
-            x = magnitude * math.cos(math.radians(theta))
-            y = magnitude * math.sin(math.radians(theta))
-            # x = joint_action[rover_id, 0]
-            # y = joint_action[rover_id, 1]
+            # x = magnitude * math.cos(math.radians(theta))
+            # y = magnitude * math.sin(math.radians(theta))
 
             self.rover_pos[rover_id, 0] += x
             self.rover_pos[rover_id, 1] += y
@@ -131,7 +132,8 @@ class RoverDomain:
                 if dist >= self.obs_radius: continue  # Observability radius
 
                 angle -= self_orient
-                if angle < 0: angle += 360
+                if angle < 0:
+                    angle += 360
 
                 bracket = int(angle / p.angle_resolution)
                 if bracket >= len(temp_poi_dist_list):

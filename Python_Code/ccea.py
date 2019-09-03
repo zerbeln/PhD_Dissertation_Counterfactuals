@@ -29,10 +29,20 @@ class Ccea:
         for pop_index in range(self.n_populations):
             for policy_index in range(self.parent_pop_size):
                 for w in range(self.policy_size):
-                    self.parent_pop[pop_index, policy_index, w] = np.random.normal(0, 1)
+                    weight = np.random.normal(0, 1)
+                    if weight > 1.0:
+                        weight = 1.0
+                    if weight < -1.0:
+                        weight = -1.0
+                    self.parent_pop[pop_index, policy_index, w] = weight
             for policy_index in range(self.offspring_pop_size):
                 for w in range(self.policy_size):
-                    self.offspring_pop[pop_index, policy_index, w] = np.random.normal(0, 1)
+                    weight = np.random.normal(0, 1)
+                    if weight > 1.0:
+                        weight = 1.0
+                    if weight < -1.0:
+                        weight = -1.0
+                    self.offspring_pop[pop_index, policy_index, w] = weight
 
         self.combine_pops()
 
@@ -61,7 +71,12 @@ class Ccea:
                 if rnum <= self.mut_prob:
                     for w in range(mutate_n):
                         target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
-                        self.offspring_pop[pop_index, policy_index, target] = np.random.normal(0, 1)
+                        weight = np.random.normal(0, 1)
+                        if weight > 1.0:
+                            weight = 1.0
+                        if weight < -1.0:
+                            weight = -1.0
+                        self.offspring_pop[pop_index, policy_index, target] = weight
                 policy_index += 1
 
     def epsilon_greedy_select(self):  # Choose K solutions

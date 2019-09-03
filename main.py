@@ -1,4 +1,4 @@
-import Python_Code.ccea as ccea
+import Python_Code.new_ccea as ccea
 import Python_Code.neural_net as neural_network
 from AADI_RoverDomain.parameters import Parameters as p
 from AADI_RoverDomain.rover_domain import RoverDomain

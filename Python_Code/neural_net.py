@@ -28,20 +28,20 @@ class NeuralNetwork:
             self.in_layer[rov_id, i] = state_vec[i]
 
     def get_weights(self, nn_weights, rov_id):  # Get weights from CCEA population
-        for w in range(self.n_weights):
-            self.weights[rov_id, w] = nn_weights[w]
-
-        # max_value = (2**p.n_bits) - 1
         # for w in range(self.n_weights):
-        #     num = 0
-        #     for bit_id in range(p.n_bits):
-        #         if bit_id < p.n_bits-1:
-        #             num += nn_weights[bit_id + p.n_bits*w] * (2**bit_id)
-        #         else:
-        #             if nn_weights[bit_id + p.n_bits*w] == 0:
-        #                 num *= -1
-        #     num /= max_value
-        #     self.weights[rov_id, w] = num
+        #     self.weights[rov_id, w] = nn_weights[w]
+
+        max_value = (2**p.n_bits) - 1
+        for w in range(self.n_weights):
+            num = 0
+            for bit_id in range(p.n_bits):
+                if bit_id < p.n_bits-1:
+                    num += nn_weights[bit_id + p.n_bits*w] * (2**bit_id)
+                else:
+                    if nn_weights[bit_id + p.n_bits*w] == 0:
+                        num *= -1
+            num /= max_value
+            self.weights[rov_id, w] = num
 
     def reset_layers(self, rov_id):  # Clear hidden layers and output layers
         for i in range(self.n_nodes):
