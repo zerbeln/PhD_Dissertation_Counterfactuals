@@ -12,7 +12,7 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 10
-    generations = 300  # Number of generations for CCEA in each stat run
+    generations = 500  # Number of generations for CCEA in each stat run
     visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
 
@@ -27,7 +27,7 @@ class Parameters:
     y_dim = 30  # Y-Dimension of the rover map
     min_observation_dist = 4.0  # Minimum distance rovers must be to observe POIs
     angle_resolution = 90  # Resolution of sensors (determines number of sectors)
-    sensor_model = "closest"  # Should either be "density" or "closest"
+    sensor_model = "summed"  # Should either be "density" or "closest"
 
     # Neural network parameters
     num_inputs = 8
@@ -39,7 +39,7 @@ class Parameters:
     percentage_mut = 0.05  # Percentage of bits which get flipped in an individual
     epsilon = 0.1  # For e-greedy selection in CCEA
     parent_pop_size = 15
-    offspring_pop_size = 15
+    offspring_pop_size = 5
     n_bits = 11  # Number of bits used to express a single weight
 
     # User specific parameters

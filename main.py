@@ -90,7 +90,6 @@ def run_homogeneous_rovers():
                 else:
                     sys.exit('Incorrect Reward Type')
 
-
             # Testing Phase
             rd.reset_to_init()  # Reset rovers to initial positions
             done = False; rd.istep = 0
@@ -98,6 +97,7 @@ def run_homogeneous_rovers():
             while not done:
                 for rover_id in range(rd.num_agents):
                     pol_index = np.argmax(cc.fitness[rover_id])
+                    # assert(cc.fitness[rover_id, pol_index] == max(cc.fitness[rover_id]))
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
 

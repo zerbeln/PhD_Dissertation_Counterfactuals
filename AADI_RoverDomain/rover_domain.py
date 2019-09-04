@@ -160,8 +160,12 @@ class RoverDomain:
             x = joint_action[rover_id, 0]
             y = joint_action[rover_id, 1]
             theta = math.atan(y/x) * (180/math.pi)
-            if theta > 360: theta -= 360
-            if theta < 0: theta += 360
+            if theta < 0:
+                theta += 360
+            if theta > 360:
+                theta -= 360
+            if math.isnan(theta):
+                theta = 0.0
             self.rover_pos[rover_id, 2] = theta
 
             # Update rover position
@@ -189,10 +193,12 @@ class RoverDomain:
         joint_state is an array of size [nrovers][8] containing inputs for NN
         :return: joint_state
         """
-        joint_state = []
+
+        joint_state = np.zeros((p.num_rovers, p.num_inputs))
 
         for rover_id in range(self.num_agents):
-            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]; self_orient = self.rover_pos[rover_id, 2]
+            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]
+            self_orient = self.rover_pos[rover_id, 2]
 
             rover_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
             poi_state = [0.0 for _ in range(int(360 / p.angle_resolution))]
@@ -201,14 +207,16 @@ class RoverDomain:
 
             # Log POI distances into brackets
             for loc, value in zip(self.poi_pos, self.poi_values):
-
                 angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
 
-                if dist >= self.obs_radius: continue  # Observability radius
+                if dist >= self.obs_radius:
+                    continue  # Observability radius
 
                 angle -= self_orient
                 if angle < 0:
                     angle += 360
+                if angle > 360:
+                    angle -= 360
 
                 bracket = int(angle / p.angle_resolution)
                 if bracket >= len(temp_poi_dist_list):
@@ -221,14 +229,19 @@ class RoverDomain:
 
             # Log rover distances into brackets
             for id, loc in enumerate(self.rover_pos):
-                if id == rover_id: continue  # Ignore self
+                if id == rover_id:
+                    continue  # Ignore self
 
                 angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
 
-                if dist >= self.obs_radius: continue  # Observability radius
+                if dist >= self.obs_radius:
+                    continue  # Observability radius
 
                 angle -= self_orient
-                if angle < 0: angle += 360
+                if angle < 0:
+                    angle += 360
+                if angle > 360:
+                    angle -= 360
 
                 if dist < p.min_distance:  # Clip distance to not overwhelm sigmoid in NN
                     dist = p.min_distance
@@ -239,7 +252,6 @@ class RoverDomain:
                     bracket = len(temp_rover_dist_list) - 1
                 temp_rover_dist_list[bracket].append(1/dist)
 
-
             # Encode the information into the state vector
             for bracket in range(int(360 / p.angle_resolution)):
                 # POIs
@@ -247,51 +259,54 @@ class RoverDomain:
                 if num_poi > 0:
                     if p.sensor_model == 'density':
                         poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi  # Density Sensor
+                    elif p.sensor_model == 'summed':
+                        poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
                     elif p.sensor_model == 'closest':
                         poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
                     else:
                         sys.exit('Incorrect sensor model')
                 else:
                     poi_state[bracket] = -1.0
+                joint_state[rover_id, bracket] = poi_state[bracket]
 
                 # Rovers
                 num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
                 if num_agents > 0:
                     if p.sensor_model == 'density':
                         rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
+                    elif p.sensor_model == 'summed':
+                        rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
                     elif p.sensor_model == 'closest':
                         rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
                     else:
                         sys.exit('Incorrect sensor model')
                 else:
                     rover_state[bracket] = -1.0
-
-            state = rover_state + poi_state  # Append rover and poi to form the full state
-
-            joint_state.append(state)
+                joint_state[rover_id, (bracket + 4)] = rover_state[bracket]
 
         return joint_state
 
 
-    def get_angle_dist(self, x1, y1, x2, y2):
+    def get_angle_dist(self, rovx, rovy, x, y):
         """
         Computes angles and distance between two predators relative to (1,0) vector (x-axis)
-        :param x1: X-Position of rover
-        :param y1: Y-Position of rover
-        :param x2: X-Position of POI or other rover
-        :param y2: Y-Position of POI or other rover
+        :param rovx: X-Position of rover
+        :param rovy: Y-Position of rover
+        :param x: X-Position of POI or other rover
+        :param y: Y-Position of POI or other rover
         :return: angle, dist
         """
-        v1 = x2 - x1; v2 = y2 - y1
-        angle = np.rad2deg(np.arctan2(v1, v2))
+        vx = x - rovx; vy = y - rovy
+        angle = math.atan(vy/vx)*(180/math.pi)
+
         if angle < 0:
             angle += 360
-
+        if angle > 360:
+            angle -= 360
         if math.isnan(angle):
             angle = 0.0
 
-        dist = (v1 * v1) + (v2 * v2)
-        dist = math.sqrt(dist)
+        dist = math.sqrt((vx * vx) + (vy * vy))
 
         return angle, dist
 

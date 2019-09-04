@@ -12,16 +12,16 @@ class NeuralNetwork:
         self.n_weights = (self.n_inputs + 1)*self.n_nodes + (self.n_nodes + 1)*self.n_outputs
         self.input_bias = 1.0
         self.hidden_bias = 1.0
-        self.weights = np.zeros((self.n_rovers, self.n_weights), dtype=np.float64)
-        self.in_layer = np.zeros((self.n_rovers, self.n_inputs), dtype=np.float64)
-        self.hid_layer = np.zeros((self.n_rovers, self.n_nodes), dtype=np.float64)
-        self.out_layer = np.zeros((self.n_rovers, self.n_outputs), dtype=np.float64)
+        self.weights = np.zeros((self.n_rovers, self.n_weights))
+        self.in_layer = np.zeros((self.n_rovers, self.n_inputs))
+        self.hid_layer = np.zeros((self.n_rovers, self.n_nodes))
+        self.out_layer = np.zeros((self.n_rovers, self.n_outputs))
 
     def reset_nn(self):  # Clear current network
-        self.weights = np.zeros((self.n_rovers, self.n_weights), dtype=np.float64)
-        self.in_layer = np.zeros((self.n_rovers, self.n_inputs), dtype=np.float64)
-        self.hid_layer = np.zeros((self.n_rovers, self.n_nodes), dtype=np.float64)
-        self.out_layer = np.zeros((self.n_rovers, self.n_outputs), dtype=np.float64)
+        self.weights = np.zeros((self.n_rovers, self.n_weights))
+        self.in_layer = np.zeros((self.n_rovers, self.n_inputs))
+        self.hid_layer = np.zeros((self.n_rovers, self.n_nodes))
+        self.out_layer = np.zeros((self.n_rovers, self.n_outputs))
 
     def get_inputs(self, state_vec, rov_id):  # Get inputs from state-vector
         for i in range(self.n_inputs):
