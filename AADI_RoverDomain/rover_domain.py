@@ -29,7 +29,7 @@ class RoverDomain:
 
     def inital_world_setup(self):
         """
-        Changes rovers' starting positions and POI positions and values according to specified functions
+        Set rover starting positions, POI positions and values
         :return: none
         """
 
@@ -124,7 +124,7 @@ class RoverDomain:
 
     def reset_to_init(self):
         """
-        Resets rovers to starting positions (does not alter the starting positions)
+        Resets rovers to starting positions (does not alter the world's initial state)
         :return: none
         """
         self.poi_rewards = np.zeros(p.num_pois)
@@ -147,16 +147,6 @@ class RoverDomain:
 
         # Update rover positions
         for rover_id in range(self.num_agents):
-            # Shaw's old code
-            # magnitude = 0.5 * (joint_action[rover_id, 0] + 1)  # [-1,1] --> [0,1]
-            # joint_action[rover_id, 1] /= 2.0  # Theta (bearing constrained to be within 90 degree turn from heading)
-
-            # theta = joint_action[rover_id, 2] * 180 + self.rover_pos[rover_id, 2]
-
-            # Update position
-            # x = magnitude * math.cos(math.radians(theta))
-            # y = magnitude * math.sin(math.radians(theta))
-
             # assert(joint_action[rover_id, 0] <= 1.0)
             # assert(joint_action[rover_id, 0] >= -1.0)
             # assert(joint_action[rover_id, 1] <= 1.0)
@@ -171,11 +161,11 @@ class RoverDomain:
                 theta -= 360
             if math.isnan(theta):
                 theta = 0.0
-            self.rover_pos[rover_id, 2] = theta
 
             # Update rover position
             self.rover_pos[rover_id, 0] += x
             self.rover_pos[rover_id, 1] += y
+            self.rover_pos[rover_id, 2] = theta
 
 
         # Update rover path
@@ -226,7 +216,6 @@ class RoverDomain:
                     angle += 360
 
                 bracket = int(angle / p.angle_resolution)
-                # assert (bracket < 4)
                 if bracket >= len(temp_poi_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
                     bracket = len(temp_poi_dist_list) - 1
@@ -255,7 +244,6 @@ class RoverDomain:
                     dist = p.min_distance
 
                 bracket = int(angle / p.angle_resolution)
-                assert(bracket < 4)
                 if bracket >= len(temp_rover_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
                     bracket = len(temp_rover_dist_list) - 1

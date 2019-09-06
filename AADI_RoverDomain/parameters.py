@@ -40,7 +40,7 @@ class Parameters:
     epsilon = 0.1  # For e-greedy selection in CCEA
     parent_pop_size = 15
     offspring_pop_size = 5
-    n_bits = 11  # Number of bits used to express a single weight
+    n_bits = 11  # Number of bits used to express a single weight in binary ccea
 
     # User specific parameters
     reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"

@@ -67,41 +67,40 @@ def run_homogeneous_rovers():
                     joint_state, done = rd.step(nn.out_layer)
 
                 # Update fitness of policies using reward information
-                global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
+                global_reward = homr.calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
                 if rtype == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_reward
                 elif rtype == "Difference":
-                    d_reward = homr.calc_difference_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                    d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
                 elif rtype == "DPP":
-                    dpp_reward = homr.calc_dpp_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                    dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
                 elif rtype == "SDPP":
-                    sdpp_reward = homr.calc_sdpp_alpha(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                    sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
                 else:
                     sys.exit('Incorrect Reward Type')
 
-            # Testing Phase
+            # Testing Phase (test best policies found so far)
             rd.reset_to_init()  # Reset rovers to initial positions
             done = False; rd.istep = 0
             joint_state = rd.get_joint_state()
             while not done:
                 for rover_id in range(rd.num_agents):
                     pol_index = np.argmax(cc.fitness[rover_id])
-                    # assert(cc.fitness[rover_id, pol_index] == max(cc.fitness[rover_id]))
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
 
-            global_reward = homr.calc_global_alpha(rd.rover_path, rd.poi_values, rd.poi_pos)
+            global_reward = homr.calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
             reward_history.append(global_reward)
 
             if gen == (p.generations-1):  # Save path at end of final generation
@@ -109,7 +108,7 @@ def run_homogeneous_rovers():
                 if p.visualizer_on:
                     visualize(rd, global_reward)
 
-            cc.down_select()  # Perform down_selection after each policy has been evaluated
+            cc.down_select()  # Choose new parents and create new offspring population
 
         if rtype == "Global":
             save_reward_history(reward_history, "Global_Reward.csv")
