@@ -157,10 +157,10 @@ class RoverDomain:
             # x = magnitude * math.cos(math.radians(theta))
             # y = magnitude * math.sin(math.radians(theta))
 
-            assert(joint_action[rover_id, 0] <= 1.0)
-            assert(joint_action[rover_id, 0] >= -1.0)
-            assert(joint_action[rover_id, 1] <= 1.0)
-            assert(joint_action[rover_id, 1] >= -1.0)
+            # assert(joint_action[rover_id, 0] <= 1.0)
+            # assert(joint_action[rover_id, 0] >= -1.0)
+            # assert(joint_action[rover_id, 1] <= 1.0)
+            # assert(joint_action[rover_id, 1] >= -1.0)
 
             x = joint_action[rover_id, 0]
             y = joint_action[rover_id, 1]
@@ -226,7 +226,7 @@ class RoverDomain:
                     angle += 360
 
                 bracket = int(angle / p.angle_resolution)
-                assert (bracket < 4)
+                # assert (bracket < 4)
                 if bracket >= len(temp_poi_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
                     bracket = len(temp_poi_dist_list) - 1
@@ -239,7 +239,7 @@ class RoverDomain:
             for other_rover_id in range(p.num_rovers):
                 if other_rover_id == rover_id: # Ignore self
                     continue
-                assert(other_rover_id != rover_id)
+                # assert(other_rover_id != rover_id)
                 rov_x = self.rover_pos[other_rover_id, 0]
                 rov_y = self.rover_pos[other_rover_id, 1]
                 angle, dist = self.get_angle_dist(self_x, self_y, rov_x, rov_y)
