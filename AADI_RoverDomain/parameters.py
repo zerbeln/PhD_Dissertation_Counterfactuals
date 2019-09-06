@@ -11,16 +11,16 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 10
-    generations = 500  # Number of generations for CCEA in each stat run
-    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
+    stat_runs = 1
+    generations = 200  # Number of generations for CCEA in each stat run
+    visualizer_on = True  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
-    num_rovers = 10  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+    num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 10  # Number of POIs on map
+    num_pois = 4  # Number of POIs on map
     num_steps = 20  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map

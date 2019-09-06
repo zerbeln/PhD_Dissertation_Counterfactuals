@@ -157,6 +157,11 @@ class RoverDomain:
             # x = magnitude * math.cos(math.radians(theta))
             # y = magnitude * math.sin(math.radians(theta))
 
+            assert(joint_action[rover_id, 0] <= 1.0)
+            assert(joint_action[rover_id, 0] >= -1.0)
+            assert(joint_action[rover_id, 1] <= 1.0)
+            assert(joint_action[rover_id, 1] >= -1.0)
+
             x = joint_action[rover_id, 0]
             y = joint_action[rover_id, 1]
             theta = math.atan(y/x) * (180/math.pi)
@@ -206,8 +211,12 @@ class RoverDomain:
             temp_rover_dist_list = [[] for _ in range(int(360 / p.angle_resolution))]
 
             # Log POI distances into brackets
-            for loc, value in zip(self.poi_pos, self.poi_values):
-                angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
+            for poi_id in range(p.num_pois):
+                poi_x = self.poi_pos[poi_id, 0]
+                poi_y = self.poi_pos[poi_id, 1]
+                poi_value = self.poi_values[poi_id]
+
+                angle, dist = self.get_angle_dist(self_x, self_y, poi_x, poi_y)
 
                 if dist >= self.obs_radius:
                     continue  # Observability radius
@@ -215,24 +224,25 @@ class RoverDomain:
                 angle -= self_orient
                 if angle < 0:
                     angle += 360
-                if angle > 360:
-                    angle -= 360
 
                 bracket = int(angle / p.angle_resolution)
+                assert (bracket < 4)
                 if bracket >= len(temp_poi_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
                     bracket = len(temp_poi_dist_list) - 1
                 if dist < p.min_distance:  # Clip distance to not overwhelm tanh in NN
                     dist = p.min_distance
 
-                temp_poi_dist_list[bracket].append(value/dist)
+                temp_poi_dist_list[bracket].append(poi_value/dist)
 
             # Log rover distances into brackets
-            for id, loc in enumerate(self.rover_pos):
-                if id == rover_id:
-                    continue  # Ignore self
-
-                angle, dist = self.get_angle_dist(self_x, self_y, loc[0], loc[1])
+            for other_rover_id in range(p.num_rovers):
+                if other_rover_id == rover_id: # Ignore self
+                    continue
+                assert(other_rover_id != rover_id)
+                rov_x = self.rover_pos[other_rover_id, 0]
+                rov_y = self.rover_pos[other_rover_id, 1]
+                angle, dist = self.get_angle_dist(self_x, self_y, rov_x, rov_y)
 
                 if dist >= self.obs_radius:
                     continue  # Observability radius
@@ -240,13 +250,12 @@ class RoverDomain:
                 angle -= self_orient
                 if angle < 0:
                     angle += 360
-                if angle > 360:
-                    angle -= 360
 
                 if dist < p.min_distance:  # Clip distance to not overwhelm sigmoid in NN
                     dist = p.min_distance
 
                 bracket = int(angle / p.angle_resolution)
+                assert(bracket < 4)
                 if bracket >= len(temp_rover_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
                     bracket = len(temp_rover_dist_list) - 1

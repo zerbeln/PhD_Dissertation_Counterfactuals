@@ -52,7 +52,7 @@ def run_homogeneous_rovers():
         nn.reset_nn()  # Initialize NN architecture
 
         for gen in range(p.generations):
-            # print("Gen: %i" % gen)
+            print("Gen: %i" % gen)
             cc.select_policy_teams()
 
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
