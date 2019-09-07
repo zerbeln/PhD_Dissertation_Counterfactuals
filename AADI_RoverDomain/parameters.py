@@ -11,8 +11,8 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 15
-    generations = 500  # Number of generations for CCEA in each stat run
+    stat_runs = 30
+    generations = 1000  # Number of generations for CCEA in each stat run
     visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
 
@@ -25,7 +25,7 @@ class Parameters:
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
     y_dim = 30  # Y-Dimension of the rover map
-    min_observation_dist = 4.0  # Minimum distance rovers must be to observe POIs
+    min_observation_dist = 3.0  # Minimum distance rovers must be to observe POIs
     angle_resolution = 90  # Resolution of sensors (determines number of sectors)
     sensor_model = "summed"  # Should either be "density" or "closest"
 
