@@ -33,7 +33,6 @@ class Parameters:
     num_inputs = 8
     num_nodes = 9
     num_outputs = 2
-    ccea_type = "binary"
 
     # CCEA parameters
     mutation_rate = 0.1  # Probability that a member of the offspring population will be mutated
@@ -42,6 +41,7 @@ class Parameters:
     parent_pop_size = 15
     offspring_pop_size = 5
     n_bits = 11  # Number of bits used to express a single weight in binary ccea
+    ccea_type = "normal"  # "normal" or "binary"
 
     # User specific parameters
     reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
