@@ -33,6 +33,7 @@ class Parameters:
     num_inputs = 8
     num_nodes = 9
     num_outputs = 2
+    ccea_type = "binary"
 
     # CCEA parameters
     mutation_rate = 0.1  # Probability that a member of the offspring population will be mutated

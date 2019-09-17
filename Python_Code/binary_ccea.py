@@ -2,6 +2,10 @@ import numpy as np
 from AADI_RoverDomain.parameters import Parameters as p
 import random
 
+"""
+This CCEA represents policies as binary strings (longer run time than other CCEA)
+"""
+
 class Ccea:
 
     def __init__(self):
@@ -16,6 +20,11 @@ class Ccea:
         self.team_selection = np.ones((p.num_rovers, p.parent_pop_size)) * (-1)
 
     def reset_populations(self):  # Re-initializes CCEA populations for new run
+        """
+        Create new populations (for beginning of stat run)
+        :return: None
+        """
+
         self.pops = np.zeros((p.num_rovers, self.total_pop_size, self.policy_size))
         self.parent_pop = np.zeros((p.num_rovers, p.parent_pop_size, self.policy_size))
         self.offspring_pop = np.zeros((p.num_rovers, p.offspring_pop_size, self.policy_size))
@@ -41,6 +50,10 @@ class Ccea:
         self.combine_pops()
 
     def select_policy_teams(self):  # Create policy teams for testing
+        """
+        Choose teams of individuals from among populations to be tested
+        :return: None
+        """
         self.team_selection = np.ones((p.num_rovers, self.total_pop_size)) * (-1)
 
         for pop_id in range(p.num_rovers):
@@ -55,6 +68,10 @@ class Ccea:
                 self.team_selection[pop_id, policy_id] = rpol  # Assign policy to team
 
     def mutate(self):  # Mutate policy based on probability
+        """
+        Mutate offspring populations
+        :return: None
+        """
         for pop_index in range(p.num_rovers):
             policy_index = 0
             mutate_n = int(p.percentage_mut * self.policy_size)
@@ -72,6 +89,10 @@ class Ccea:
                 policy_index += 1
 
     def epsilon_greedy_select(self):  # Choose K solutions
+        """
+        Select parents from which an offspring population will be created
+        :return: None
+        """
         for pop_id in range(p.num_rovers):
             policy_id = 0
             while policy_id < p.parent_pop_size:
@@ -85,12 +106,20 @@ class Ccea:
                 policy_id += 1
 
     def down_select(self):  # Create a new offspring population using parents from top 50% of policies
+        """
+        Select parent,s create offspring population, and perform mutation operations
+        :return: None
+        """
         self.epsilon_greedy_select()  # Select K solutions using epsilon greedy
         self.offspring_pop = self.parent_pop.copy()  # Produce K offspring
         self.mutate()  # Mutate offspring population
         self.combine_pops()
 
     def combine_pops(self):
+        """
+        Combine parent and offspring populations into single population array
+        :return: None
+        """
         for pop_id in range(p.num_rovers):
             off_pol_id = 0
             for pol_id in range(self.total_pop_size):

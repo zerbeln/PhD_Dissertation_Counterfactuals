@@ -1,8 +1,0 @@
-cd SD++
-python3 main.py
-cd ../D++
-python3 main.py
-cd ../Difference
-python3 main.py
-cd ../Global
-python3 main.py

@@ -29,7 +29,7 @@ class RoverDomain:
 
     def inital_world_setup(self):
         """
-        Set rover starting positions, POI positions and values
+        Set rover starting positions, POI positions and POI values
         :return: none
         """
 
@@ -53,16 +53,19 @@ class RoverDomain:
             self.poi_values = init_poi_values_txt_file()
 
         self.istep = 0
-        # Rover path trace for trajectory-wide global reward computation and vizualization purposes
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))  # Tracks rover trajectories
         self.poi_rewards = np.zeros(p.num_pois)
 
-        for rover_id in range(self.num_agents):  # Record intial positions
+        for rover_id in range(self.num_agents):  # Record intial positions in rover path
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
     def save_world_configuration(self):
+        """
+        Saves world configuration to a txt files in a folder called Output_Data
+        :Output: Three txt files for Rover starting positions, POI postions, and POI values
+        """
         dir_name = 'Output_Data/'  # Intended directory for output files
         nrovers = p.num_rovers
 
@@ -98,30 +101,6 @@ class RoverDomain:
         poi_coords.close()
         poi_values.close()
 
-    def reset_world(self):
-        """
-        Changes rovers' starting positions and POI positions and values according to specified functions
-        :return: none
-        """
-        # Initialize rover positions
-        self.rover_pos = init_rover_positions_random_concentrated()
-        self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
-
-        # Rover path trace for trajectory-wide global reward computation and vizualization purposes
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
-
-        # Initialize POI positions and values
-        self.poi_pos = init_poi_positions_random(self.rover_pos)
-        self.poi_values = init_poi_values_random()
-        self.poi_rewards = np.zeros(p.num_pois)
-
-        self.istep = 0
-
-        for rover_id in range(self.num_agents):  # Record intial positions
-            self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
-            self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
-            self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
-
     def reset_to_init(self):
         """
         Resets rovers to starting positions (does not alter the world's initial state)
@@ -132,7 +111,7 @@ class RoverDomain:
         self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
         self.istep = 0
 
-        for rover_id in range(self.num_agents):  # Record initial positions
+        for rover_id in range(self.num_agents):  # Record initial positions in rover path
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
@@ -147,10 +126,6 @@ class RoverDomain:
 
         # Update rover positions
         for rover_id in range(self.num_agents):
-            # assert(joint_action[rover_id, 0] <= 1.0)
-            # assert(joint_action[rover_id, 0] >= -1.0)
-            # assert(joint_action[rover_id, 1] <= 1.0)
-            # assert(joint_action[rover_id, 1] >= -1.0)
 
             x = joint_action[rover_id, 0]
             y = joint_action[rover_id, 1]
@@ -228,7 +203,6 @@ class RoverDomain:
             for other_rover_id in range(p.num_rovers):
                 if other_rover_id == rover_id: # Ignore self
                     continue
-                # assert(other_rover_id != rover_id)
                 rov_x = self.rover_pos[other_rover_id, 0]
                 rov_y = self.rover_pos[other_rover_id, 1]
                 angle, dist = self.get_angle_dist(self_x, self_y, rov_x, rov_y)
