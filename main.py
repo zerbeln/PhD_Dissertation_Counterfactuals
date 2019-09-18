@@ -105,8 +105,6 @@ def run_homogeneous_rovers():
 
             if gen == (p.generations-1):  # Save path at end of final generation
                 save_rover_path(rd.rover_path)
-                if p.visualizer_on:
-                    visualize(rd, global_reward)
 
             cc.down_select()  # Choose new parents and create new offspring population
 
