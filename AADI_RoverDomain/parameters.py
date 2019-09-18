@@ -15,6 +15,9 @@ class Parameters:
     generations = 1000  # Number of generations for CCEA in each stat run
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
 
+    # Visualizer
+    running = False  # True keeps visualizer from closing until you 'X' out of window
+
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
     num_rovers = 10  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)

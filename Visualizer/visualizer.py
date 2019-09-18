@@ -6,6 +6,7 @@ import numpy as np
 import time
 import math
 import sys
+import os
 sys.path.append('../')
 from AADI_RoverDomain.parameters import Parameters as p
 
@@ -176,11 +177,17 @@ def run_visualizer(episode_reward, srun):
     draw(game_display, scoresurface, x_map*scale_factor-500, 20)
     pygame.display.update()
 
-    running = True  # Keeps visualizer from closing until you 'X' out of window
-    while running:
+    dir_name = 'Screenshots/'  # Intended directory for output files
+    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
+        os.makedirs(dir_name)
+    image_name = "Screenshot_SR" + str(srun) + ".jpg"
+    screenshot_filename = os.path.join(dir_name, image_name)
+
+    pygame.image.save(game_display, screenshot_filename)
+    while p.running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                p.running = False
 
 
 for srun in range(p.stat_runs):
