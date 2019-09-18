@@ -5,6 +5,8 @@ import pygame
 import numpy as np
 import time
 import math
+import sys
+sys.path.append('../')
 from AADI_RoverDomain.parameters import Parameters as p
 
 pygame.font.init()  # you have to call this at the start, if you want to use this module
@@ -15,7 +17,7 @@ def draw(display, obj, x, y):
     display.blit(obj, (x, y))  # Correct for center of mass shift
 
 
-def generate_color_array(num_colors): #generates num random colors
+def generate_color_array(num_colors):  # Generates num random colors
     color_arr = []
     
     for i in range(num_colors):
@@ -25,8 +27,7 @@ def generate_color_array(num_colors): #generates num random colors
 
 def import_rover_paths():
     rover_paths = np.zeros((p.stat_runs, (p.num_steps+1), p.num_rovers, 2))
-
-    posFile = open('Output_Data/Rover_Paths.txt', 'r')
+    posFile = open('../Output_Data/Rover_Paths.txt', 'r')
 
     sr = 0
     rover_id = 0
@@ -55,16 +56,15 @@ def import_rover_paths():
     return rover_paths
 
 def import_poi_positions():
-
     poi_positions = np.zeros((p.num_pois, 2))
 
-    with open('Output_Data/POI_Positions.txt') as f:
+    with open('../Output_Data/POI_Positions.txt') as f:
         for i, l in enumerate(f):
             pass
 
     line_count = i + 1
 
-    posFile = open('Output_Data/POI_Positions.txt', 'r')
+    posFile = open('../Output_Data/POI_Positions.txt', 'r')
 
     count = 1
     coordMat = []
@@ -77,17 +77,15 @@ def import_poi_positions():
 
     prev_pos = np.reshape(coordMat, (p.num_pois, 2))
 
-    for ii in range(p.num_pois):
-        poi_positions[ii, 0] = prev_pos[ii, 0]
-        poi_positions[ii, 1] = prev_pos[ii, 1]
+    for poi_id in range(p.num_pois):
+        poi_positions[poi_id, 0] = prev_pos[poi_id, 0]
+        poi_positions[poi_id, 1] = prev_pos[poi_id, 1]
 
     return poi_positions
 
 def import_poi_values():
-
     poi_vals = np.zeros(p.num_pois)
-
-    poi_val_file = open('Output_Data/POI_Values.txt', 'r')
+    poi_val_file = open('../Output_Data/POI_Values.txt', 'r')
 
     value_mat = []
     for line in poi_val_file:
@@ -111,10 +109,10 @@ def run_visualizer(episode_reward, srun):
     pygame.init()
     game_display = pygame.display.set_mode((x_map*scale_factor, y_map*scale_factor))
     pygame.display.set_caption('Rover Domain')
-    robot_image = pygame.image.load('./AADI_RoverDomain/robot.png')
-    background = pygame.image.load('./AADI_RoverDomain/background.png')
-    greenflag = pygame.image.load('./AADI_RoverDomain/greenflag.png')
-    redflag = pygame.image.load('./AADI_RoverDomain/redflag.png')
+    robot_image = pygame.image.load('./robot.png')
+    background = pygame.image.load('./background.png')
+    greenflag = pygame.image.load('./greenflag.png')
+    redflag = pygame.image.load('./redflag.png')
     color_array = generate_color_array(p.num_rovers)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)

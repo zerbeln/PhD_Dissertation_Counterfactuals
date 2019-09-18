@@ -4,7 +4,6 @@ from AADI_RoverDomain.parameters import Parameters as p
 from AADI_RoverDomain.rover_domain import RoverDomain
 import Python_Code.homogeneous_rewards as homr
 import csv; import os; import sys
-from AADI_RoverDomain.visualizer import visualize
 import numpy as np
 
 

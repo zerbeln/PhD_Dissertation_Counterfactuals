@@ -13,7 +13,6 @@ class Parameters:
     # Run Parameters
     stat_runs = 30
     generations = 1000  # Number of generations for CCEA in each stat run
-    visualizer_on = False  # Turn visualizer on or off (TURN OFF FOR MULTIPLE STAT RUNS)
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
 
     # Domain parameters
