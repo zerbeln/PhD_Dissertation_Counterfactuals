@@ -292,7 +292,7 @@ def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward):
                         observer_count += 1
 
                 # Add in counterfactual partners
-                added_observers = low_value_pois(rover_distances[agent_id], poi_id, poi_values, n_counters)
+                added_observers = value_based_suggestions(rover_distances[agent_id], poi_id, poi_values, n_counters)
                 for partner_id in range(n_counters):
                     rover_distances[p.num_rovers + partner_id] = added_observers[partner_id]
 
@@ -346,7 +346,7 @@ def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward):
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        added_observers = low_value_pois(rover_distances[agent_id], poi_id, poi_values, n_counters)
+                        added_observers = value_based_suggestions(rover_distances[agent_id], poi_id, poi_values, n_counters)
                         for partner_id in range(n_counters):
                             rover_distances[p.num_rovers + partner_id] = added_observers[partner_id]
 

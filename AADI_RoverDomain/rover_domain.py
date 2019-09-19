@@ -40,7 +40,7 @@ class RoverDomain:
 
             # Initialize POI positions and values
             self.poi_pos = init_poi_positions_random(self.rover_pos)
-            self.poi_values = init_poi_values_random()
+            self.poi_values = init_poi_values_fixed_ascending()
 
             self.save_world_configuration()
         else:
@@ -287,17 +287,13 @@ class RoverDomain:
         Calculates global reward for current world state.
         :return: global_reward
         """
-        number_agents = p.num_rovers
-        number_pois = p.num_pois
-        inf = 1000.00
         global_reward = 0.0
 
-        for poi_id in range(number_pois):
+        for poi_id in range(p.num_pois):
             rover_distances = np.zeros(p.num_rovers)
             observer_count = 0
-            summed_observer_distances = 0.0
 
-            for agent_id in range(number_agents):
+            for agent_id in range(p.num_rovers):
                 # Calculate distance between agent and POI
                 x_distance = self.poi_pos[poi_id, 0] - self.rover_pos[agent_id, 0]
                 y_distance = self.poi_pos[poi_id, 1] - self.rover_pos[agent_id, 1]
@@ -314,11 +310,6 @@ class RoverDomain:
 
             # Update global reward if POI is observed
             if observer_count >= p.coupling:
-                for observer in range(p.coupling):
-                    summed_observer_distances += min(rover_distances)
-                    od_index = np.argmin(rover_distances)
-                    rover_distances[od_index] = inf
-
-                global_reward += self.poi_values[poi_id] / ((1 / p.coupling) * summed_observer_distances)
+                global_reward += self.poi_values[poi_id]
 
         return global_reward

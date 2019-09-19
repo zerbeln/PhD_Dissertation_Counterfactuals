@@ -91,10 +91,10 @@ def init_rover_pos_txt_file():
 
     prev_pos = np.reshape(coordMat, (p.num_rovers, 3))
 
-    for ii in range(p.num_rovers):
-        rover_positions[ii, 0] = prev_pos[ii, 0]
-        rover_positions[ii, 1] = prev_pos[ii, 1]
-        rover_positions[ii, 2] = prev_pos[ii, 2]
+    for rover_id in range(p.num_rovers):
+        rover_positions[rover_id, 0] = prev_pos[rover_id, 0]
+        rover_positions[rover_id, 1] = prev_pos[rover_id, 1]
+        rover_positions[rover_id, 2] = prev_pos[rover_id, 2]
 
     return rover_positions
 
@@ -212,9 +212,9 @@ def init_poi_positions_txt_file():
 
     prev_pos = np.reshape(coordMat, (p.num_pois, 2))
 
-    for ii in range(p.num_pois):
-        poi_positions[ii, 0] = prev_pos[ii, 0]
-        poi_positions[ii, 1] = prev_pos[ii, 1]
+    for poi_id in range(p.num_pois):
+        poi_positions[poi_id, 0] = prev_pos[poi_id, 0]
+        poi_positions[poi_id, 1] = prev_pos[poi_id, 1]
 
     return poi_positions
 

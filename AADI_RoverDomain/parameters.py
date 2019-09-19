@@ -11,7 +11,7 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 30
+    stat_runs = 10
     generations = 1000  # Number of generations for CCEA in each stat run
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
 
@@ -20,7 +20,7 @@ class Parameters:
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
-    num_rovers = 10  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+    num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     coupling = 3  # Number of rovers required to view a POI for credit
     num_pois = 10  # Number of POIs on map
     num_steps = 20  # Number of steps rovers take each episode
@@ -29,7 +29,7 @@ class Parameters:
     y_dim = 30  # Y-Dimension of the rover map
     min_observation_dist = 3.0  # Minimum distance rovers must be to observe POIs
     angle_resolution = 90  # Resolution of sensors (determines number of sectors)
-    sensor_model = "summed"  # Should either be "density" or "closest"
+    sensor_model = "summed"  # Should either be "density" or "closest" or "summed"
 
     # Neural network parameters
     num_inputs = 8
@@ -40,10 +40,8 @@ class Parameters:
     mutation_rate = 0.1  # Probability that a member of the offspring population will be mutated
     percentage_mut = 0.01  # Percentage of bits which get flipped in an individual
     epsilon = 0.1  # For e-greedy selection in CCEA
-    parent_pop_size = 15
+    parent_pop_size = 20
     offspring_pop_size = 5
-    n_bits = 11  # Number of bits used to express a single weight in binary ccea
-    ccea_type = "normal"  # "normal" or "binary"
 
     # User specific parameters
-    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"

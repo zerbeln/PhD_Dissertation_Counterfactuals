@@ -44,23 +44,8 @@ class NeuralNetwork:
         :return: None
         """
 
-        if p.ccea_type == "binary":
-            # The reason for -1 is because the final bit is used only to determine positive or negative
-            max_value = (2**(p.n_bits-1)) - 1  # Maximum number which can be expressed by binary string of n_bits
-
-            for w in range(self.n_weights):
-                num = 0
-                for bit_id in range(p.n_bits):
-                    if bit_id < p.n_bits-1:
-                        num += nn_weights[bit_id + p.n_bits*w] * (2**bit_id)
-                    else:
-                        if nn_weights[bit_id + p.n_bits*w] == 0:
-                            num *= -1
-                num /= max_value
-                self.weights[rov_id, w] = num
-        else:
-            for w in range(self.n_weights):
-                self.weights[rov_id, w] = nn_weights[w]
+        for w in range(self.n_weights):
+            self.weights[rov_id, w] = nn_weights[w]
 
     def reset_layers(self, rov_id):  # Clear hidden layers and output layers
         """
