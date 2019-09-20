@@ -55,7 +55,7 @@ def high_value_only(rover_dist, poi_id, poi_values, n_counters):
 
     return partners
 
-def low_value_pois(rover_dist, poi_id, poi_values, n_counters):
+def low_value_only(rover_dist, poi_id, poi_values, n_counters):
     """
     Suggestions give rover stepping stone reward only for low value POIs
     :param rover_dist:

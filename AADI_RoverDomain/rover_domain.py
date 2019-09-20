@@ -40,7 +40,7 @@ class RoverDomain:
 
             # Initialize POI positions and values
             self.poi_pos = init_poi_positions_random(self.rover_pos)
-            self.poi_values = init_poi_values_fixed_ascending()
+            self.poi_values = init_poi_values_random()
 
             self.save_world_configuration()
         else:
