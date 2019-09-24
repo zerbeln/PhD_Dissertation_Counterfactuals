@@ -52,7 +52,6 @@ def calc_global(rover_paths, poi_values, poi_positions):
 
     for poi_id in range(p.num_pois):
         if poi_observed[poi_id] == True:
-            # global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
             global_reward += poi_values[poi_id]
 
     return global_reward
@@ -117,8 +116,7 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
             if poi_observed[poi_id] == True:
-                # counterfactual_global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/p.coupling)
-                counterfactual_global_reward += poi_values[poi_id]
+                counterfactual_global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/p.coupling)
         difference_rewards[agent_id] = global_reward - counterfactual_global_reward
 
     return difference_rewards
@@ -188,8 +186,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
             if poi_observed[poi_id] == True:
-                # counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
-                counterfactual_global_reward += poi_values[poi_id]
+                counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(p.num_rovers):
@@ -242,8 +239,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                 counterfactual_global_reward = 0.0
                 for poi_id in range(p.num_pois):
                     if poi_observed[poi_id] == True:
-                        # counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
-                        counterfactual_global_reward += poi_values[poi_id]
+                        counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
                 temp_dpp_reward = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] < temp_dpp_reward:
                     dpp_rewards[agent_id] = temp_dpp_reward
@@ -317,8 +313,7 @@ def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward):
         counterfactual_global_reward = 0.0
         for poi_id in range(p.num_pois):
             if poi_observed[poi_id] == True:
-                # counterfactual_global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/p.coupling)
-                counterfactual_global_reward += poi_values[poi_id]
+                counterfactual_global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/p.coupling)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(p.num_rovers):
@@ -372,8 +367,7 @@ def calc_sdpp(rover_paths, poi_values, poi_positions, global_reward):
                 counterfactual_global_reward = 0.0
                 for poi_id in range(p.num_pois):
                     if poi_observed[poi_id] == True:
-                        # counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
-                        counterfactual_global_reward += poi_values[poi_id]
+                        counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/p.coupling)
                 temp_dpp_reward = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] < temp_dpp_reward:
                     dpp_rewards[agent_id] = temp_dpp_reward
