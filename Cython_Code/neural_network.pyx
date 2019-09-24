@@ -41,10 +41,10 @@ cdef class NeuralNetwork:
             self.in_layer[rov_id, i] = state_vec[i]
 
     cdef get_weights(self, nn_weights, rov_id):  # Get weights from CCEA population
-        cdef int i
+        cdef int w
 
-        for i in range(self.n_weights):
-            self.weights[rov_id, i] = nn_weights[i]
+        for w in range(self.n_weights):
+            self.weights[rov_id, w] = nn_weights[w]
 
     cdef reset_layers(self, rov_id):  # Clear hidden layers and output layers
         cdef int i, j
@@ -59,6 +59,9 @@ cdef class NeuralNetwork:
 
         count = 0  # Keeps count of which weight is being applied
         self.reset_layers(rov_id)
+
+        # for i in range(self.n_inputs):
+        #     self.in_layer[rov_id, i] = self.tanh(self.in_layer[rov_id, i])
 
         for i in range(self.n_inputs):  # Pass inputs to hidden layer
             for j in range(self.n_nodes):

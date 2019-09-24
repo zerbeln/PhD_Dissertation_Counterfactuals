@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import sys
 from AADI_RoverDomain.parameters import Parameters as p
 
 def low_high_split(rover_dist, rover_id, poi_id, poi_values, n_counters):
@@ -78,7 +79,7 @@ def low_value_only(rover_dist, poi_id, poi_values, n_counters):
     return partners
 
 
-def value_based_suggestions(rover_dist, poi_id, poi_values, n_counters):
+def value_based_incentives(rover_dist, poi_id, poi_values, n_counters):
     """
     Partners are placed close to high value POIs to generate larger stepping stone reward
     Partners are placed further away from low value POIs to generate smaller stepping stone reward
@@ -105,7 +106,7 @@ def value_based_suggestions(rover_dist, poi_id, poi_values, n_counters):
 
     return partners
 
-def team_member_based_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id):
+def partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id):
     """
     Partner suggestions based on rover proximity to other rovers
     :param rover_dist:
@@ -145,5 +146,26 @@ def team_member_based_suggestions(rover_dist, n_counters, self_id, rover_paths, 
     else:
         for partner_id in range(npartners):
             partners[partner_id] = p.min_distance
+
+    return partners
+
+def get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, step_id):
+    partners = np.zeros(n_counters)
+
+    if p.suggestion_type == "none":
+        for partner_id in range(n_counters):
+            partners[partner_id] = rover_dist
+    elif p.suggestion_type == "high_val":
+        partners = high_value_only(rover_dist, poi_id, poi_values, n_counters)
+    elif p.suggestion_type == "low_val":
+        partners = low_value_only(rover_dist, poi_id, poi_values, n_counters)
+    elif p.suggestion_type == "high_low":
+        partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters)
+    elif p.suggestion_type == "value_incentives":
+        partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters)
+    elif p.suggestion_type == "partner_proximity":
+        partners = partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id)
+    else:
+        sys.exit('Incorrect Suggestion Type')
 
     return partners

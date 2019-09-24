@@ -12,8 +12,9 @@ class Parameters:
 
     # Run Parameters
     stat_runs = 10
-    generations = 1000  # Number of generations for CCEA in each stat run
+    generations = 800  # Number of generations for CCEA in each stat run
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
+    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP"
 
     # Visualizer
     running = False  # True keeps visualizer from closing until you 'X' out of window
@@ -44,4 +45,7 @@ class Parameters:
     offspring_pop_size = 5
 
     # User specific parameters
-    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    """
+    Suggestions: high_val, low_val, high_low, value_incentives, partner_proximity, or none
+    """
+    suggestion_type = "none"

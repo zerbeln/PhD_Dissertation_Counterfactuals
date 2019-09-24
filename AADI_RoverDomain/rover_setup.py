@@ -101,6 +101,7 @@ def init_rover_pos_txt_file():
 
 ### POI SETUP FUNCTIONS ###########################################################
 
+# POI POSITION FUNCTIONS ------------------------------------------------------------------------------------------
 def init_poi_positions_random(rover_positions):  # Randomly set POI on the map
     """
     POI positions set randomly across the map (but not in range of any rover)
@@ -237,6 +238,75 @@ def init_poi_values_txt_file():
     return poi_vals
 
 
+def init_poi_pos_random_inner_square_outer():
+    num_pois = p.num_pois
+    num_outer_pois = 4
+    num_inner_pois = num_pois - num_outer_pois
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = 0.0  # Bottom left
+    poi_positions[1, 0] = 0.0; poi_positions[1, 1] = (p.y_dim - 1.0)  # Top left
+    poi_positions[2, 0] = (p.x_dim - 1.0); poi_positions[2, 1] = 0.0  # Bottom right
+    poi_positions[3, 0] = (p.x_dim - 1.0); poi_positions[3, 1] = (p.y_dim - 1.0)  # Top right
+
+    for i in range(4, num_pois):
+        poi_positions[i, 0] = random.uniform(p.x_dim / 4, 3 * p.x_dim / 4)
+        poi_positions[i, 1] = random.uniform(p.y_dim / 4, 3 * p.y_dim / 4)
+
+    return poi_positions
+
+
+def init_poi_pos_twelve_grid():
+
+    assert(p.num_pois == 12)
+
+    poi_positions = np.zeros((p.num_pois, 2))
+    poi_id = 0
+
+    for i in range(4):
+        for j in range(3):
+            poi_positions[poi_id, 0] = j * ((p.x_dim - 10) / 2)
+            poi_positions[poi_id, 1] = i * (p.y_dim / 3)
+
+            poi_id += 1
+
+    return poi_positions
+
+
+def init_poi_concentric_squares_pos():
+
+    assert(p.num_pois == 8)
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    poi_positions[0, 0] = (p.x_dim / 2) - 5
+    poi_positions[0, 1] = (p.y_dim / 2) - 5
+
+    poi_positions[1, 0] = (p.x_dim / 2) + 5
+    poi_positions[1, 1] = (p.y_dim / 2) - 5
+
+    poi_positions[2, 0] = (p.x_dim / 2) - 5
+    poi_positions[2, 1] = (p.y_dim / 2) + 5
+
+    poi_positions[3, 0] = (p.x_dim / 2) + 5
+    poi_positions[3, 1] = (p.y_dim / 2) + 5
+
+    poi_positions[4, 0] = (p.x_dim / 2) - 10
+    poi_positions[4, 1] = (p.y_dim / 2) - 10
+
+    poi_positions[5, 0] = (p.x_dim / 2) + 10
+    poi_positions[5, 1] = (p.y_dim / 2) - 10
+
+    poi_positions[6, 0] = (p.x_dim / 2) - 10
+    poi_positions[6, 1] = (p.y_dim / 2) + 10
+
+    poi_positions[7, 0] = (p.x_dim / 2) + 10
+    poi_positions[7, 1] = (p.y_dim / 2) + 10
+
+    return poi_positions
+
+# POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
 def init_poi_values_random():
     """
     POI values randomly assigned 1-10
@@ -290,23 +360,22 @@ def init_poi_values_half_and_half():
 
     return poi_vals
 
-def init_poi_pos_random_inner_square_outer():
-    num_pois = p.num_pois
-    num_outer_pois = 4
-    num_inner_pois = num_pois - num_outer_pois
+def init_poi_concentric_squares_vals():
 
-    poi_positions = np.zeros((p.num_pois, 2))
+    assert(p.num_pois == 8)
+    poi_vals = np.zeros(p.num_pois)
 
-    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = 0.0  # Bottom left
-    poi_positions[1, 0] = 0.0; poi_positions[1, 1] = (p.y_dim - 1.0)  # Top left
-    poi_positions[2, 0] = (p.x_dim - 1.0); poi_positions[2, 1] = 0.0  # Bottom right
-    poi_positions[3, 0] = (p.x_dim - 1.0); poi_positions[3, 1] = (p.y_dim - 1.0)  # Top right
+    poi_vals[0] = 1.0
+    poi_vals[1] = 1.0
+    poi_vals[2] = 1.0
+    poi_vals[3] = 1.0
 
-    for i in range(4, num_pois):
-        poi_positions[i, 0] = random.uniform(p.x_dim / 4, 3 * p.x_dim / 4)
-        poi_positions[i, 1] = random.uniform(p.y_dim / 4, 3 * p.y_dim / 4)
+    poi_vals[4] = 10.0
+    poi_vals[5] = 10.0
+    poi_vals[6] = 10.0
+    poi_vals[7] = 10.0
 
-    return poi_positions
+    return poi_vals
 
 def init_poi_val_random_inner_square_outer():
     poi_vals = np.zeros(p.num_pois)
@@ -319,69 +388,18 @@ def init_poi_val_random_inner_square_outer():
 
     return poi_vals
 
-
-def init_poi_pos_twelve_grid():
-
-    assert(p.num_pois == 12)
-
-    poi_positions = np.zeros((p.num_pois, 2))
-    poi_id = 0
-
-    for i in range(4):
-        for j in range(3):
-            poi_positions[poi_id, 0] = j * ((p.x_dim - 10) / 2)
-            poi_positions[poi_id, 1] = i * (p.y_dim / 3)
-
-            poi_id += 1
-
-    return poi_positions
-
-
-def init_poi_concentric_squares_pos():
-
-    assert(p.num_pois == 8)
-
-    poi_positions = np.zeros((p.num_pois, 2))
-
-    poi_positions[0, 0] = (p.x_dim / 2) - 5
-    poi_positions[0, 1] = (p.y_dim / 2) - 5
-
-    poi_positions[1, 0] = (p.x_dim / 2) + 5
-    poi_positions[1, 1] = (p.y_dim / 2) - 5
-
-    poi_positions[2, 0] = (p.x_dim / 2) - 5
-    poi_positions[2, 1] = (p.y_dim / 2) + 5
-
-    poi_positions[3, 0] = (p.x_dim / 2) + 5
-    poi_positions[3, 1] = (p.y_dim / 2) + 5
-
-    poi_positions[4, 0] = (p.x_dim / 2) - 10
-    poi_positions[4, 1] = (p.y_dim / 2) - 10
-
-    poi_positions[5, 0] = (p.x_dim / 2) + 10
-    poi_positions[5, 1] = (p.y_dim / 2) - 10
-
-    poi_positions[6, 0] = (p.x_dim / 2) - 10
-    poi_positions[6, 1] = (p.y_dim / 2) + 10
-
-    poi_positions[7, 0] = (p.x_dim / 2) + 10
-    poi_positions[7, 1] = (p.y_dim / 2) + 10
-
-    return poi_positions
-
-def init_poi_concentric_squares_vals():
-
-    assert(p.num_pois == 8)
+def init_poi_val_four_corners():
     poi_vals = np.zeros(p.num_pois)
+    assert(p.num_pois == 4)
 
-    poi_vals[0] = 4
-    poi_vals[1] = 4
-    poi_vals[2] = 4
-    poi_vals[3] = 4
-
-    poi_vals[4] = 20
-    poi_vals[5] = 20
-    poi_vals[6] = 20
-    poi_vals[7] = 20
+    for poi_id in range(4):
+        if poi_id == 0:
+            poi_vals[poi_id] = 1.0
+        elif poi_id == 1:
+            poi_vals[poi_id] = 5.0
+        elif poi_id == 2:
+            poi_vals[poi_id] = 6.0
+        else:
+            poi_vals[poi_id] = 10.0
 
     return poi_vals

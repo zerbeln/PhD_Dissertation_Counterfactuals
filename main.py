@@ -41,6 +41,7 @@ def run_homogeneous_rovers():
 
     rtype = p.reward_type
     rd.inital_world_setup()
+    print("Reward Type: ", p.reward_type)
 
     for srun in range(p.stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
@@ -81,11 +82,6 @@ def run_homogeneous_rovers():
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
-                elif rtype == "SDPP":
-                    sdpp_reward = homr.calc_sdpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
-                    for rover_id in range(p.num_rovers):
-                        policy_id = int(cc.team_selection[rover_id, team_number])
-                        cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
                 else:
                     sys.exit('Incorrect Reward Type')
 
@@ -111,9 +107,9 @@ def run_homogeneous_rovers():
             save_reward_history(reward_history, "Global_Reward.csv")
         if rtype == "Difference":
             save_reward_history(reward_history, "Difference_Reward.csv")
-        if rtype == 'DPP':
+        if rtype == 'DPP' and p.suggestion_type == "none":
             save_reward_history(reward_history, "DPP_Reward.csv")
-        if rtype == "SDPP":
+        if rtype == 'DPP' and p.suggestion_type != "none":
             save_reward_history(reward_history, "SDPP_Reward.csv")
 
 

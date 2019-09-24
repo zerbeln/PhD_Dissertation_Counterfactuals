@@ -13,7 +13,7 @@ class Ccea:
         self.parent_pop = np.zeros((p.num_rovers, p.parent_pop_size, self.policy_size))
         self.offspring_pop = np.zeros((p.num_rovers, p.offspring_pop_size, self.policy_size))
         self.fitness = np.zeros((p.num_rovers, self.total_pop_size))
-        self.team_selection = np.ones((p.num_rovers, p.parent_pop_size)) * (-1)
+        self.team_selection = np.ones((p.num_rovers, self.total_pop_size)) * (-1)
 
     def reset_populations(self):  # Re-initializes CCEA populations for new run
         """
@@ -25,7 +25,7 @@ class Ccea:
         self.parent_pop = np.zeros((p.num_rovers, p.parent_pop_size, self.policy_size))
         self.offspring_pop = np.zeros((p.num_rovers, p.offspring_pop_size, self.policy_size))
         self.fitness = np.zeros((p.num_rovers, self.total_pop_size))
-        self.team_selection = np.ones((p.num_rovers, p.parent_pop_size)) * (-1)
+        self.team_selection = np.ones((p.num_rovers, self.total_pop_size)) * (-1)
 
         for pop_index in range(p.num_rovers):
             for policy_index in range(p.parent_pop_size):
