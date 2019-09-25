@@ -1,8 +1,14 @@
-import Python_Code.ccea as ccea
-import Python_Code.neural_net as neural_network
+# import Python_Code.ccea as ccea
+# import Python_Code.neural_net as neural_network
+# import Python_Code.homogeneous_rewards as homr
+
+import pyximport; pyximport.install()
+from Cython_Code.ccea import Ccea
+from Cython_Code.neural_network import NeuralNetwork
+from Cython_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
+
 from AADI_RoverDomain.parameters import Parameters as p
 from AADI_RoverDomain.rover_domain import RoverDomain
-import Python_Code.homogeneous_rewards as homr
 import csv; import os; import sys
 import numpy as np
 
@@ -35,8 +41,12 @@ def save_rover_path(rover_path):  # Save path rovers take using best policy foun
 
 # HOMOGENEOUS ROVER TEAMS ---------------------------------------------------------------------------------------------
 def run_homogeneous_rovers():
-    cc = ccea.Ccea()
-    nn = neural_network.NeuralNetwork()
+    # cc = ccea.Ccea()
+    # nn = neural_network.NeuralNetwork()
+    # rd = RoverDomain()
+
+    cc = Ccea()
+    nn = NeuralNetwork()
     rd = RoverDomain()
 
     rtype = p.reward_type
@@ -67,18 +77,18 @@ def run_homogeneous_rovers():
                     joint_state, done = rd.step(nn.out_layer)
 
                 # Update fitness of policies using reward information
-                global_reward = homr.calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
+                global_reward = calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
                 if rtype == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_reward
                 elif rtype == "Difference":
-                    d_reward = homr.calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                    d_reward = calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
                 elif rtype == "DPP":
-                    dpp_reward = homr.calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                    dpp_reward = calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
@@ -95,7 +105,7 @@ def run_homogeneous_rovers():
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
 
-            global_reward = homr.calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
+            global_reward = calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
             reward_history.append(global_reward)
 
             if gen == (p.generations-1):  # Save path at end of final generation

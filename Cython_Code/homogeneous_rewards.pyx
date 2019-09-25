@@ -24,7 +24,7 @@ cpdef calc_global(rover_paths, poi_values, poi_positions):
 
     cdef double [:] rover_distances
     cdef double [:, :] poi_observer_distances = np.zeros((npoi, total_steps))
-    cdef int [:] poi_observed = np.zeros(npoi)
+    cdef double [:] poi_observed = np.zeros(npoi)
 
     for poi_id in range(npoi):
         for step_index in range(total_steps):
@@ -90,7 +90,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
     cdef double [:] difference_rewards = np.zeros(nrovers)
     cdef double [:] rover_distances
     cdef double [:, :] poi_observer_distances
-    cdef int [:] poi_observed
+    cdef double [:] poi_observed
 
     for agent_id in range(nrovers):  # For each rover
         poi_observer_distances = np.zeros((npoi, total_steps))  # Tracks summed observer distances
@@ -168,7 +168,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     cdef double [:] observer_distances
     cdef double [:] counterfactual_agents
     cdef double [:, :] poi_observer_distances
-    cdef int [:] poi_observed
+    cdef double [:] poi_observed
 
     difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward)
     dpp_rewards = np.zeros(nrovers)

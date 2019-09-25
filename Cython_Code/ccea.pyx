@@ -8,7 +8,7 @@ cdef class Ccea:
     # Declare variables
     cdef int parent_psize
     cdef int offspring_psize
-    cdef int total_pop_size
+    cdef public int total_pop_size
     cdef int policy_size
     cdef int n_populations
     cdef double percent_mut
