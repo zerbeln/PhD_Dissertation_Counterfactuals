@@ -1,7 +1,7 @@
 import numpy as np
 from AADI_RoverDomain.parameters import Parameters as p
 import math
-from Python_Code.suggestions import get_counterfactual_partners
+from Cython_Code.suggestions import get_counterfactual_partners
 
 cpdef calc_global(rover_paths, poi_values, poi_positions):
     """
@@ -67,6 +67,14 @@ cpdef calc_global(rover_paths, poi_values, poi_positions):
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
 cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
+    """
+    Calcualte each rover's difference reward from entire rover trajectory
+    :param rover_paths:
+    :param poi_values:
+    :param poi_positions:
+    :param global_reward:
+    :return: difference_rewards (np array of size (n_rovers))
+    """
     cdef int nrovers = p.num_rovers
     cdef int npoi = p.num_pois
     cdef int cpl = p.coupling
@@ -134,6 +142,14 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
 
 # D++ REWARD ----------------------------------------------------------------------------------------------------------
 cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
+    """
+    Calculate D++ rewards for each rover across entire trajectory
+    :param rover_paths:
+    :param poi_values:
+    :param poi_positions:
+    :param global_reward:
+    :return: dpp_rewards (np array of size (n_rovers))
+    """
     cdef int nrovers = p.num_rovers
     cdef int npoi = p.num_pois
     cdef int cpl = p.coupling
@@ -150,6 +166,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     cdef double [:] dpp_rewards = np.zeros(nrovers)
     cdef double [:] observer_distances
     cdef double [:] counterfactual_agents
+    cdef bool [:] poi_observed
 
     difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward)
     dpp_rewards = np.zeros(nrovers)
