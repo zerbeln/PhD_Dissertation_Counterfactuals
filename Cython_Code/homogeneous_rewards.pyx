@@ -22,9 +22,9 @@ cpdef calc_global(rover_paths, poi_values, poi_positions):
     cdef double min_obs_dist = p.min_observation_dist
     cdef double global_reward = 0.0
 
-    cdef double [:] poi_observer_distances = np.zeros((npoi, total_steps))
     cdef double [:] rover_distances
-    cdef bool [:] poi_observed = [False for _ in range(npoi)]
+    cdef double [:, :] poi_observer_distances = np.zeros((npoi, total_steps))
+    cdef int [:] poi_observed = np.zeros(npoi)
 
     for poi_id in range(npoi):
         for step_index in range(total_steps):
@@ -48,7 +48,7 @@ cpdef calc_global(rover_paths, poi_values, poi_positions):
 
             # Update global reward if POI is observed
             if observer_count >= cpl:
-                poi_observed[poi_id] = True
+                poi_observed[poi_id] = 1
                 summed_observer_distances = 0.0
                 for observer in range(cpl):  # Sum distances of closest observers
                     summed_observer_distances += min(rover_distances)
@@ -59,7 +59,7 @@ cpdef calc_global(rover_paths, poi_values, poi_positions):
                 poi_observer_distances[poi_id, step_index] = inf
 
     for poi_id in range(npoi):
-        if poi_observed[poi_id] == True:
+        if poi_observed[poi_id] == 1:
             global_reward += poi_values[poi_id]
 
     return global_reward
@@ -89,11 +89,12 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
 
     cdef double [:] difference_rewards = np.zeros(nrovers)
     cdef double [:] rover_distances
-    cdef bool [:] poi_observed
+    cdef double [:, :] poi_observer_distances
+    cdef int [:] poi_observed
 
     for agent_id in range(nrovers):  # For each rover
         poi_observer_distances = np.zeros((npoi, total_steps))  # Tracks summed observer distances
-        poi_observed = [False for _ in range(npoi)]
+        poi_observed = np.zeros(npoi)
 
         for poi_id in range(npoi):  # For each POI
             for step_index in range(total_steps):  # For each step in trajectory
@@ -122,7 +123,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
                 # Determine if coupling is satisfied
                 if observer_count >= cpl:
                     summed_observer_distances = 0.0
-                    poi_observed[poi_id] = True
+                    poi_observed[poi_id] = 1
                     for observer in range(cpl):  # Sum distances of closest observers
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
@@ -133,7 +134,7 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
 
         counterfactual_global_reward = 0.0
         for poi_id in range(npoi):
-            if poi_observed[poi_id] == True:
+            if poi_observed[poi_id] == 1:
                 counterfactual_global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/cpl_double)
         difference_rewards[agent_id] = global_reward - counterfactual_global_reward
 
@@ -166,7 +167,8 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     cdef double [:] dpp_rewards = np.zeros(nrovers)
     cdef double [:] observer_distances
     cdef double [:] counterfactual_agents
-    cdef bool [:] poi_observed
+    cdef double [:, :] poi_observer_distances
+    cdef int [:] poi_observed
 
     difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward)
     dpp_rewards = np.zeros(nrovers)
@@ -175,7 +177,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     n_counters = cpl - 1
     for agent_id in range(nrovers):
         poi_observer_distances = np.zeros((npoi, total_steps))
-        poi_observed = [False for _ in range(npoi)]
+        poi_observed = np.zeros(npoi)
 
         for poi_id in range(npoi):
             for step_index in range(total_steps):
@@ -208,7 +210,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                 # Update whether or not POI has been observed
                 if observer_count >= cpl:
                     summed_observer_distances = 0.0
-                    poi_observed[poi_id] = True
+                    poi_observed[poi_id] = 1
                     for observer in range(cpl):  # Sum distances of closest observers
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
@@ -219,14 +221,14 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
 
         counterfactual_global_reward = 0.0
         for poi_id in range(npoi):
-            if poi_observed[poi_id] == True:
+            if poi_observed[poi_id] == 1:
                 counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(nrovers):
         if dpp_rewards[agent_id] > difference_rewards[agent_id]:
             poi_observer_distances = np.zeros((npoi, total_steps))
-            poi_observed = [False for _ in range(npoi)]
+            poi_observed = np.zeros(npoi)
 
             for n_counters in range(cpl-1):
                 if n_counters == 0:  # 0 counterfactual partnrs is identical to G
@@ -262,7 +264,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                         # Determine if coupling has been satisfied
                         if observer_count >= cpl:
                             summed_observer_distances = 0.0
-                            poi_observed[poi_id] = True
+                            poi_observed[poi_id] = 1
                             for observer in range(cpl):  # Sum distances of closest observers
                                 summed_observer_distances += min(rover_distances)
                                 od_index = np.argmin(rover_distances)
@@ -273,7 +275,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
 
                 counterfactual_global_reward = 0.0
                 for poi_id in range(npoi):
-                    if poi_observed[poi_id] == True:
+                    if poi_observed[poi_id] == 1:
                         counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
                 temp_dpp_reward = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] < temp_dpp_reward:

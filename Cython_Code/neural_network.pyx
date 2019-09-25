@@ -29,24 +29,45 @@ cdef class NeuralNetwork:
         self.hid_layer = np.zeros((self.n_rovers, self.n_nodes), dtype=np.float64)
         self.out_layer = np.zeros((self.n_rovers, self.n_outputs), dtype=np.float64)
 
-    cpdef reset_nn(self):  # Clear current network
+    cdef reset_nn(self):  # Clear current network
+        """
+        Clears neural network arrays so that they all contain zeros
+        :return: None
+        """
         self.weights = np.zeros((self.n_rovers, self.n_weights), dtype=np.float64)
         self.in_layer = np.zeros((self.n_rovers, self.n_inputs), dtype=np.float64)
         self.hid_layer = np.zeros((self.n_rovers, self.n_nodes), dtype=np.float64)
         self.out_layer = np.zeros((self.n_rovers, self.n_outputs), dtype=np.float64)
 
     cdef get_inputs(self, state_vec, rov_id):  # Get inputs from state-vector
+        """
+        Assign inputs from rover sensors to the input layer of the NN
+        :param state_vec: Inputs from rover sensors
+        :param rov_id: Current rover
+        :return: None
+        """
         cdef int i
         for i in range(self.n_inputs):
             self.in_layer[rov_id, i] = state_vec[i]
 
     cdef get_weights(self, nn_weights, rov_id):  # Get weights from CCEA population
+        """
+        Receive rover NN weights from CCEA
+        :param nn_weights:
+        :param rov_id:
+        :return: None
+        """
         cdef int w
 
         for w in range(self.n_weights):
             self.weights[rov_id, w] = nn_weights[w]
 
     cdef reset_layers(self, rov_id):  # Clear hidden layers and output layers
+        """
+        Zeros hidden layer and output layer of NN
+        :param rov_id:
+        :return: None
+        """
         cdef int i, j
 
         for i in range(self.n_nodes):
@@ -55,6 +76,11 @@ cdef class NeuralNetwork:
             self.out_layer[rov_id, j] = 0.0
 
     cdef get_outputs(self, rov_id):
+        """
+        Run NN to receive rover action outputs
+        :param rov_id:
+        :return: None
+        """
         cdef int count, i, j
 
         count = 0  # Keeps count of which weight is being applied
@@ -88,18 +114,35 @@ cdef class NeuralNetwork:
             self.out_layer[rov_id, i] = self.tanh(self.out_layer[rov_id, i])
 
     cdef tanh(self, double inp):  # Tanh function as activation function
+        """
+        NN activation function
+        :param inp: Node value in NN (pre-activation function)
+        :return: tanh value
+        """
         cdef double tanh
 
         tanh = (2/(1 + np.exp(-2*inp)))-1
         return tanh
 
     cdef sigmoid(self, double inp):  # Sigmoid function as activation function
+        """
+        NN activation function
+        :param inp: Node value in NN (pre-activation function)
+        :return: sigmoid value
+        """
         cdef double sig
 
         sig = 1/(1 + np.exp(-inp))
         return sig
 
-    cpdef run_neural_network(self, state_vec, weight_vec, rover_id):
+    cdef run_neural_network(self, state_vec, weight_vec, rover_id):
+        """
+        Run through NN for given rover
+        :param rover_input: Inputs from rover sensors
+        :param weight_vec:  Weights from CCEA
+        :param rover_id: Rover identifier
+        :return: None
+        """
         self.get_inputs(state_vec, rover_id)
         self.get_weights(weight_vec, rover_id)
         self.get_outputs(rover_id)

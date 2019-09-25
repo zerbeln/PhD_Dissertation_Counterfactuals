@@ -6,21 +6,29 @@ import random
 cdef class Ccea:
 
     # Declare variables
-    cpdef int parent_psize = p.parent_pop_size
-    cpdef int offspring_psize = p.offspring_pop_size
-    cpdef int total_pop_size = p.parent_pop_size + p.offspring_pop_size
-    cpdef int policy_size = (p.num_inputs + 1)*p.num_nodes + (p.num_nodes + 1) * p.num_outputs  # Number of weights for NN
-    cpdef int n_populations = p.num_rovers
-    cpdef double percent_mut = p.percentage_mut
-    cpdef double mut_rate = p.mutation_rate
-    cpdef double eps = p.epsilon
-    cpdef double[:, :, :] parent_pop
-    cpdef double[:, :, :] offspring_pop
-    cpdef public double[:, :, :] pops
-    cpdef public double[:, :] fitness
-    cpdef public double[:, :] team_selection
+    cdef int parent_psize
+    cdef int offspring_psize
+    cdef int total_pop_size
+    cdef int policy_size
+    cdef int n_populations
+    cdef double percent_mut
+    cdef double mut_rate
+    cdef double eps
+    cdef double[:, :, :] parent_pop
+    cdef double[:, :, :] offspring_pop
+    cdef public double[:, :, :] pops
+    cdef public double[:, :] fitness
+    cdef public double[:, :] team_selection
 
     def __cinit__(self):
+        self.parent_psize = p.parent_pop_size
+        self.offspring_psize = p.offspring_pop_size
+        self.total_pop_size = p.parent_pop_size + p.offspring_pop_size
+        self.policy_size = (p.num_inputs + 1)*p.num_nodes + (p.num_nodes + 1) * p.num_outputs  # Number of weights for NN
+        self.n_populations = p.num_rovers
+        self.percent_mut = p.percentage_mut
+        self.mut_rate = p.mutation_rate
+        self.eps = p.epsilon
         self.pops = np.zeros((self.n_populations, self.total_pop_size, self.policy_size))
         self.parent_pop = np.zeros((self.n_populations, self.parent_psize, self.policy_size))
         self.offspring_pop = np.zeros((self.n_populations, self.offspring_psize, self.policy_size))
