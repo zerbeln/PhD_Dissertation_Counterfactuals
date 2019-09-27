@@ -1,7 +1,9 @@
+# For Python Code
 # import Python_Code.ccea as ccea
 # import Python_Code.neural_net as neural_network
-# import Python_Code.homogeneous_rewards as homr
+# from Python_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
 
+# For Cython Code
 import pyximport; pyximport.install()
 from Cython_Code.ccea import Ccea
 from Cython_Code.neural_network import NeuralNetwork
@@ -41,10 +43,12 @@ def save_rover_path(rover_path):  # Save path rovers take using best policy foun
 
 # HOMOGENEOUS ROVER TEAMS ---------------------------------------------------------------------------------------------
 def run_homogeneous_rovers():
+    # For Python code
     # cc = ccea.Ccea()
     # nn = neural_network.NeuralNetwork()
     # rd = RoverDomain()
 
+    # For Cython Code
     cc = Ccea()
     nn = NeuralNetwork()
     rd = RoverDomain()

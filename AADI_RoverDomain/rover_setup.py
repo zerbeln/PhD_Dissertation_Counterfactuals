@@ -5,7 +5,7 @@ import math
 
 ### ROVER SETUP FUNCTIONS ######################################################
 
-def init_rover_positions_fixed_middle():  # Set rovers to fixed starting position
+def init_rover_pos_fixed_middle():  # Set rovers to fixed starting position
     """
     Rovers all start out in the middle of the map at random orientations
     :return: rover_positions: np array of size (nrovers, 3)
@@ -20,7 +20,7 @@ def init_rover_positions_fixed_middle():  # Set rovers to fixed starting positio
 
     return rover_positions
 
-def init_rover_positions_random():  # Randomly set rovers on map
+def init_rover_pos_random():  # Randomly set rovers on map
     """
     Rovers given random starting positions and orientations
     :return: rover_positions: np array of size (nrovers, 3)
@@ -35,7 +35,7 @@ def init_rover_positions_random():  # Randomly set rovers on map
 
     return rover_positions
 
-def init_rover_positions_random_concentrated():
+def init_rover_pos_random_concentrated():
     """
         Rovers given random starting positions within a radius of the center. Starting orientations are random
         :return: rover_positions: np array of size (nrovers, 3)
@@ -134,12 +134,12 @@ def init_poi_positions_random(rover_positions):  # Randomly set POI on the map
 
     return poi_positions
 
-def init_poi_positions_circle():
+def init_poi_pos_circle():
     """
         POI positions are set in a circle around the center of the map at a specified radius.
         :return: poi_positions: np array of size (npoi, 2)
     """
-    radius = 15.0
+    radius = 13.0
     interval = 360/p.num_pois
 
     poi_positions = np.zeros((p.num_pois, 2))
@@ -156,7 +156,38 @@ def init_poi_positions_circle():
 
     return poi_positions
 
-def init_poi_positions_two_poi():
+def init_poi_pos_concentric_circles():
+    """
+        POI positions are set in a circle around the center of the map at a specified radius.
+        :return: poi_positions: np array of size (npoi, 2)
+    """
+    assert(p.num_pois == 12)
+    inner_radius = 6.0
+    outter_radius = 15.0
+    interval = 360 / (p.num_pois/2)
+
+    poi_positions = np.zeros((p.num_pois, 2))
+
+    x = p.x_dim / 2
+    y = p.y_dim / 2
+    theta = 0.0
+
+    for poi_id in range(p.num_pois):
+        if poi_id == 6:
+            theta = 0
+        if poi_id < 6:
+            poi_positions[poi_id, 0] = x + inner_radius * math.cos(theta * math.pi / 180)
+            poi_positions[poi_id, 1] = y + inner_radius * math.sin(theta * math.pi / 180)
+            theta += interval
+        else:
+            poi_positions[poi_id, 0] = x + outter_radius * math.cos(theta * math.pi / 180)
+            poi_positions[poi_id, 1] = y + outter_radius * math.sin(theta * math.pi / 180)
+            theta += interval
+
+    return poi_positions
+
+
+def init_poi_pos_two_poi():
     """
     Sets two POI on the map, one on the left, one on the right at Y-Dimension/2
     :return: poi_positions: np array of size (npoi, 2)
@@ -171,7 +202,7 @@ def init_poi_positions_two_poi():
     return poi_positions
 
 
-def init_poi_positions_four_corners():  # Statically set 4 POI (one in each corner)
+def init_poi_pos_four_corners():  # Statically set 4 POI (one in each corner)
     """
     Sets 4 POI on the map in a box formation around the center
     :return: poi_positions: np array of size (npoi, 2)
@@ -274,40 +305,48 @@ def init_poi_pos_twelve_grid():
     return poi_positions
 
 
-def init_poi_concentric_squares_pos():
+def init_poi_pos_concentric_squares():
 
     assert(p.num_pois == 8)
 
     poi_positions = np.zeros((p.num_pois, 2))
 
-    poi_positions[0, 0] = (p.x_dim / 2) - 5
-    poi_positions[0, 1] = (p.y_dim / 2) - 5
+    # Inner-Bottom POI
+    poi_positions[0, 0] = (p.x_dim / 2)
+    poi_positions[0, 1] = (p.y_dim / 2) - 6
 
-    poi_positions[1, 0] = (p.x_dim / 2) + 5
-    poi_positions[1, 1] = (p.y_dim / 2) - 5
+    # Inner-Right POI
+    poi_positions[1, 0] = (p.x_dim / 2) + 6
+    poi_positions[1, 1] = (p.y_dim / 2)
 
-    poi_positions[2, 0] = (p.x_dim / 2) - 5
-    poi_positions[2, 1] = (p.y_dim / 2) + 5
+    # Inner-Top POI
+    poi_positions[2, 0] = (p.x_dim / 2)
+    poi_positions[2, 1] = (p.y_dim / 2) + 6
 
-    poi_positions[3, 0] = (p.x_dim / 2) + 5
-    poi_positions[3, 1] = (p.y_dim / 2) + 5
+    # Inner-Left POI
+    poi_positions[3, 0] = (p.x_dim / 2) - 6
+    poi_positions[3, 1] = (p.y_dim / 2)
 
-    poi_positions[4, 0] = (p.x_dim / 2) - 10
-    poi_positions[4, 1] = (p.y_dim / 2) - 10
+    # Outter-Bottom-Left POI
+    poi_positions[4, 0] = (p.x_dim / 2) - 15
+    poi_positions[4, 1] = (p.y_dim / 2) - 15
 
-    poi_positions[5, 0] = (p.x_dim / 2) + 10
-    poi_positions[5, 1] = (p.y_dim / 2) - 10
+    # Outter-Bottom-Right POI
+    poi_positions[5, 0] = (p.x_dim / 2) + 15
+    poi_positions[5, 1] = (p.y_dim / 2) - 15
 
-    poi_positions[6, 0] = (p.x_dim / 2) - 10
-    poi_positions[6, 1] = (p.y_dim / 2) + 10
+    # Outter-Top-Left POI
+    poi_positions[6, 0] = (p.x_dim / 2) - 15
+    poi_positions[6, 1] = (p.y_dim / 2) + 15
 
-    poi_positions[7, 0] = (p.x_dim / 2) + 10
-    poi_positions[7, 1] = (p.y_dim / 2) + 10
+    # Outter-Top-Right POI
+    poi_positions[7, 0] = (p.x_dim / 2) + 15
+    poi_positions[7, 1] = (p.y_dim / 2) + 15
 
     return poi_positions
 
 # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
-def init_poi_values_random():
+def init_poi_vals_random():
     """
     POI values randomly assigned 1-10
     :return: poi_vals: array of size(npoi)
@@ -320,7 +359,7 @@ def init_poi_values_random():
     return poi_vals
 
 
-def init_poi_values_fixed_ascending():
+def init_poi_vals_fixed_ascending():
     """
     POI values set to fixed, ascending values based on POI ID
     :return: poi_vals: array of size(npoi)
@@ -332,7 +371,7 @@ def init_poi_values_fixed_ascending():
 
     return poi_vals
 
-def init_poi_values_fixed_identical():
+def init_poi_vals_fixed_identical():
     """
         POI values set to fixed, identical value
         :return: poi_vals: array of size(npoi)
@@ -340,11 +379,11 @@ def init_poi_values_fixed_identical():
     poi_vals = np.zeros(p.num_pois)
 
     for poi_id in range(p.num_pois):
-        poi_vals[poi_id] = 5.0
+        poi_vals[poi_id] = 10.0
 
     return poi_vals
 
-def init_poi_values_half_and_half():
+def init_poi_vals_half_and_half():
     """
     POI values set to fixed value
     :return: poi_vals: array of size(npoi)
@@ -354,22 +393,24 @@ def init_poi_values_half_and_half():
 
     for poi_id in range(p.num_pois):
         if poi_id%2 == 0:
-            poi_vals[poi_id] *= 10.0
+            poi_vals[poi_id] *= 12.0
         else:
             poi_vals[poi_id] *= 5.0
 
     return poi_vals
 
-def init_poi_concentric_squares_vals():
+def init_poi_vals_concentric_squares():
 
     assert(p.num_pois == 8)
     poi_vals = np.zeros(p.num_pois)
 
-    poi_vals[0] = 1.0
-    poi_vals[1] = 1.0
-    poi_vals[2] = 1.0
-    poi_vals[3] = 1.0
+    # Inner POI Values
+    poi_vals[0] = 2.0
+    poi_vals[1] = 2.0
+    poi_vals[2] = 2.0
+    poi_vals[3] = 2.0
 
+    # Outter POI Values
     poi_vals[4] = 10.0
     poi_vals[5] = 10.0
     poi_vals[6] = 10.0
@@ -377,7 +418,19 @@ def init_poi_concentric_squares_vals():
 
     return poi_vals
 
-def init_poi_val_random_inner_square_outer():
+def init_poi_vals_concentric_circles():
+    assert(p.num_pois == 12)
+
+    poi_vals = np.zeros(p.num_pois)
+    for poi_id in range(p.num_pois):
+        if poi_id < 6:
+            poi_vals[poi_id] = 2.0
+        else:
+            poi_vals[poi_id] = 12.0
+
+    return poi_vals
+
+def init_poi_vals_random_inner_square_outer():
     poi_vals = np.zeros(p.num_pois)
 
     for poi_id in range(4):
@@ -388,18 +441,18 @@ def init_poi_val_random_inner_square_outer():
 
     return poi_vals
 
-def init_poi_val_four_corners():
+def init_poi_vals_four_corners():
     poi_vals = np.zeros(p.num_pois)
     assert(p.num_pois == 4)
 
     for poi_id in range(4):
         if poi_id == 0:
-            poi_vals[poi_id] = 1.0
+            poi_vals[poi_id] = 2.0
         elif poi_id == 1:
             poi_vals[poi_id] = 5.0
         elif poi_id == 2:
             poi_vals[poi_id] = 6.0
         else:
-            poi_vals[poi_id] = 10.0
+            poi_vals[poi_id] = 12.0
 
     return poi_vals

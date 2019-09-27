@@ -159,7 +159,43 @@ cpdef partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths
 
     return partners
 
-cpdef get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, step_id):
+cpdef go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters):
+    cdef int partner_id
+    cdef int npartners = n_counters
+    cdef double [:] partners = np.zeros(npartners)
+    cdef double x_middle
+
+    partners = np.zeros(npartners)
+    x_middle = p.x_dim/2
+
+    if poi_pos[poi_id, 0] < x_middle:
+        for partner_id in range(npartners):
+            partners[partner_id] = rover_dist
+    else:
+        for partner_id in range(npartners):
+            partners[partner_id] = 100.00
+
+    return partners
+
+cpdef go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters):
+    cdef int partner_id
+    cdef int npartners = n_counters
+    cdef double [:] partners = np.zeros(npartners)
+    cdef double x_middle
+
+    partners = np.zeros(npartners)
+    x_middle = p.x_dim/2
+
+    if poi_pos[poi_id, 0] > x_middle:
+        for partner_id in range(npartners):
+            partners[partner_id] = rover_dist
+    else:
+        for partner_id in range(npartners):
+            partners[partner_id] = 100.00
+
+    return partners
+
+cpdef get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, poi_pos, step_id):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
@@ -176,6 +212,10 @@ cpdef get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, 
         partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters)
     elif p.suggestion_type == "partner_proximity":
         partners = partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id)
+    elif p.suggestion_type == "left":
+        partners = go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters)
+    elif p.suggestion_type == "right":
+        partners = go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters)
     else:
         sys.exit('Incorrect Suggestion Type')
 
