@@ -175,6 +175,22 @@ def go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters):
 
     return partners
 
+def left_right_split(rover_dist, rover_id, poi_id, poi_pos, n_counters):
+    partners = np.zeros(n_counters)
+    x_middle = p.x_dim / 2
+
+    if rover_id % 2 == 0 and poi_pos[poi_id, 0] > x_middle:
+        for partner_id in range(n_counters):
+            partners[partner_id] = rover_dist
+    elif rover_id % 2 != 0 and poi_pos[poi_id, 0] < x_middle:
+        for partner_id in range(n_counters):
+            partners[partner_id] = rover_dist
+    else:
+        for partner_id in range(n_counters):
+            partners[partner_id] = 100.00
+
+    return partners
+
 def get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, poi_pos, step_id):
     partners = np.zeros(n_counters)
 
@@ -195,6 +211,8 @@ def get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, po
         partners = go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters)
     elif p.suggestion_type == "right":
         partners = go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters)
+    elif p.suggestion_type == "left_right":
+        partners = left_right_split(rover_dist, self_id, poi_id, poi_pos, n_counters)
     else:
         sys.exit('Incorrect Suggestion Type')
 

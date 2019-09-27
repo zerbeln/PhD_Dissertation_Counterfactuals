@@ -23,7 +23,7 @@ class Parameters:
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
     num_rovers = 10  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 6  # Number of POIs on map
+    num_pois = 4  # Number of POIs on map
     num_steps = 20  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
@@ -46,6 +46,6 @@ class Parameters:
 
     # User specific parameters
     """
-    Suggestions: high_val, low_val, high_low, value_incentives, partner_proximity, left, right, or none
+    Suggestions: high_val, low_val, high_low, value_incentives, partner_proximity, left, right, left_right, or none
     """
-    suggestion_type = "none"
+    suggestion_type = "left_right"
