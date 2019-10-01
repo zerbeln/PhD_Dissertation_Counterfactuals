@@ -243,3 +243,18 @@ cpdef get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, 
         sys.exit('Incorrect Suggestion Type')
 
     return partners
+
+cpdef get_cpartners_step_switch(n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, poi_pos, step_id):
+    cdef int partner_id
+    cdef double [:] partners = np.zeros(n_counters)
+
+    if p.suggestion_type == "none":
+        for partner_id in range(n_counters):
+            partners[partner_id] = rover_dist
+    else:
+        if step_id > (p.num_steps/2):
+            partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters)
+        else:
+            partners = high_value_only(rover_dist, poi_id, poi_values, n_counters)
+
+    return partners

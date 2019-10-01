@@ -1,7 +1,7 @@
 import numpy as np
 from AADI_RoverDomain.parameters import Parameters as p
 import math
-from Cython_Code.suggestions import get_counterfactual_partners
+from Cython_Code.suggestions import get_counterfactual_partners, get_cpartners_step_switch
 
 cpdef calc_global(rover_paths, poi_values, poi_positions):
     """
@@ -201,6 +201,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
 
                 # Add in counterfactual partners
                 counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
+                # counterfactual_agents = get_cpartners_step_switch(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
@@ -255,6 +256,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
 
                         # Add in counterfactual partners
                         counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
+                        # counterfactual_agents = get_cpartners_step_switch(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 

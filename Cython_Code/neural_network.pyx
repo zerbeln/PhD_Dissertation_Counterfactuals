@@ -68,12 +68,12 @@ cdef class NeuralNetwork:
         :param rov_id:
         :return: None
         """
-        cdef int i, j
+        cdef int n
 
-        for i in range(self.n_nodes):
-            self.hid_layer[rov_id, i] = 0.0
-        for j in range(self.n_outputs):
-            self.out_layer[rov_id, j] = 0.0
+        for n in range(self.n_nodes):
+            self.hid_layer[rov_id, n] = 0.0
+        for n in range(self.n_outputs):
+            self.out_layer[rov_id, n] = 0.0
 
     cpdef get_outputs(self, rov_id):
         """
@@ -81,37 +81,34 @@ cdef class NeuralNetwork:
         :param rov_id:
         :return: None
         """
-        cdef int count, i, j
+        cdef int count, i, n
 
         count = 0  # Keeps count of which weight is being applied
         self.reset_layers(rov_id)
 
-        # for i in range(self.n_inputs):
-        #     self.in_layer[rov_id, i] = self.tanh(self.in_layer[rov_id, i])
-
         for i in range(self.n_inputs):  # Pass inputs to hidden layer
-            for j in range(self.n_nodes):
-                self.hid_layer[rov_id, j] += self.in_layer[rov_id, i] * self.weights[rov_id, count]
+            for n in range(self.n_nodes):
+                self.hid_layer[rov_id, n] += self.in_layer[rov_id, i] * self.weights[rov_id, count]
                 count += 1
 
-        for j in range(self.n_nodes):  # Add Biasing Node
-            self.hid_layer[rov_id, j] += (self.input_bias * self.weights[rov_id, count])
+        for n in range(self.n_nodes):  # Add Biasing Node
+            self.hid_layer[rov_id, n] += (self.input_bias * self.weights[rov_id, count])
             count += 1
 
-        for i in range(self.n_nodes):  # Pass through sigmoid
-            self.hid_layer[rov_id, i] = self.tanh(self.hid_layer[rov_id, i])
+        for n in range(self.n_nodes):  # Pass hidden layer nodes through activation function
+            self.hid_layer[rov_id, n] = self.tanh(self.hid_layer[rov_id, n])
 
         for i in range(self.n_nodes):  # Pass from hidden layer to output layer
-            for j in range(self.n_outputs):
-                self.out_layer[rov_id, j] += self.hid_layer[rov_id, i] * self.weights[rov_id, count]
+            for n in range(self.n_outputs):
+                self.out_layer[rov_id, n] += self.hid_layer[rov_id, i] * self.weights[rov_id, count]
                 count += 1
 
-        for j in range(self.n_outputs):  # Add biasing node
-            self.out_layer[rov_id, j] += (self.hidden_bias * self.weights[rov_id, count])
+        for n in range(self.n_outputs):  # Add biasing node
+            self.out_layer[rov_id, n] += (self.hidden_bias * self.weights[rov_id, count])
             count += 1
 
-        for i in range(self.n_outputs):  # Pass through sigmoid
-            self.out_layer[rov_id, i] = self.tanh(self.out_layer[rov_id, i])
+        for n in range(self.n_outputs):  # Pass output nodes through activation function
+            self.out_layer[rov_id, n] = self.tanh(self.out_layer[rov_id, n])
 
     cpdef tanh(self, double inp):  # Tanh function as activation function
         """

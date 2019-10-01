@@ -56,8 +56,11 @@ def run_homogeneous_rovers():
     rtype = p.reward_type
     rd.inital_world_setup()
     print("Reward Type: ", p.reward_type)
+    if p.reward_type == "DPP":
+        assert(p.suggestion_type == "none")
 
     for srun in range(p.stat_runs):  # Perform statistical runs
+        p.suggestion_type = p.original_suggestion
         print("Run: %i" % srun)
         reward_history = []
 
@@ -67,6 +70,8 @@ def run_homogeneous_rovers():
 
         for gen in range(p.generations):
             # print("Gen: %i" % gen)
+            if p.gen_suggestion_switch == True and gen > 499:
+                p.suggestion_type = p.new_suggestion  # Switch the suggestion to this
             cc.select_policy_teams()
 
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
@@ -91,7 +96,7 @@ def run_homogeneous_rovers():
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
-                elif rtype == "DPP":
+                elif rtype == "DPP" or rtype == "SDPP":
                     dpp_reward = calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
@@ -121,9 +126,9 @@ def run_homogeneous_rovers():
             save_reward_history(reward_history, "Global_Reward.csv")
         if rtype == "Difference":
             save_reward_history(reward_history, "Difference_Reward.csv")
-        if rtype == 'DPP' and p.suggestion_type == "none":
+        if rtype == "DPP":
             save_reward_history(reward_history, "DPP_Reward.csv")
-        if rtype == 'DPP' and p.suggestion_type != "none":
+        if rtype == "SDPP":
             save_reward_history(reward_history, "SDPP_Reward.csv")
 
 

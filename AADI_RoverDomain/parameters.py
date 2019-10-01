@@ -14,7 +14,7 @@ class Parameters:
     stat_runs = 15
     generations = 800  # Number of generations for CCEA in each stat run
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
-    reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP"
+    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
     # Visualizer
     running = False  # True keeps visualizer from closing until you 'X' out of window
@@ -23,7 +23,7 @@ class Parameters:
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
     num_rovers = 10  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 4  # Number of POIs on map
+    num_pois = 6  # Number of POIs on map
     num_steps = 20  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
@@ -48,4 +48,7 @@ class Parameters:
     """
     Suggestions: high_val, low_val, high_low, value_incentives, partner_proximity, left, right, left_right, or none
     """
-    suggestion_type = "left_right"
+    suggestion_type = "none"
+    new_suggestion = "high_val"
+    original_suggestion = "none"
+    gen_suggestion_switch = True
