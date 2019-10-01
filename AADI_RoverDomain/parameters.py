@@ -51,4 +51,4 @@ class Parameters:
     suggestion_type = "none"
     new_suggestion = "high_val"
     original_suggestion = "none"
-    gen_suggestion_switch = True
+    gen_suggestion_switch = False

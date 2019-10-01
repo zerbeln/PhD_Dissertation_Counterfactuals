@@ -58,6 +58,7 @@ def run_homogeneous_rovers():
     print("Reward Type: ", p.reward_type)
     if p.reward_type == "DPP":
         assert(p.suggestion_type == "none")
+        assert(p.gen_suggestion_switch == False)
 
     for srun in range(p.stat_runs):  # Perform statistical runs
         p.suggestion_type = p.original_suggestion
