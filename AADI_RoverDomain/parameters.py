@@ -17,13 +17,13 @@ class Parameters:
     reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
     # Visualizer
-    running = False  # True keeps visualizer from closing until you 'X' out of window
+    running = True  # True keeps visualizer from closing until you 'X' out of window
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
     num_rovers = 10  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
     coupling = 3  # Number of rovers required to view a POI for credit
-    num_pois = 6  # Number of POIs on map
+    num_pois = 12  # Number of POIs on map
     num_steps = 20  # Number of steps rovers take each episode
     min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
     x_dim = 30  # X-Dimension of the rover map
