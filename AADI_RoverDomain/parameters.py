@@ -17,7 +17,7 @@ class Parameters:
     reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
     # Visualizer
-    running = True  # True keeps visualizer from closing until you 'X' out of window
+    running = False  # True keeps visualizer from closing until you 'X' out of window
 
     # Domain parameters
     team_types = 'homogeneous'  # Switch between 'homogeneous' and 'heterogeneous' rover domains
