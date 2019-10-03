@@ -63,6 +63,8 @@ def run_homogeneous_rovers():
     for srun in range(p.stat_runs):  # Perform statistical runs
         p.suggestion_type = p.original_suggestion
         print("Run: %i" % srun)
+        print("Suggestion Type: ", p.suggestion_type)
+
         reward_history = []
 
         # Reset CCEA and NN new stat run
@@ -71,8 +73,9 @@ def run_homogeneous_rovers():
 
         for gen in range(p.generations):
             # print("Gen: %i" % gen)
-            if p.gen_suggestion_switch == True and gen > 499:
+            if p.gen_suggestion_switch == True and gen == 1:
                 p.suggestion_type = p.new_suggestion  # Switch the suggestion to this
+                print("New Suggestion Type: ", p.suggestion_type)
             cc.select_policy_teams()
 
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
