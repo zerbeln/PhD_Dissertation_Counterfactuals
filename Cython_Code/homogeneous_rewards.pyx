@@ -1,9 +1,9 @@
 import numpy as np
 from AADI_RoverDomain.parameters import Parameters as p
 import math
-from Cython_Code.suggestions import get_counterfactual_partners, get_cpartners_step_switch
+from Cython_Code.suggestions import get_counterfactual_partners
 
-cpdef calc_global(rover_paths, poi_values, poi_positions):
+cpdef calc_global(double [:, :, :] rover_paths, double[:] poi_values, double [:, :] poi_positions):
     """
     Calculate the global reward for the entire rover trajectory
     :param rover_paths:
@@ -66,7 +66,7 @@ cpdef calc_global(rover_paths, poi_values, poi_positions):
 
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
-cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
+cpdef calc_difference(double [:, :, :] rover_paths, double [:] poi_values, double [:, :] poi_positions, double global_reward):
     """
     Calcualte each rover's difference reward from entire rover trajectory
     :param rover_paths:
@@ -142,9 +142,10 @@ cpdef calc_difference(rover_paths, poi_values, poi_positions, global_reward):
 
 
 # D++ REWARD ----------------------------------------------------------------------------------------------------------
-cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
+cpdef calc_dpp(double [:, :, :] rover_paths, double [:]poi_values, double [:, :] poi_positions, double global_reward, str sgst):
     """
     Calculate D++ rewards for each rover across entire trajectory
+    :param sgst: 
     :param rover_paths:
     :param poi_values:
     :param poi_positions:
@@ -154,7 +155,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     cdef int nrovers = p.num_rovers
     cdef int npoi = p.num_pois
     cdef int cpl = p.coupling
-    cdef int total_steps = p.num_steps + 1 # The +1 is to account for the initial position
+    cdef int total_steps = p.num_steps + 1  # The +1 is to account for the initial position
     cdef double cpl_double = p.coupling
     cdef double min_obs_distance = p.min_observation_dist
     cdef double min_dist = p.min_distance
@@ -162,6 +163,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
     cdef int agent_id, poi_id, other_agent_id, observer_count, od_index, observer, n_counters, partner_id, step_index
     cdef double x_distance, y_distance, distance, summed_observer_distances, temp_dpp_reward
     cdef double counterfactual_global_reward
+    cdef str suggestion
 
     cdef double [:] difference_rewards = np.zeros(nrovers)
     cdef double [:] dpp_rewards = np.zeros(nrovers)
@@ -180,9 +182,13 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
         poi_observed = np.zeros(npoi)
 
         for poi_id in range(npoi):
+            suggestion = sgst
             for step_index in range(total_steps):
                 observer_count = 0
                 rover_distances = np.zeros(nrovers + n_counters)
+
+                if p.step_suggestion_switch and p.step_switch_point == step_index and p.reward_type == "SDPP":
+                    suggestion = p.new_suggestion
 
                 # Count how many agents observe poi, update closest distances
                 for other_agent_id in range(nrovers):
@@ -200,8 +206,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                         observer_count += 1
 
                 # Add in counterfactual partners
-                counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
-                # counterfactual_agents = get_cpartners_step_switch(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
+                counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
@@ -235,9 +240,13 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                 if n_counters == 0:  # 0 counterfactual partnrs is identical to G
                     n_counters = 1
                 for poi_id in range(npoi):
+                    suggestion = sgst
                     for step_index in range(total_steps):
                         observer_count = 0
                         rover_distances = np.zeros(nrovers + n_counters)
+
+                        if p.step_suggestion_switch and p.step_switch_point == step_index and p.reward_type == "SDPP":
+                            suggestion = p.new_suggestion
 
                         # Count how many agents observe poi, update closest distances
                         for other_agent_id in range(nrovers):
@@ -255,8 +264,7 @@ cpdef calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
-                        # counterfactual_agents = get_cpartners_step_switch(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
+                        counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 

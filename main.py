@@ -4,7 +4,7 @@
 # from Python_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
 
 # For Cython Code
-import pyximport; pyximport.install()
+import pyximport; pyximport.install(language_level=3)
 from Cython_Code.ccea import Ccea
 from Cython_Code.neural_network import NeuralNetwork
 from Cython_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
@@ -53,31 +53,30 @@ def run_homogeneous_rovers():
     nn = NeuralNetwork()
     rd = RoverDomain()
 
-    rtype = p.reward_type
+    # Checks to make sure gen switch and step switch are not both engaged
+    if p.gen_suggestion_switch and p.step_suggestion_switch:
+        sys.exit('Gen Switch and Step Switch are both True')
+
     rd.inital_world_setup()
     print("Reward Type: ", p.reward_type)
     if p.reward_type != "SDPP":
         assert(p.suggestion_type == "none")
-        assert(p.gen_suggestion_switch == False)
 
     for srun in range(p.stat_runs):  # Perform statistical runs
-        p.suggestion_type = p.original_suggestion
         print("Run: %i" % srun)
-        print("Suggestion Type: ", p.suggestion_type)
-
-        reward_history = []
 
         # Reset CCEA and NN new stat run
         cc.reset_populations()  # Randomly initialize ccea populations
         nn.reset_nn()  # Initialize NN architecture
+        suggestion = p.suggestion_type
+        reward_history = []
 
         for gen in range(p.generations):
-            # print("Gen: %i" % gen)
-            if p.gen_suggestion_switch == True and gen == 1:
-                p.suggestion_type = p.new_suggestion  # Switch the suggestion to this
-                print("New Suggestion Type: ", p.suggestion_type)
-            cc.select_policy_teams()
+            print("Gen: %i" % gen)
+            if p.gen_suggestion_switch and gen == p.gen_switch_point and p.reward_type == "SDPP":
+                suggestion = p.new_suggestion
 
+            cc.select_policy_teams()
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
                 done = False; rd.istep = 0
@@ -91,17 +90,17 @@ def run_homogeneous_rovers():
 
                 # Update fitness of policies using reward information
                 global_reward = calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
-                if rtype == "Global":
+                if p.reward_type == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_reward
-                elif rtype == "Difference":
+                elif p.reward_type == "Difference":
                     d_reward = calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
-                elif rtype == "DPP" or rtype == "SDPP":
-                    dpp_reward = calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                elif p.reward_type == "DPP" or p.reward_type == "SDPP":
+                    dpp_reward = calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, suggestion)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
@@ -126,13 +125,13 @@ def run_homogeneous_rovers():
 
             cc.down_select()  # Choose new parents and create new offspring population
 
-        if rtype == "Global":
+        if p.reward_type == "Global":
             save_reward_history(reward_history, "Global_Reward.csv")
-        if rtype == "Difference":
+        if p.reward_type == "Difference":
             save_reward_history(reward_history, "Difference_Reward.csv")
-        if rtype == "DPP":
+        if p.reward_type == "DPP":
             save_reward_history(reward_history, "DPP_Reward.csv")
-        if rtype == "SDPP":
+        if p.reward_type == "SDPP":
             save_reward_history(reward_history, "SDPP_Reward.csv")
 
 

@@ -11,10 +11,10 @@ class Parameters:
     """
 
     # Run Parameters
-    stat_runs = 2
-    generations = 5  # Number of generations for CCEA in each stat run
+    stat_runs = 1
+    generations = 100  # Number of generations for CCEA in each stat run
     new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
-    reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+    reward_type = "Global"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
     # Visualizer
     running = False  # True keeps visualizer from closing until you 'X' out of window
@@ -50,5 +50,7 @@ class Parameters:
     """
     suggestion_type = "none"
     new_suggestion = "high_val"
-    original_suggestion = "none"
-    gen_suggestion_switch = True
+    gen_switch_point = 499  # What generation should the suggestion type switch at?
+    step_switch_point = 5  # What step should the suggestion type switch at?
+    gen_suggestion_switch = False  # Switch suggestion types at a specified generation
+    step_suggestion_switch = False  # Switch suggestion types at a specified rover step

@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from AADI_RoverDomain.parameters import Parameters as p
-from Python_Code.suggestions import get_counterfactual_partners, get_cpartners_step_switch
+from Python_Code.suggestions import get_counterfactual_partners
 
 # GLOBAL REWARDS ------------------------------------------------------------------------------------------------------
 def calc_global(rover_paths, poi_values, poi_positions):
@@ -122,7 +122,7 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
     return difference_rewards
 
 
-def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
+def calc_dpp(rover_paths, poi_values, poi_positions, global_reward, sgst):
     """
     Calculate D++ rewards for each rover across entire trajectory
     :param rover_paths:
@@ -145,9 +145,13 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
         poi_observed = [False for _ in range(p.num_pois)]
 
         for poi_id in range(p.num_pois):
+            suggestion = sgst
             for step_index in range(total_steps):
                 observer_count = 0
                 rover_distances = np.zeros(p.num_rovers+n_counters)
+
+                if p.step_suggestion_switch and p.step_switch_point == step_index and p.reward_type == "SDPP":
+                    suggestion = p.new_suggestion
 
                 # Count how many agents observe poi, update closest distances
                 for other_agent_id in range(p.num_rovers):
@@ -165,8 +169,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                         observer_count += 1
 
                 # Add in counterfactual partners
-                counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
-                # counterfactual_agents = get_cpartners_step_switch(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
+                counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
                 for partner_id in range(n_counters):
                     rover_distances[p.num_rovers+partner_id] = counterfactual_agents[partner_id]
 
@@ -200,9 +203,13 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                 if n_counters == 0:  # 0 counterfactual partnrs is identical to G
                     n_counters = 1
                 for poi_id in range(p.num_pois):
+                    suggestion = sgst
                     for step_index in range(total_steps):
                         observer_count = 0
                         rover_distances = np.zeros(p.num_rovers + n_counters)
+
+                        if p.step_suggestion_switch and p.step_switch_point == step_index and p.reward_type == "SDPP":
+                            suggestion = p.new_suggestion
 
                         # Count how many agents observe poi, update closest distances
                         for other_agent_id in range(p.num_rovers):
@@ -220,8 +227,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward):
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
-                        # counterfactual_agents = get_cpartners_step_switch(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index)
+                        counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
                         for partner_id in range(n_counters):
                             rover_distances[p.num_rovers+partner_id] = counterfactual_agents[partner_id]
 

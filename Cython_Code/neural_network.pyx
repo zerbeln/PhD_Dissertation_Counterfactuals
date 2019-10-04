@@ -39,7 +39,7 @@ cdef class NeuralNetwork:
         self.hid_layer = np.zeros((self.n_rovers, self.n_nodes), dtype=np.float64)
         self.out_layer = np.zeros((self.n_rovers, self.n_outputs), dtype=np.float64)
 
-    cpdef get_inputs(self, state_vec, rov_id):  # Get inputs from state-vector
+    cpdef get_inputs(self, double [:] state_vec, int rov_id):  # Get inputs from state-vector
         """
         Assign inputs from rover sensors to the input layer of the NN
         :param state_vec: Inputs from rover sensors
@@ -50,7 +50,7 @@ cdef class NeuralNetwork:
         for i in range(self.n_inputs):
             self.in_layer[rov_id, i] = state_vec[i]
 
-    cpdef get_weights(self, nn_weights, rov_id):  # Get weights from CCEA population
+    cpdef get_weights(self, double [:] nn_weights, int rov_id):  # Get weights from CCEA population
         """
         Receive rover NN weights from CCEA
         :param nn_weights:
@@ -62,7 +62,7 @@ cdef class NeuralNetwork:
         for w in range(self.n_weights):
             self.weights[rov_id, w] = nn_weights[w]
 
-    cpdef reset_layers(self, rov_id):  # Clear hidden layers and output layers
+    cpdef reset_layers(self, int rov_id):  # Clear hidden layers and output layers
         """
         Zeros hidden layer and output layer of NN
         :param rov_id:
@@ -75,7 +75,7 @@ cdef class NeuralNetwork:
         for n in range(self.n_outputs):
             self.out_layer[rov_id, n] = 0.0
 
-    cpdef get_outputs(self, rov_id):
+    cpdef get_outputs(self, int rov_id):
         """
         Run NN to receive rover action outputs
         :param rov_id:
@@ -132,7 +132,7 @@ cdef class NeuralNetwork:
         sig = 1/(1 + np.exp(-inp))
         return sig
 
-    cpdef run_neural_network(self, state_vec, weight_vec, rover_id):
+    cpdef run_neural_network(self, double [:] state_vec, double [:] weight_vec, int rover_id):
         """
         Run through NN for given rover
         :param rover_input: Inputs from rover sensors
