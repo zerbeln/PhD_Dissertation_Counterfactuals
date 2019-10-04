@@ -9,7 +9,7 @@ from Cython_Code.ccea import Ccea
 from Cython_Code.neural_network import NeuralNetwork
 from Cython_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
 
-from AADI_RoverDomain.parameters import Parameters as p
+from AADI_RoverDomain.parameters import Parameters
 from AADI_RoverDomain.rover_domain import RoverDomain
 import csv; import os; import sys
 import numpy as np
@@ -23,7 +23,7 @@ def save_reward_history(reward_history, file_name):
         writer = csv.writer(csvfile)
         writer.writerow(['Performance'] + reward_history)
 
-def save_rover_path(rover_path):  # Save path rovers take using best policy found
+def save_rover_path(p, rover_path):  # Save path rovers take using best policy found
     dir_name = 'Output_Data/'  # Intended directory for output files
     nrovers = p.num_rovers
 
@@ -44,14 +44,17 @@ def save_rover_path(rover_path):  # Save path rovers take using best policy foun
 # HOMOGENEOUS ROVER TEAMS ---------------------------------------------------------------------------------------------
 def run_homogeneous_rovers():
     # For Python code
+    # p = Parameters()
     # cc = ccea.Ccea()
     # nn = neural_network.NeuralNetwork()
     # rd = RoverDomain()
 
     # For Cython Code
-    cc = Ccea()
-    nn = NeuralNetwork()
-    rd = RoverDomain()
+    p = Parameters()
+    cc = Ccea(p)
+    nn = NeuralNetwork(p)
+    rd = RoverDomain(p)
+
 
     # Checks to make sure gen switch and step switch are not both engaged
     if p.gen_suggestion_switch and p.step_suggestion_switch:
@@ -89,18 +92,18 @@ def run_homogeneous_rovers():
                     joint_state, done = rd.step(nn.out_layer)
 
                 # Update fitness of policies using reward information
-                global_reward = calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
+                global_reward = calc_global(p, rd.rover_path, rd.poi_values, rd.poi_pos)
                 if p.reward_type == "Global":
                     for rover_id in range(rd.num_agents):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_reward
                 elif p.reward_type == "Difference":
-                    d_reward = calc_difference(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
+                    d_reward = calc_difference(p, rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
                 elif p.reward_type == "DPP" or p.reward_type == "SDPP":
-                    dpp_reward = calc_dpp(rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, suggestion)
+                    dpp_reward = calc_dpp(p, rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, suggestion)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
@@ -117,11 +120,11 @@ def run_homogeneous_rovers():
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)
 
-            global_reward = calc_global(rd.rover_path, rd.poi_values, rd.poi_pos)
+            global_reward = calc_global(p, rd.rover_path, rd.poi_values, rd.poi_pos)
             reward_history.append(global_reward)
 
             if gen == (p.generations-1):  # Save path at end of final generation
-                save_rover_path(rd.rover_path)
+                save_rover_path(p, rd.rover_path)
 
             cc.down_select()  # Choose new parents and create new offspring population
 
@@ -136,10 +139,6 @@ def run_homogeneous_rovers():
 
 
 def main():
-    if p.team_types == 'homogeneous':
-        run_homogeneous_rovers()
-    else:
-        print('ERROR')
-
+    run_homogeneous_rovers()
 
 main()  # Run the program

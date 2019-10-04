@@ -8,7 +8,7 @@ import math
 import sys
 import os
 sys.path.append('../')
-from AADI_RoverDomain.parameters import Parameters as p
+from AADI_RoverDomain.parameters import Parameters
 
 pygame.font.init()  # you have to call this at the start, if you want to use this module
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
@@ -26,7 +26,7 @@ def generate_color_array(num_colors):  # Generates num random colors
     
     return color_arr
 
-def import_rover_paths():
+def import_rover_paths(p):
     rover_paths = np.zeros((p.stat_runs, (p.num_steps+1), p.num_rovers, 2))
     posFile = open('../Output_Data/Rover_Paths.txt', 'r')
 
@@ -56,7 +56,7 @@ def import_rover_paths():
 
     return rover_paths
 
-def import_poi_positions():
+def import_poi_positions(p):
     poi_positions = np.zeros((p.num_pois, 2))
 
     with open('../Output_Data/POI_Positions.txt') as f:
@@ -84,7 +84,7 @@ def import_poi_positions():
 
     return poi_positions
 
-def import_poi_values():
+def import_poi_values(p):
     poi_vals = np.zeros(p.num_pois)
     poi_val_file = open('../Output_Data/POI_Values.txt', 'r')
 
@@ -102,6 +102,7 @@ def import_poi_values():
 
 
 def run_visualizer(episode_reward, srun):
+    p = Parameters()
     scale_factor = 20  # Scaling factor for images
     width = -15  # robot icon widths
     x_map = p.x_dim + 10  # Slightly larger so POI are not cut off
@@ -119,9 +120,9 @@ def run_visualizer(episode_reward, srun):
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
     poi_status = [False for _ in range(p.num_pois)]
 
-    rover_path = import_rover_paths()
-    poi_pos = import_poi_positions()
-    poi_values = import_poi_values()
+    rover_path = import_rover_paths(p)
+    poi_pos = import_poi_positions(p)
+    poi_values = import_poi_values(p)
 
     for tstep in range(p.num_steps):
         draw(game_display, background, 0, 0)

@@ -1,11 +1,10 @@
-from AADI_RoverDomain.parameters import Parameters as p
 import numpy as np
 import random
 import math
 
 ### ROVER SETUP FUNCTIONS ######################################################
 
-def init_rover_pos_fixed_middle():  # Set rovers to fixed starting position
+def init_rover_pos_fixed_middle(p):  # Set rovers to fixed starting position
     """
     Rovers all start out in the middle of the map at random orientations
     :return: rover_positions: np array of size (nrovers, 3)
@@ -20,7 +19,7 @@ def init_rover_pos_fixed_middle():  # Set rovers to fixed starting position
 
     return rover_positions
 
-def init_rover_pos_random():  # Randomly set rovers on map
+def init_rover_pos_random(p):  # Randomly set rovers on map
     """
     Rovers given random starting positions and orientations
     :return: rover_positions: np array of size (nrovers, 3)
@@ -35,7 +34,7 @@ def init_rover_pos_random():  # Randomly set rovers on map
 
     return rover_positions
 
-def init_rover_pos_random_concentrated():
+def init_rover_pos_random_concentrated(p):
     """
         Rovers given random starting positions within a radius of the center. Starting orientations are random
         :return: rover_positions: np array of size (nrovers, 3)
@@ -59,7 +58,7 @@ def init_rover_pos_random_concentrated():
 
     return rover_positions
 
-def init_rover_pos_twelve_grid():
+def init_rover_pos_twelve_grid(p):
     rover_positions = np.zeros((p.num_rovers, 3))
 
     for rover_id in range(p.num_rovers):
@@ -69,7 +68,7 @@ def init_rover_pos_twelve_grid():
 
     return rover_positions
 
-def init_rover_pos_txt_file():
+def init_rover_pos_txt_file(p):
     rover_positions = np.zeros((p.num_rovers, 3))
 
     with open('Output_Data/Rover_Positions.txt') as f:
@@ -102,7 +101,7 @@ def init_rover_pos_txt_file():
 ### POI SETUP FUNCTIONS ###########################################################
 
 # POI POSITION FUNCTIONS ------------------------------------------------------------------------------------------
-def init_poi_positions_random(rover_positions):  # Randomly set POI on the map
+def init_poi_positions_random(p, rover_positions):  # Randomly set POI on the map
     """
     POI positions set randomly across the map (but not in range of any rover)
     :return: poi_positions: np array of size (npoi, 2)
@@ -134,7 +133,7 @@ def init_poi_positions_random(rover_positions):  # Randomly set POI on the map
 
     return poi_positions
 
-def init_poi_pos_circle():
+def init_poi_pos_circle(p):
     """
         POI positions are set in a circle around the center of the map at a specified radius.
         :return: poi_positions: np array of size (npoi, 2)
@@ -156,7 +155,7 @@ def init_poi_pos_circle():
 
     return poi_positions
 
-def init_poi_pos_concentric_circles():
+def init_poi_pos_concentric_circles(p):
     """
         POI positions are set in a circle around the center of the map at a specified radius.
         :return: poi_positions: np array of size (npoi, 2)
@@ -187,7 +186,7 @@ def init_poi_pos_concentric_circles():
     return poi_positions
 
 
-def init_poi_pos_two_poi():
+def init_poi_pos_two_poi(p):
     """
     Sets two POI on the map, one on the left, one on the right at Y-Dimension/2
     :return: poi_positions: np array of size (npoi, 2)
@@ -202,7 +201,7 @@ def init_poi_pos_two_poi():
     return poi_positions
 
 
-def init_poi_pos_four_corners():  # Statically set 4 POI (one in each corner)
+def init_poi_pos_four_corners(p):  # Statically set 4 POI (one in each corner)
     """
     Sets 4 POI on the map in a box formation around the center
     :return: poi_positions: np array of size (npoi, 2)
@@ -218,7 +217,7 @@ def init_poi_pos_four_corners():  # Statically set 4 POI (one in each corner)
 
     return poi_positions
 
-def init_poi_positions_txt_file():
+def init_poi_positions_txt_file(p):
     """
     POI positions read in from existing txt file (TXT FILE NEEDED FOR THIS FUNCTION)
     :return: poi_positions: np array of size (npoi, 2)
@@ -250,7 +249,7 @@ def init_poi_positions_txt_file():
 
     return poi_positions
 
-def init_poi_values_txt_file():
+def init_poi_values_txt_file(p):
 
     poi_vals = np.zeros(p.num_pois)
 
@@ -269,7 +268,7 @@ def init_poi_values_txt_file():
     return poi_vals
 
 
-def init_poi_pos_random_inner_square_outer():
+def init_poi_pos_random_inner_square_outer(p):
     num_pois = p.num_pois
     num_outer_pois = 4
     num_inner_pois = num_pois - num_outer_pois
@@ -288,7 +287,7 @@ def init_poi_pos_random_inner_square_outer():
     return poi_positions
 
 
-def init_poi_pos_twelve_grid():
+def init_poi_pos_twelve_grid(p):
 
     assert(p.num_pois == 12)
 
@@ -305,7 +304,7 @@ def init_poi_pos_twelve_grid():
     return poi_positions
 
 
-def init_poi_pos_concentric_squares():
+def init_poi_pos_concentric_squares(p):
 
     assert(p.num_pois == 8)
 
@@ -346,7 +345,7 @@ def init_poi_pos_concentric_squares():
     return poi_positions
 
 # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
-def init_poi_vals_random():
+def init_poi_vals_random(p):
     """
     POI values randomly assigned 1-10
     :return: poi_vals: array of size(npoi)
@@ -359,7 +358,7 @@ def init_poi_vals_random():
     return poi_vals
 
 
-def init_poi_vals_fixed_ascending():
+def init_poi_vals_fixed_ascending(p):
     """
     POI values set to fixed, ascending values based on POI ID
     :return: poi_vals: array of size(npoi)
@@ -371,7 +370,7 @@ def init_poi_vals_fixed_ascending():
 
     return poi_vals
 
-def init_poi_vals_fixed_identical():
+def init_poi_vals_fixed_identical(p):
     """
         POI values set to fixed, identical value
         :return: poi_vals: array of size(npoi)
@@ -383,7 +382,7 @@ def init_poi_vals_fixed_identical():
 
     return poi_vals
 
-def init_poi_vals_half_and_half():
+def init_poi_vals_half_and_half(p):
     """
     POI values set to fixed value
     :return: poi_vals: array of size(npoi)
@@ -399,7 +398,7 @@ def init_poi_vals_half_and_half():
 
     return poi_vals
 
-def init_poi_vals_concentric_squares():
+def init_poi_vals_concentric_squares(p):
 
     assert(p.num_pois == 8)
     poi_vals = np.zeros(p.num_pois)
@@ -418,7 +417,7 @@ def init_poi_vals_concentric_squares():
 
     return poi_vals
 
-def init_poi_vals_concentric_circles():
+def init_poi_vals_concentric_circles(p):
     assert(p.num_pois == 12)
 
     poi_vals = np.zeros(p.num_pois)
@@ -430,7 +429,7 @@ def init_poi_vals_concentric_circles():
 
     return poi_vals
 
-def init_poi_vals_random_inner_square_outer():
+def init_poi_vals_random_inner_square_outer(p):
     poi_vals = np.zeros(p.num_pois)
 
     for poi_id in range(4):
@@ -441,7 +440,7 @@ def init_poi_vals_random_inner_square_outer():
 
     return poi_vals
 
-def init_poi_vals_four_corners():
+def init_poi_vals_four_corners(p):
     poi_vals = np.zeros(p.num_pois)
     assert(p.num_pois == 4)
 

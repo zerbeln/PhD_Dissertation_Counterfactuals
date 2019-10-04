@@ -1,10 +1,9 @@
 import numpy as np
 import math
-from AADI_RoverDomain.parameters import Parameters as p
 from Python_Code.suggestions import get_counterfactual_partners
 
 # GLOBAL REWARDS ------------------------------------------------------------------------------------------------------
-def calc_global(rover_paths, poi_values, poi_positions):
+def calc_global(p, rover_paths, poi_values, poi_positions):
     """
     Calculate the global reward for the entire rover trajectory
     :param rover_paths:
@@ -58,7 +57,7 @@ def calc_global(rover_paths, poi_values, poi_positions):
 
 
 
-def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
+def calc_difference(p, rover_paths, poi_values, poi_positions, global_reward):
     """
     Calcualte each rover's difference reward from entire rover trajectory
     :param rover_paths:
@@ -122,7 +121,7 @@ def calc_difference(rover_paths, poi_values, poi_positions, global_reward):
     return difference_rewards
 
 
-def calc_dpp(rover_paths, poi_values, poi_positions, global_reward, sgst):
+def calc_dpp(p, rover_paths, poi_values, poi_positions, global_reward, sgst):
     """
     Calculate D++ rewards for each rover across entire trajectory
     :param rover_paths:
@@ -169,7 +168,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward, sgst):
                         observer_count += 1
 
                 # Add in counterfactual partners
-                counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
+                counterfactual_agents = get_counterfactual_partners(p, n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
                 for partner_id in range(n_counters):
                     rover_distances[p.num_rovers+partner_id] = counterfactual_agents[partner_id]
 
@@ -227,7 +226,7 @@ def calc_dpp(rover_paths, poi_values, poi_positions, global_reward, sgst):
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
+                        counterfactual_agents = get_counterfactual_partners(p, n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
                         for partner_id in range(n_counters):
                             rover_distances[p.num_rovers+partner_id] = counterfactual_agents[partner_id]
 

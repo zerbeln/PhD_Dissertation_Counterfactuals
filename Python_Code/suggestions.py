@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import sys
-from AADI_RoverDomain.parameters import Parameters as p
 
 def low_high_split(rover_dist, rover_id, poi_id, poi_values, n_counters):
     """
@@ -73,7 +72,7 @@ def low_value_only(rover_dist, poi_id, poi_values, n_counters):
     return partners
 
 
-def value_based_incentives(rover_dist, poi_id, poi_values, n_counters):
+def value_based_incentives(p, rover_dist, poi_id, poi_values, n_counters):
     """
     Partners are placed close to high value POIs to generate larger stepping stone reward
     Partners are placed further away from low value POIs to generate smaller stepping stone reward
@@ -98,7 +97,7 @@ def value_based_incentives(rover_dist, poi_id, poi_values, n_counters):
 
     return partners
 
-def partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id):
+def partner_proximity_suggestions(p, rover_dist, n_counters, self_id, rover_paths, step_id):
     """
     Partner suggestions based on rover proximity to other rovers
     :param rover_dist:
@@ -139,7 +138,7 @@ def partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, 
 
     return partners
 
-def go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters):
+def go_left_suggestions(p, rover_dist, poi_id, poi_pos, n_counters):
     partners = np.zeros(n_counters)
     x_middle = p.x_dim/2
 
@@ -152,7 +151,7 @@ def go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters):
 
     return partners
 
-def go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters):
+def go_right_suggestions(p, rover_dist, poi_id, poi_pos, n_counters):
     partners = np.zeros(n_counters)
     x_middle = p.x_dim / 2
 
@@ -165,7 +164,7 @@ def go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters):
 
     return partners
 
-def left_right_split(rover_dist, rover_id, poi_id, poi_pos, n_counters):
+def left_right_split(p, rover_dist, rover_id, poi_id, poi_pos, n_counters):
     partners = np.zeros(n_counters)
     x_middle = p.x_dim / 2
 
@@ -181,7 +180,7 @@ def left_right_split(rover_dist, rover_id, poi_id, poi_pos, n_counters):
 
     return partners
 
-def get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, poi_pos, step_id, suggestion):
+def get_counterfactual_partners(p, n_counters, self_id, rover_dist, rover_paths, poi_id, poi_values, poi_pos, step_id, suggestion):
     partners = np.zeros(n_counters)
 
     if suggestion == "none":
@@ -194,15 +193,15 @@ def get_counterfactual_partners(n_counters, self_id, rover_dist, rover_paths, po
     elif suggestion == "high_low":
         partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters)
     elif suggestion == "value_incentives":
-        partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters)
+        partners = value_based_incentives(p, rover_dist, poi_id, poi_values, n_counters)
     elif suggestion == "partner_proximity":
-        partners = partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id)
+        partners = partner_proximity_suggestions(p, rover_dist, n_counters, self_id, rover_paths, step_id)
     elif suggestion == "left":
-        partners = go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters)
+        partners = go_left_suggestions(p, rover_dist, poi_id, poi_pos, n_counters)
     elif suggestion == "right":
-        partners = go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters)
+        partners = go_right_suggestions(p, rover_dist, poi_id, poi_pos, n_counters)
     elif suggestion == "left_right":
-        partners = left_right_split(rover_dist, self_id, poi_id, poi_pos, n_counters)
+        partners = left_right_split(p, rover_dist, self_id, poi_id, poi_pos, n_counters)
     else:
         sys.exit('Incorrect Suggestion Type')
 

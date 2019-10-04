@@ -1,5 +1,4 @@
 import numpy as np
-from AADI_RoverDomain.parameters import Parameters as p
 
 
 cdef class NeuralNetwork:
@@ -16,7 +15,7 @@ cdef class NeuralNetwork:
     cdef public double[:, :] hid_layer
     cdef public double[:, :] out_layer
 
-    def __cinit__(self):
+    def __cinit__(self, p):
         self.n_rovers = int(p.num_rovers)
         self.n_inputs = int(p.num_inputs)
         self.n_outputs = int(p.num_outputs)

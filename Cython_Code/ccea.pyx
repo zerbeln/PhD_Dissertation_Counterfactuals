@@ -1,5 +1,4 @@
 import numpy as np
-from AADI_RoverDomain.parameters import Parameters as p
 import random
 
 
@@ -20,7 +19,7 @@ cdef class Ccea:
     cdef public double[:, :] fitness
     cdef public double[:, :] team_selection
 
-    def __cinit__(self):
+    def __cinit__(self, p):
         self.parent_psize = p.parent_pop_size
         self.offspring_psize = p.offspring_pop_size
         self.total_pop_size = p.parent_pop_size + p.offspring_pop_size

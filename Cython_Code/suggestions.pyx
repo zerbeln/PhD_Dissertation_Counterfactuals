@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import sys
-from AADI_RoverDomain.parameters import Parameters as p
 
 cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi_values, int n_counters):
     """
@@ -79,7 +78,7 @@ cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n
     return partners
 
 
-cpdef value_based_incentives(double rover_dist, int poi_id, double [:] poi_values, int n_counters):
+cpdef value_based_incentives(object p, double rover_dist, int poi_id, double [:] poi_values, int n_counters):
     """
     Partners are placed close to high value POIs to generate larger stepping stone reward
     Partners are placed further away from low value POIs to generate smaller stepping stone reward
@@ -108,7 +107,7 @@ cpdef value_based_incentives(double rover_dist, int poi_id, double [:] poi_value
 
     return partners
 
-cpdef partner_proximity_suggestions(double rover_dist, int n_counters, int self_id, double [:, :, :] rover_paths, int step_id):
+cpdef partner_proximity_suggestions(object p, double rover_dist, int n_counters, int self_id, double [:, :, :] rover_paths, int step_id):
     """
     Partner suggestions based on rover proximity to other rovers
     :param rover_dist:
@@ -155,7 +154,7 @@ cpdef partner_proximity_suggestions(double rover_dist, int n_counters, int self_
 
     return partners
 
-cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters):
+cpdef go_left_suggestions(object p, double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
     cdef double x_middle
@@ -172,7 +171,7 @@ cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, 
 
     return partners
 
-cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters):
+cpdef go_right_suggestions(object p, double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
     cdef double x_middle
@@ -189,7 +188,7 @@ cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos,
 
     return partners
 
-cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :] poi_pos, int n_counters):
+cpdef left_right_split(object p, double rover_dist, int rover_id, int poi_id, double [:, :] poi_pos, int n_counters):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
     cdef double x_middle
@@ -209,7 +208,7 @@ cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :
 
     return partners
 
-cpdef get_counterfactual_partners(int n_counters, int self_id, double rover_dist, double [:, :, :] rover_paths, int poi_id, double [:] poi_values, double [:, :] poi_pos, int step_id, str suggestion):
+cpdef get_counterfactual_partners(object p, int n_counters, int self_id, double rover_dist, double [:, :, :] rover_paths, int poi_id, double [:] poi_values, double [:, :] poi_pos, int step_id, str suggestion):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
@@ -223,15 +222,15 @@ cpdef get_counterfactual_partners(int n_counters, int self_id, double rover_dist
     elif suggestion == "high_low":
         partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters)
     elif suggestion == "value_incentives":
-        partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters)
+        partners = value_based_incentives(p, rover_dist, poi_id, poi_values, n_counters)
     elif suggestion == "partner_proximity":
-        partners = partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, step_id)
+        partners = partner_proximity_suggestions(p, rover_dist, n_counters, self_id, rover_paths, step_id)
     elif suggestion == "left":
-        partners = go_left_suggestions(rover_dist, poi_id, poi_pos, n_counters)
+        partners = go_left_suggestions(p, rover_dist, poi_id, poi_pos, n_counters)
     elif suggestion == "right":
-        partners = go_right_suggestions(rover_dist, poi_id, poi_pos, n_counters)
+        partners = go_right_suggestions(p, rover_dist, poi_id, poi_pos, n_counters)
     elif suggestion == "left_right":
-        partners = left_right_split(rover_dist, self_id, poi_id, poi_pos, n_counters)
+        partners = left_right_split(p, rover_dist, self_id, poi_id, poi_pos, n_counters)
     else:
         sys.exit('Incorrect Suggestion Type')
 
