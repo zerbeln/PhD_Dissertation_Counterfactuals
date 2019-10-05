@@ -3,15 +3,14 @@ import random
 
 
 cdef class Ccea:
-
     # Declare variables
     cdef int parent_psize
     cdef int offspring_psize
     cdef public int total_pop_size
     cdef int policy_size
     cdef int n_populations
-    cdef double percent_mut
     cdef double mut_rate
+    cdef double mut_chance
     cdef double eps
     cdef double[:, :, :] parent_pop
     cdef double[:, :, :] offspring_pop
@@ -19,14 +18,14 @@ cdef class Ccea:
     cdef public double[:, :] fitness
     cdef public double[:, :] team_selection
 
-    def __cinit__(self, p):
-        self.parent_psize = p.parent_pop_size
-        self.offspring_psize = p.offspring_pop_size
-        self.total_pop_size = p.parent_pop_size + p.offspring_pop_size
-        self.policy_size = (p.num_inputs + 1)*p.num_nodes + (p.num_nodes + 1) * p.num_outputs  # Number of weights for NN
-        self.n_populations = p.num_rovers
-        self.percent_mut = p.percentage_mut
+    def __cinit__(self, object p):
+        self.parent_psize = int(p.parent_pop_size)
+        self.offspring_psize = int(p.offspring_pop_size)
+        self.total_pop_size = int(p.parent_pop_size + p.offspring_pop_size)
+        self.policy_size = int((p.num_inputs + 1)*p.num_nodes + (p.num_nodes + 1) * p.num_outputs)  # Number of weights for NN
+        self.n_populations = int(p.num_rovers)
         self.mut_rate = p.mutation_rate
+        self.mut_chance = p.mutation_prob
         self.eps = p.epsilon
         self.pops = np.zeros((self.n_populations, self.total_pop_size, self.policy_size))
         self.parent_pop = np.zeros((self.n_populations, self.parent_psize, self.policy_size))
@@ -65,19 +64,19 @@ cdef class Ccea:
         Choose teams of individuals from among populations to be tested
         :return: None
         """
-        cdef int pop_id, policy_id, k, rpol
+        cdef int pop_id, policy_id, k, target
         self.team_selection = np.ones((self.n_populations, self.total_pop_size)) * (-1)
 
         for pop_id in range(self.n_populations):
             for policy_id in range(self.total_pop_size):
-                rpol = random.randint(0, (self.total_pop_size - 1))  # Select a random policy from pop
+                target = random.randint(0, (self.total_pop_size - 1))  # Select a random policy from pop
                 k = 0
                 while k < policy_id:  # Check for duplicates
-                    if rpol == self.team_selection[pop_id, k]:
-                        rpol = random.randint(0, (self.total_pop_size - 1))
+                    if target == self.team_selection[pop_id, k]:
+                        target = random.randint(0, (self.total_pop_size - 1))
                         k = -1
                     k += 1
-                self.team_selection[pop_id, policy_id] = rpol  # Assign policy to team
+                self.team_selection[pop_id, policy_id] = target  # Assign policy to team
 
     cpdef mutate(self):  # Mutate policy based on probability
         """
@@ -89,12 +88,12 @@ cdef class Ccea:
 
         for pop_index in range(self.n_populations):
             policy_index = 0
-            mutate_n = int(self.percent_mut * self.policy_size)
+            mutate_n = int(self.mut_rate * self.policy_size)
             if mutate_n == 0:
                 mutate_n = 1
             while policy_index < self.offspring_psize:
                 rnum = random.uniform(0, 1)
-                if rnum <= self.mut_rate:
+                if rnum <= self.mut_chance:
                     for w in range(mutate_n):
                         target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
                         weight = np.random.normal(0, 1)
@@ -136,7 +135,7 @@ cdef class Ccea:
         Combine parent and offspring populations into single population array
         :return: None
         """
-        cdef pop_id, off_pol_id, pol_id
+        cdef int pop_id, off_pol_id, pol_id
 
         for pop_id in range(self.n_populations):
             off_pol_id = 0

@@ -7,22 +7,33 @@ from AADI_RoverDomain.rover_setup import *
 class RoverDomain:
 
     def __init__(self, p):
-        self.par = p
-        self.num_agents = p.num_rovers
-        self.obs_radius = p.min_observation_dist
 
-        #Gym compatible attributes
-        self.observation_space = np.zeros((1, int(2*360 / p.angle_resolution)))
+        # World attributes
+        self.world_x = p.x_dim
+        self.world_y = p.y_dim
+        self.nrovers = p.num_rovers
+        self.n_pois = p.num_pois
+        self.observation_space = np.zeros((1, int(2 * 360 / p.angle_resolution)))
+        self.c_req = p.coupling
+        self.min_dist = p.min_distance
+        self.obs_radius = p.min_observation_dist
         self.istep = 0  # Current Step counter
 
-        # Initialize rover positions
+        # Rover parameters
+        self.create_new_world_config = p.new_world_config
+        self.rover_steps = p.num_steps
+        self.n_rover_inputs = p.num_inputs
+        self.angle_res = p.angle_resolution
+        self.rover_sensors = p.sensor_model
+
+        # Rover position vectors
         self.rover_pos = np.zeros((p.num_rovers, 3))
         self.rover_initial_pos = np.zeros((p.num_rovers, 3))
 
         # Rover path trace for trajectory-wide global reward computation and vizualization purposes
-        self.rover_path = np.zeros(((p.num_steps + 1), self.num_agents, 3))
+        self.rover_path = np.zeros(((p.num_steps + 1), self.nrovers, 3))
 
-        # Initialize POI positions and values
+        # POI position and value vectors
         self.poi_pos = np.zeros((p.num_pois, 2))
         self.poi_values = np.zeros(p.num_pois)
         self.poi_rewards = np.zeros(p.num_pois)
@@ -33,29 +44,29 @@ class RoverDomain:
         :return: none
         """
 
-        if self.par.new_world_config == True:
+        if self.create_new_world_config == True:
             # Initialize rover positions
-            self.rover_pos = init_rover_pos_random_concentrated(self.par)
+            self.rover_pos = init_rover_pos_random_concentrated(self.nrovers, self.world_x, self.world_y)
             self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
             # Initialize POI positions and values
-            self.poi_pos = init_poi_pos_circle(self.par)
-            self.poi_values = init_poi_vals_half_and_half(self.par)
+            self.poi_pos = init_poi_pos_circle(self.n_pois, self.world_x, self.world_y)
+            self.poi_values = init_poi_vals_half_and_half(self.n_pois)
             self.save_world_configuration()
         else:
             # Initialize rover positions
-            self.rover_pos = init_rover_pos_txt_file(self.par)
+            self.rover_pos = init_rover_pos_txt_file(self.nrovers)
             self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
             # Initialize POI positions and values
-            self.poi_pos = init_poi_positions_txt_file(self.par)
-            self.poi_values = init_poi_values_txt_file(self.par)
+            self.poi_pos = init_poi_positions_txt_file(self.n_pois)
+            self.poi_values = init_poi_values_txt_file(self.n_pois)
 
         self.istep = 0
-        self.rover_path = np.zeros(((self.par.num_steps + 1), self.num_agents, 3))  # Tracks rover trajectories
-        self.poi_rewards = np.zeros(self.par.num_pois)
+        self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))  # Tracks rover trajectories
+        self.poi_rewards = np.zeros(self.n_pois)
 
-        for rover_id in range(self.num_agents):  # Record intial positions in rover path
+        for rover_id in range(self.nrovers):  # Record intial positions in rover path
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
@@ -66,7 +77,6 @@ class RoverDomain:
         :Output: Three txt files for Rover starting positions, POI postions, and POI values
         """
         dir_name = 'Output_Data/'  # Intended directory for output files
-        nrovers = self.par.num_rovers
 
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it
             os.makedirs(dir_name)
@@ -76,7 +86,7 @@ class RoverDomain:
         pvals_name = os.path.join(dir_name, 'POI_Values.txt')
 
         rov_coords = open(rcoords_name, 'w')
-        for r_id in range(nrovers):  # Record initial rover positions to txt file
+        for r_id in range(self.nrovers):  # Record initial rover positions to txt file
             rov_coords.write('%f' % self.rover_pos[r_id, 0])
             rov_coords.write('\t')
             rov_coords.write('%f' % self.rover_pos[r_id, 1])
@@ -88,7 +98,7 @@ class RoverDomain:
 
         poi_coords = open(pcoords_name, 'w')
         poi_values = open(pvals_name, 'w')
-        for p_id in range(self.par.num_pois):  # Record POI positions and values
+        for p_id in range(self.n_pois):  # Record POI positions and values
             poi_coords.write('%f' % self.poi_pos[p_id, 0])
             poi_coords.write('\t')
             poi_coords.write('%f' % self.poi_pos[p_id, 1])
@@ -105,12 +115,12 @@ class RoverDomain:
         Resets rovers to starting positions (does not alter the world's initial state)
         :return: none
         """
-        self.poi_rewards = np.zeros(self.par.num_pois)
+        self.poi_rewards = np.zeros(self.n_pois)
         self.rover_pos = self.rover_initial_pos.copy()
-        self.rover_path = np.zeros(((self.par.num_steps + 1), self.num_agents, 3))
+        self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))
         self.istep = 0
 
-        for rover_id in range(self.num_agents):  # Record initial positions in rover path
+        for rover_id in range(self.nrovers):  # Record initial positions in rover path
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
@@ -124,7 +134,7 @@ class RoverDomain:
         joint_action = np.clip(joint_action, -1.0, 1.0)
 
         # Update rover positions
-        for rover_id in range(self.num_agents):
+        for rover_id in range(self.nrovers):
 
             x = joint_action[rover_id, 0]
             y = joint_action[rover_id, 1]
@@ -143,13 +153,13 @@ class RoverDomain:
 
 
         # Update rover path
-        for rover_id in range(self.num_agents):
+        for rover_id in range(self.nrovers):
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
         # Computes done
-        done = int(self.istep >= self.par.num_steps)
+        done = int(self.istep >= self.rover_steps)
 
         joint_state = self.get_joint_state()
 
@@ -163,19 +173,19 @@ class RoverDomain:
         :return: joint_state
         """
 
-        joint_state = np.zeros((self.par.num_rovers, self.par.num_inputs))
+        joint_state = np.zeros((self.nrovers, self.n_rover_inputs))
 
-        for rover_id in range(self.num_agents):
+        for rover_id in range(self.nrovers):
             self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]
             self_orient = self.rover_pos[rover_id, 2]
 
-            rover_state = [0.0 for _ in range(int(360 / self.par.angle_resolution))]
-            poi_state = [0.0 for _ in range(int(360 / self.par.angle_resolution))]
-            temp_poi_dist_list = [[] for _ in range(int(360 / self.par.angle_resolution))]
-            temp_rover_dist_list = [[] for _ in range(int(360 / self.par.angle_resolution))]
+            rover_state = [0.0 for _ in range(int(360 / self.angle_res))]
+            poi_state = [0.0 for _ in range(int(360 / self.angle_res))]
+            temp_poi_dist_list = [[] for _ in range(int(360 / self.angle_res))]
+            temp_rover_dist_list = [[] for _ in range(int(360 / self.angle_res))]
 
             # Log POI distances into brackets
-            for poi_id in range(self.par.num_pois):
+            for poi_id in range(self.n_pois):
                 poi_x = self.poi_pos[poi_id, 0]
                 poi_y = self.poi_pos[poi_id, 1]
                 poi_value = self.poi_values[poi_id]
@@ -189,17 +199,17 @@ class RoverDomain:
                 if angle < 0:
                     angle += 360
 
-                bracket = int(angle / self.par.angle_resolution)
+                bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_poi_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
                     bracket = len(temp_poi_dist_list) - 1
-                if dist < self.par.min_distance:  # Clip distance to not overwhelm tanh in NN
-                    dist = self.par.min_distance
+                if dist < self.min_dist:  # Clip distance to not overwhelm tanh in NN
+                    dist = self.min_dist
 
                 temp_poi_dist_list[bracket].append(poi_value/dist)
 
             # Log rover distances into brackets
-            for other_rover_id in range(self.par.num_rovers):
+            for other_rover_id in range(self.nrovers):
                 if other_rover_id == rover_id: # Ignore self
                     continue
                 rov_x = self.rover_pos[other_rover_id, 0]
@@ -213,25 +223,25 @@ class RoverDomain:
                 if angle < 0:
                     angle += 360
 
-                if dist < self.par.min_distance:  # Clip distance to not overwhelm sigmoid in NN
-                    dist = self.par.min_distance
+                if dist < self.min_dist:  # Clip distance to not overwhelm sigmoid in NN
+                    dist = self.min_dist
 
-                bracket = int(angle / self.par.angle_resolution)
+                bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_rover_dist_list):
                     print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
                     bracket = len(temp_rover_dist_list) - 1
                 temp_rover_dist_list[bracket].append(1/dist)
 
             # Encode the information into the state vector
-            for bracket in range(int(360 / self.par.angle_resolution)):
+            for bracket in range(int(360 / self.angle_res)):
                 # POIs
                 num_poi = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
                 if num_poi > 0:
-                    if self.par.sensor_model == 'density':
+                    if self.rover_sensors == 'density':
                         poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi  # Density Sensor
-                    elif self.par.sensor_model == 'summed':
+                    elif self.rover_sensors == 'summed':
                         poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
-                    elif self.par.sensor_model == 'closest':
+                    elif self.rover_sensors == 'closest':
                         poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
                     else:
                         sys.exit('Incorrect sensor model')
@@ -242,11 +252,11 @@ class RoverDomain:
                 # Rovers
                 num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
                 if num_agents > 0:
-                    if self.par.sensor_model == 'density':
+                    if self.rover_sensors == 'density':
                         rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
-                    elif self.par.sensor_model == 'summed':
+                    elif self.rover_sensors == 'summed':
                         rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
-                    elif self.par.sensor_model == 'closest':
+                    elif self.rover_sensors == 'closest':
                         rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
                     else:
                         sys.exit('Incorrect sensor model')
@@ -288,18 +298,18 @@ class RoverDomain:
         """
         global_reward = 0.0
 
-        for poi_id in range(self.par.num_pois):
-            rover_distances = np.zeros(self.par.num_rovers)
+        for poi_id in range(self.n_pois):
+            rover_distances = np.zeros(self.nrovers)
             observer_count = 0
 
-            for agent_id in range(self.par.num_rovers):
+            for agent_id in range(self.nrovers):
                 # Calculate distance between agent and POI
                 x_distance = self.poi_pos[poi_id, 0] - self.rover_pos[agent_id, 0]
                 y_distance = self.poi_pos[poi_id, 1] - self.rover_pos[agent_id, 1]
                 distance = math.sqrt((x_distance * x_distance) + (y_distance * y_distance))
 
-                if distance < self.par.min_distance:
-                    distance = self.par.min_distance
+                if distance < self.min_dist:
+                    distance = self.min_dist
 
                 rover_distances[agent_id] = distance
 
@@ -308,7 +318,7 @@ class RoverDomain:
                     observer_count += 1
 
             # Update global reward if POI is observed
-            if observer_count >= self.par.coupling:
+            if observer_count >= self.c_req:
                 global_reward += self.poi_values[poi_id]
 
         return global_reward

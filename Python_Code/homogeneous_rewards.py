@@ -134,7 +134,7 @@ def calc_dpp(p, rover_paths, poi_values, poi_positions, global_reward, sgst):
     total_steps = p.num_steps + 1  # The +1 is to account for the initial position
     inf = 1000.00
 
-    difference_rewards = calc_difference(rover_paths, poi_values, poi_positions, global_reward)
+    difference_rewards = calc_difference(p, rover_paths, poi_values, poi_positions, global_reward)
     dpp_rewards = np.zeros(p.num_rovers)
 
     # Calculate Dpp Reward with (TotalAgents - 1) Counterfactuals
@@ -168,7 +168,8 @@ def calc_dpp(p, rover_paths, poi_values, poi_positions, global_reward, sgst):
                         observer_count += 1
 
                 # Add in counterfactual partners
-                counterfactual_agents = get_counterfactual_partners(p, n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
+                # (n_counters, nrovers, self_id, rover_dist, rover_paths, poi_id, poi_values, step_id, suggestion, min_dist, obs_rad)
+                counterfactual_agents = get_counterfactual_partners(n_counters, p.num_rovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, step_index, suggestion, p.min_distance, p.min_observation_dist)
                 for partner_id in range(n_counters):
                     rover_distances[p.num_rovers+partner_id] = counterfactual_agents[partner_id]
 
@@ -226,7 +227,7 @@ def calc_dpp(p, rover_paths, poi_values, poi_positions, global_reward, sgst):
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        counterfactual_agents = get_counterfactual_partners(p, n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
+                        counterfactual_agents = get_counterfactual_partners(n_counters, p.num_rovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, step_index, suggestion, p.min_distance, p.min_observation_dist)
                         for partner_id in range(n_counters):
                             rover_distances[p.num_rovers+partner_id] = counterfactual_agents[partner_id]
 

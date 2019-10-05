@@ -5,15 +5,20 @@ import random
 class Ccea:
 
     def __init__(self, p):
-        self.par = p
-        self.total_pop_size = self.par.parent_pop_size + self.par.offspring_pop_size  # Number of policies in each pop
-        n_inputs = self.par.num_inputs; n_outputs = self.par.num_outputs; n_nodes = self.par.num_nodes
+        self.n_rovers = p.num_rovers
+        self.parent_psize = p.parent_pop_size
+        self.offspring_psize = p.offspring_pop_size
+        self.total_pop_size = p.parent_pop_size + p.offspring_pop_size  # Number of policies in each pop
+        self.mut_chance = p.mutation_prob
+        self.mut_rate = p.mutation_rate
+        self.eps = p.epsilon
+        n_inputs = p.num_inputs; n_outputs = p.num_outputs; n_nodes = p.num_nodes
         self.policy_size = (n_inputs + 1)*n_nodes + (n_nodes + 1) * n_outputs  # Number of weights for NN
-        self.pops = np.zeros((self.par.num_rovers, self.total_pop_size, self.policy_size))
-        self.parent_pop = np.zeros((self.par.num_rovers, self.par.parent_pop_size, self.policy_size))
-        self.offspring_pop = np.zeros((self.par.num_rovers, self.par.offspring_pop_size, self.policy_size))
-        self.fitness = np.zeros((self.par.num_rovers, self.total_pop_size))
-        self.team_selection = np.ones((self.par.num_rovers, self.total_pop_size)) * (-1)
+        self.pops = np.zeros((self.n_rovers, self.total_pop_size, self.policy_size))
+        self.parent_pop = np.zeros((self.n_rovers, p.parent_pop_size, self.policy_size))
+        self.offspring_pop = np.zeros((self.n_rovers, p.offspring_pop_size, self.policy_size))
+        self.fitness = np.zeros((self.n_rovers, self.total_pop_size))
+        self.team_selection = np.ones((self.n_rovers, self.total_pop_size)) * (-1)
 
     def reset_populations(self):  # Re-initializes CCEA populations for new run
         """
@@ -21,18 +26,18 @@ class Ccea:
         :return: None
         """
 
-        self.pops = np.zeros((self.par.num_rovers, self.total_pop_size, self.policy_size))
-        self.parent_pop = np.zeros((self.par.num_rovers, self.par.parent_pop_size, self.policy_size))
-        self.offspring_pop = np.zeros((self.par.num_rovers, self.par.offspring_pop_size, self.policy_size))
-        self.fitness = np.zeros((self.par.num_rovers, self.total_pop_size))
-        self.team_selection = np.ones((self.par.num_rovers, self.total_pop_size)) * (-1)
+        self.pops = np.zeros((self.n_rovers, self.total_pop_size, self.policy_size))
+        self.parent_pop = np.zeros((self.n_rovers, self.parent_psize, self.policy_size))
+        self.offspring_pop = np.zeros((self.n_rovers, self.offspring_psize, self.policy_size))
+        self.fitness = np.zeros((self.n_rovers, self.total_pop_size))
+        self.team_selection = np.ones((self.n_rovers, self.total_pop_size)) * (-1)
 
-        for pop_index in range(self.par.num_rovers):
-            for policy_index in range(self.par.parent_pop_size):
+        for pop_index in range(self.n_rovers):
+            for policy_index in range(self.parent_psize):
                 for w in range(self.policy_size):
                     weight = np.random.normal(0, 1)
                     self.parent_pop[pop_index, policy_index, w] = weight
-            for policy_index in range(self.par.offspring_pop_size):
+            for policy_index in range(self.offspring_psize):
                 for w in range(self.policy_size):
                     weight = np.random.normal(0, 1)
                     self.offspring_pop[pop_index, policy_index, w] = weight
@@ -44,9 +49,9 @@ class Ccea:
         Choose teams of individuals from among populations to be tested
         :return: None
         """
-        self.team_selection = np.ones((self.par.num_rovers, self.total_pop_size)) * (-1)
+        self.team_selection = np.ones((self.n_rovers, self.total_pop_size)) * (-1)
 
-        for pop_id in range(self.par.num_rovers):
+        for pop_id in range(self.n_rovers):
             for policy_id in range(self.total_pop_size):
                 rpol = random.randint(0, (self.total_pop_size - 1))  # Select a random policy from pop
                 k = 0
@@ -62,14 +67,14 @@ class Ccea:
         Mutate offspring populations
         :return: None
         """
-        for pop_index in range(self.par.num_rovers):
+        for pop_index in range(self.n_rovers):
             policy_index = 0
-            mutate_n = int(self.par.percentage_mut * self.policy_size)
+            mutate_n = int(self.mut_rate * self.policy_size)
             if mutate_n == 0:
                 mutate_n = 1
-            while policy_index < self.par.offspring_pop_size:
+            while policy_index < self.offspring_psize:
                 rnum = random.uniform(0, 1)
-                if rnum <= self.par.mutation_rate:
+                if rnum <= self.mut_chance:
                     for w in range(mutate_n):
                         target = random.randint(0, (self.policy_size - 1))  # Select random weight to mutate
                         weight = np.random.normal(0, 1)
@@ -81,11 +86,11 @@ class Ccea:
         Select parents from which an offspring population will be created
         :return: None
         """
-        for pop_id in range(self.par.num_rovers):
+        for pop_id in range(self.n_rovers):
             policy_id = 0
-            while policy_id < self.par.parent_pop_size:
+            while policy_id < self.parent_psize:
                 rnum = random.uniform(0, 1)
-                if rnum >= self.par.epsilon:  # Choose best policy
+                if rnum >= self.eps:  # Choose best policy
                     pol_index = np.argmax(self.fitness[pop_id])
                     self.parent_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
                 else:
@@ -108,10 +113,10 @@ class Ccea:
         Combine parent and offspring populations into single population array
         :return: None
         """
-        for pop_id in range(self.par.num_rovers):
+        for pop_id in range(self.n_rovers):
             off_pol_id = 0
             for pol_id in range(self.total_pop_size):
-                if pol_id < self.par.parent_pop_size:
+                if pol_id < self.parent_psize:
                     self.pops[pop_id, pol_id] = self.parent_pop[pop_id, pol_id].copy()
                 else:
                     self.pops[pop_id, pol_id] = self.offspring_pop[pop_id, off_pol_id].copy()

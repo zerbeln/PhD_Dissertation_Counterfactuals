@@ -4,27 +4,27 @@ import numpy as np
 class NeuralNetwork:
 
     def __init__(self, p):
-        self.par = p
-        self.n_inputs = self.par.num_inputs
-        self.n_outputs = self.par.num_outputs
-        self.n_nodes = self.par.num_nodes  # Number of nodes in hidden layer
+        self.n_rovers = p.num_rovers
+        self.n_inputs = p.num_inputs
+        self.n_outputs = p.num_outputs
+        self.n_nodes = p.num_nodes  # Number of nodes in hidden layer
         self.n_weights = (self.n_inputs + 1)*self.n_nodes + (self.n_nodes + 1)*self.n_outputs
         self.input_bias = 1.0
         self.hidden_bias = 1.0
-        self.weights = np.zeros((self.par.num_rovers, self.n_weights))
-        self.in_layer = np.zeros((self.par.num_rovers, self.n_inputs))
-        self.hid_layer = np.zeros((self.par.num_rovers, self.n_nodes))
-        self.out_layer = np.zeros((self.par.num_rovers, self.n_outputs))
+        self.weights = np.zeros((p.num_rovers, self.n_weights))
+        self.in_layer = np.zeros((p.num_rovers, self.n_inputs))
+        self.hid_layer = np.zeros((p.num_rovers, self.n_nodes))
+        self.out_layer = np.zeros((p.num_rovers, self.n_outputs))
 
     def reset_nn(self):  # Clear current network
         """
         Clears neural network arrays so that they all contain zeros
         :return: None
         """
-        self.weights = np.zeros((self.par.num_rovers, self.n_weights))
-        self.in_layer = np.zeros((self.par.num_rovers, self.n_inputs))
-        self.hid_layer = np.zeros((self.par.num_rovers, self.n_nodes))
-        self.out_layer = np.zeros((self.par.num_rovers, self.n_outputs))
+        self.weights = np.zeros((self.n_rovers, self.n_weights))
+        self.in_layer = np.zeros((self.n_rovers, self.n_inputs))
+        self.hid_layer = np.zeros((self.n_rovers, self.n_nodes))
+        self.out_layer = np.zeros((self.n_rovers, self.n_outputs))
 
     def get_inputs(self, state_vec, rov_id):  # Get inputs from state-vector
         """

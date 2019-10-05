@@ -11,11 +11,11 @@ cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, 
     :return: global_reward
     """
     cdef int poi_id, step_index, agent_id, observer, observer_count, od_index
-    cdef int nrovers = p.num_rovers
-    cdef int npoi = p.num_pois
+    cdef int nrovers = int(p.num_rovers)
+    cdef int npoi = int(p.num_pois)
     cdef double summed_observer_distances, x_distance, y_distance, distance
-    cdef int cpl = p.coupling
-    cdef int total_steps = p.num_steps + 1  # The +1 is to account for the initial position
+    cdef int cpl = int(p.coupling)
+    cdef int total_steps = int(p.num_steps + 1)  # The +1 is to account for the initial position
     cdef double inf = 1000.00
     cdef double min_dist = p.min_distance
     cdef double min_obs_dist = p.min_observation_dist
@@ -74,10 +74,10 @@ cpdef calc_difference(object p, double [:, :, :] rover_paths, double [:] poi_val
     :param global_reward:
     :return: difference_rewards (np array of size (n_rovers))
     """
-    cdef int nrovers = p.num_rovers
-    cdef int npoi = p.num_pois
-    cdef int cpl = p.coupling
-    cdef int total_steps = p.num_steps + 1  # The +1 is to account for the initial position
+    cdef int nrovers = int(p.num_rovers)
+    cdef int npoi = int(p.num_pois)
+    cdef int cpl = int(p.coupling)
+    cdef int total_steps = int(p.num_steps + 1)  # The +1 is to account for the initial position
     cdef double cpl_double = p.coupling
     cdef double min_dist = p.min_distance
     cdef double min_obs_distance = p.min_observation_dist
@@ -151,10 +151,10 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
     :param global_reward:
     :return: dpp_rewards (np array of size (n_rovers))
     """
-    cdef int nrovers = p.num_rovers
-    cdef int npoi = p.num_pois
-    cdef int cpl = p.coupling
-    cdef int total_steps = p.num_steps + 1  # The +1 is to account for the initial position
+    cdef int nrovers = int(p.num_rovers)
+    cdef int npoi = int(p.num_pois)
+    cdef int cpl = int(p.coupling)
+    cdef int total_steps = int(p.num_steps + 1)  # The +1 is to account for the initial position
     cdef double cpl_double = p.coupling
     cdef double min_obs_distance = p.min_observation_dist
     cdef double min_dist = p.min_distance
@@ -205,7 +205,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                         observer_count += 1
 
                 # Add in counterfactual partners
-                counterfactual_agents = get_counterfactual_partners(p, n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
+                counterfactual_agents = get_counterfactual_partners(n_counters, nrovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, step_index, suggestion, min_dist, min_obs_distance)
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
@@ -263,7 +263,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        counterfactual_agents = get_counterfactual_partners(p, n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, poi_positions, step_index, suggestion)
+                        counterfactual_agents = get_counterfactual_partners(n_counters, nrovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, step_index, suggestion, min_dist, min_obs_distance)
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 

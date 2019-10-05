@@ -45,9 +45,9 @@ def save_rover_path(p, rover_path):  # Save path rovers take using best policy f
 def run_homogeneous_rovers():
     # For Python code
     # p = Parameters()
-    # cc = ccea.Ccea()
-    # nn = neural_network.NeuralNetwork()
-    # rd = RoverDomain()
+    # cc = ccea.Ccea(p)
+    # nn = neural_network.NeuralNetwork(p)
+    # rd = RoverDomain(p)
 
     # For Cython Code
     p = Parameters()
@@ -86,7 +86,7 @@ def run_homogeneous_rovers():
                 joint_state = rd.get_joint_state()
 
                 while not done:
-                    for rover_id in range(rd.num_agents):
+                    for rover_id in range(rd.nrovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     joint_state, done = rd.step(nn.out_layer)
@@ -94,7 +94,7 @@ def run_homogeneous_rovers():
                 # Update fitness of policies using reward information
                 global_reward = calc_global(p, rd.rover_path, rd.poi_values, rd.poi_pos)
                 if p.reward_type == "Global":
-                    for rover_id in range(rd.num_agents):
+                    for rover_id in range(rd.nrovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_reward
                 elif p.reward_type == "Difference":
@@ -115,7 +115,7 @@ def run_homogeneous_rovers():
             done = False; rd.istep = 0
             joint_state = rd.get_joint_state()
             while not done:
-                for rover_id in range(rd.num_agents):
+                for rover_id in range(rd.nrovers):
                     pol_index = np.argmax(cc.fitness[rover_id])
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)

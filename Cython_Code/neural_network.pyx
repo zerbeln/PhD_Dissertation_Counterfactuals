@@ -15,7 +15,7 @@ cdef class NeuralNetwork:
     cdef public double[:, :] hid_layer
     cdef public double[:, :] out_layer
 
-    def __cinit__(self, p):
+    def __cinit__(self, object p):
         self.n_rovers = int(p.num_rovers)
         self.n_inputs = int(p.num_inputs)
         self.n_outputs = int(p.num_outputs)

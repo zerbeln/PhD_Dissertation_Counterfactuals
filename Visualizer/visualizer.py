@@ -101,7 +101,7 @@ def import_poi_values(p):
     return poi_vals
 
 
-def run_visualizer(episode_reward, srun):
+def run_visualizer(episode_reward):
     p = Parameters()
     scale_factor = 20  # Scaling factor for images
     width = -15  # robot icon widths
@@ -124,76 +124,76 @@ def run_visualizer(episode_reward, srun):
     poi_pos = import_poi_positions(p)
     poi_values = import_poi_values(p)
 
-    for tstep in range(p.num_steps):
-        draw(game_display, background, 0, 0)
-        for poi_id in range(p.num_pois):  # Draw POI and POI values
-            poi_x = int(poi_pos[poi_id, 0] * scale_factor) + image_adjust
-            poi_y = int(poi_pos[poi_id, 1] * scale_factor) + image_adjust
+    for srun in range(p.stat_runs):
+        for tstep in range(p.num_steps):
+            draw(game_display, background, 0, 0)
+            for poi_id in range(p.num_pois):  # Draw POI and POI values
+                poi_x = int(poi_pos[poi_id, 0] * scale_factor) + image_adjust
+                poi_y = int(poi_pos[poi_id, 1] * scale_factor) + image_adjust
 
-            observer_count = 0
-            for rover_id in range(p.num_rovers):
-                x_dist = poi_pos[poi_id, 0] - rover_path[srun, tstep, rover_id, 0]
-                y_dist = poi_pos[poi_id, 1] - rover_path[srun, tstep, rover_id, 1]
-                dist = math.sqrt((x_dist**2) + (y_dist**2))
+                observer_count = 0
+                for rover_id in range(p.num_rovers):
+                    x_dist = poi_pos[poi_id, 0] - rover_path[srun, tstep, rover_id, 0]
+                    y_dist = poi_pos[poi_id, 1] - rover_path[srun, tstep, rover_id, 1]
+                    dist = math.sqrt((x_dist**2) + (y_dist**2))
 
-                if dist <= p.min_observation_dist:
-                    observer_count += 1
+                    if dist <= p.min_observation_dist:
+                        observer_count += 1
 
 
-            if observer_count >= p.coupling:
-                poi_status[poi_id] = True
+                if observer_count >= p.coupling:
+                    poi_status[poi_id] = True
 
-            if poi_status[poi_id]:
-                # draw(game_display, greenflag, poi_x, poi_y)  # POI observed
-                pygame.draw.circle(game_display, (50, 205, 50), (poi_x, poi_y), 10)
-                pygame.draw.circle(game_display, (255, 255, 255), (poi_x, poi_y), 3 * scale_factor, 1)
-            else:
-                # draw(game_display, redflag, poi_x, poi_y)  # POI not observed
-                pygame.draw.circle(game_display, (220, 20, 60), (poi_x, poi_y), 10)
-                pygame.draw.circle(game_display, (255, 255, 255), (poi_x, poi_y), 3 * scale_factor, 1)
-            textsurface = myfont.render(str(poi_values[poi_id]), False, (255, 255, 255))
-            target_x = int(poi_pos[poi_id, 0]*scale_factor) + image_adjust
-            target_y = int(poi_pos[poi_id, 1]*scale_factor) + image_adjust
-            draw(game_display, textsurface, target_x, target_y)
+                if poi_status[poi_id]:
+                    # draw(game_display, greenflag, poi_x, poi_y)  # POI observed
+                    pygame.draw.circle(game_display, (50, 205, 50), (poi_x, poi_y), 10)
+                    pygame.draw.circle(game_display, (255, 255, 255), (poi_x, poi_y), 3 * scale_factor, 1)
+                else:
+                    # draw(game_display, redflag, poi_x, poi_y)  # POI not observed
+                    pygame.draw.circle(game_display, (220, 20, 60), (poi_x, poi_y), 10)
+                    pygame.draw.circle(game_display, (255, 255, 255), (poi_x, poi_y), 3 * scale_factor, 1)
+                textsurface = myfont.render(str(poi_values[poi_id]), False, (255, 255, 255))
+                target_x = int(poi_pos[poi_id, 0]*scale_factor) + image_adjust
+                target_y = int(poi_pos[poi_id, 1]*scale_factor) + image_adjust
+                draw(game_display, textsurface, target_x, target_y)
 
-        for rov_id in range(p.num_rovers):  # Draw all rovers and their trajectories
-            rover_x = int(rover_path[srun, tstep, rov_id, 0]*scale_factor) + width + image_adjust
-            rover_y = int(rover_path[srun, tstep, rov_id, 1]*scale_factor) + width + image_adjust
-            draw(game_display, robot_image, rover_x, rover_y)
+            for rov_id in range(p.num_rovers):  # Draw all rovers and their trajectories
+                rover_x = int(rover_path[srun, tstep, rov_id, 0]*scale_factor) + width + image_adjust
+                rover_y = int(rover_path[srun, tstep, rov_id, 1]*scale_factor) + width + image_adjust
+                draw(game_display, robot_image, rover_x, rover_y)
 
-            if tstep != 0:  # start drawing trails from timestep 1.
-                for timestep in range(1, tstep):  # draw the trajectory lines
-                    line_color = tuple(color_array[rov_id])
-                    start_x = int(rover_path[srun, (timestep-1), rov_id, 0]*scale_factor) + image_adjust
-                    start_y = int(rover_path[srun, (timestep-1), rov_id, 1]*scale_factor) + image_adjust
-                    end_x = int(rover_path[srun, timestep, rov_id, 0]*scale_factor) + image_adjust
-                    end_y = int(rover_path[srun, timestep, rov_id, 1]*scale_factor) + image_adjust
-                    line_width = 3
-                    pygame.draw.line(game_display, line_color, (start_x, start_y), (end_x, end_y), line_width)
-                    origin_x = int(rover_path[srun, timestep, rov_id, 0]*scale_factor) + image_adjust
-                    origin_y = int(rover_path[srun, timestep, rov_id, 1]*scale_factor) + image_adjust
-                    circle_rad = 3
-                    pygame.draw.circle(game_display, line_color, (origin_x, origin_y), circle_rad)
+                if tstep != 0:  # start drawing trails from timestep 1.
+                    for timestep in range(1, tstep):  # draw the trajectory lines
+                        line_color = tuple(color_array[rov_id])
+                        start_x = int(rover_path[srun, (timestep-1), rov_id, 0]*scale_factor) + image_adjust
+                        start_y = int(rover_path[srun, (timestep-1), rov_id, 1]*scale_factor) + image_adjust
+                        end_x = int(rover_path[srun, timestep, rov_id, 0]*scale_factor) + image_adjust
+                        end_y = int(rover_path[srun, timestep, rov_id, 1]*scale_factor) + image_adjust
+                        line_width = 3
+                        pygame.draw.line(game_display, line_color, (start_x, start_y), (end_x, end_y), line_width)
+                        origin_x = int(rover_path[srun, timestep, rov_id, 0]*scale_factor) + image_adjust
+                        origin_y = int(rover_path[srun, timestep, rov_id, 1]*scale_factor) + image_adjust
+                        circle_rad = 3
+                        pygame.draw.circle(game_display, line_color, (origin_x, origin_y), circle_rad)
 
+            pygame.display.update()
+            time.sleep(0.1)
+
+        scoresurface = myfont.render('The system reward obtained is ' + str(round(episode_reward, 2)), False, (0, 0, 0))
+        draw(game_display, scoresurface, x_map*scale_factor-500, 20)
         pygame.display.update()
-        time.sleep(0.1)
-        
-    scoresurface = myfont.render('The system reward obtained is ' + str(round(episode_reward, 2)), False, (0, 0, 0))
-    draw(game_display, scoresurface, x_map*scale_factor-500, 20)
-    pygame.display.update()
 
-    dir_name = 'Screenshots/'  # Intended directory for output files
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-    image_name = "Screenshot_SR" + str(srun) + ".jpg"
-    screenshot_filename = os.path.join(dir_name, image_name)
+        dir_name = 'Screenshots/'  # Intended directory for output files
+        if not os.path.exists(dir_name):  # If Data directory does not exist, create it
+            os.makedirs(dir_name)
+        image_name = "Screenshot_SR" + str(srun) + ".jpg"
+        screenshot_filename = os.path.join(dir_name, image_name)
 
-    pygame.image.save(game_display, screenshot_filename)
-    while p.running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                p.running = False
+        pygame.image.save(game_display, screenshot_filename)
+        while p.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    p.running = False
 
 
-for srun in range(p.stat_runs):
-    run_visualizer(20, srun)
+run_visualizer(20)
