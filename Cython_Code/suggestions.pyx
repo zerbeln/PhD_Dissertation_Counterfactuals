@@ -2,7 +2,7 @@ import numpy as np
 import math
 import sys
 
-cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi_values, int n_counters):
+cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi_values, int n_counters, double obs_rad):
     """
     Rovers with even IDs go for high value POIs, Rovers with odd IDs go for low value POIs
     :param rover_dist:
@@ -15,17 +15,17 @@ cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
-    if rover_id % 2 == 0:
-        if poi_values[poi_id] > 5.0:
+    if rover_id % 2 == 0:  # Even IDed rovers pursue higher value targets
+        if poi_values[poi_id] > 5.0 and rover_dist < obs_rad:
             for partner_id in range(n_counters):
-                partners[partner_id] = rover_dist
+                partners[partner_id] = 1.0
         else:
             for partner_id in range(n_counters):
                 partners[partner_id] = 100.0
     else:
-        if poi_values[poi_id] <= 5.0:
+        if poi_values[poi_id] <= 5.0 and rover_dist < obs_rad:  # Odd IDed rovers pursue lower value targets
             for partner_id in range(n_counters):
-                partners[partner_id] = rover_dist
+                partners[partner_id] = 1.0
         else:
             for partner_id in range(n_counters):
                 partners[partner_id] = 100.0
@@ -113,7 +113,7 @@ cpdef partner_proximity_suggestions(double rover_dist, int n_counters, int self_
     :param obs_rad: 
     :return: 
     """
-    cdef int partner_id, count
+    cdef int partner_id, count, rover_id
     cdef double x_dist, y_dist, rover_x, rover_y, dist, self_x, self_y
     cdef double [:] partners = np.zeros(n_counters)
     count = 0
@@ -132,16 +132,15 @@ cpdef partner_proximity_suggestions(double rover_dist, int n_counters, int self_
         if dist < obs_rad:
             count += 1
 
-    if count > 0:
-        if rover_dist < obs_rad:
-            for partner_id in range(n_counters):
-                partners[partner_id] = min_dist
-        else:
-            for partner_id in range(n_counters):
-                partners[partner_id] = obs_rad - 0.01
-    else:
+    if count > 0 and rover_dist < obs_rad:
         for partner_id in range(n_counters):
             partners[partner_id] = min_dist
+    if count == 0 and rover_dist < obs_rad:
+        for partner_id in range(n_counters):
+            partners[partner_id] = obs_rad - 0.01
+    else:
+        for partner_id in range(n_counters):
+            partners[partner_id] = 100.00
 
     return partners
 
@@ -211,10 +210,10 @@ cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, doub
     elif suggestion == "low_val":
         partners = low_value_only(rover_dist, poi_id, poi_values, n_counters)
     elif suggestion == "high_low":
-        partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters)
-    elif suggestion == "value_incentives":
+        partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters, obs_rad)
+    elif suggestion == "val_based":
         partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters, min_dist, obs_rad)
-    elif suggestion == "partner_proximity":
+    elif suggestion == "partner_prox":
         partners = partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, nrovers, step_id, min_dist, obs_rad)
     else:
         sys.exit('Incorrect Suggestion Type')

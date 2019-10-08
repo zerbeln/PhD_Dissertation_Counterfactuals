@@ -135,7 +135,7 @@ def init_poi_pos_circle(num_pois, xd, yd):
         POI positions are set in a circle around the center of the map at a specified radius.
         :return: poi_positions: np array of size (npoi, 2)
     """
-    radius = 13.0
+    radius = 14.0
     interval = 360/num_pois
 
     poi_positions = np.zeros((num_pois, 2))
@@ -157,7 +157,7 @@ def init_poi_pos_concentric_circles(num_pois, xd, yd):
         :return: poi_positions: np array of size (npoi, 2)
     """
     assert(num_pois == 12)
-    inner_radius = 6.0
+    inner_radius = 8.0
     outter_radius = 15.0
     interval = 360 / (num_pois/2)
 
@@ -165,19 +165,18 @@ def init_poi_pos_concentric_circles(num_pois, xd, yd):
 
     x = xd / 2
     y = yd / 2
-    theta = 0.0
+    inner_theta = 30.0
+    outter_theta = 0.0
 
     for poi_id in range(num_pois):
-        if poi_id == 6:
-            theta = 0
         if poi_id < 6:
-            poi_positions[poi_id, 0] = x + inner_radius * math.cos(theta * math.pi / 180)
-            poi_positions[poi_id, 1] = y + inner_radius * math.sin(theta * math.pi / 180)
-            theta += interval
+            poi_positions[poi_id, 0] = x + inner_radius * math.cos(inner_theta * math.pi / 180)
+            poi_positions[poi_id, 1] = y + inner_radius * math.sin(inner_theta * math.pi / 180)
+            inner_theta += interval
         else:
-            poi_positions[poi_id, 0] = x + outter_radius * math.cos(theta * math.pi / 180)
-            poi_positions[poi_id, 1] = y + outter_radius * math.sin(theta * math.pi / 180)
-            theta += interval
+            poi_positions[poi_id, 0] = x + outter_radius * math.cos(outter_theta * math.pi / 180)
+            poi_positions[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
+            outter_theta += interval
 
     return poi_positions
 
@@ -264,21 +263,40 @@ def init_poi_values_txt_file(num_pois):
     return poi_vals
 
 
-def init_poi_pos_random_inner_square_outer(num_pois, xd, yd):
+def init_poi_pos_random_and_square(num_pois, xd, yd, num_rovers, rover_positions, obs_rad):
     num_pois = num_pois
-    num_outer_pois = 4
-    num_inner_pois = num_pois - num_outer_pois
-
     poi_positions = np.zeros((num_pois, 2))
 
-    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = 0.0  # Bottom left
-    poi_positions[1, 0] = 0.0; poi_positions[1, 1] = (yd - 1.0)  # Top left
-    poi_positions[2, 0] = (xd - 1.0); poi_positions[2, 1] = 0.0  # Bottom right
-    poi_positions[3, 0] = (xd - 1.0); poi_positions[3, 1] = (yd - 1.0)  # Top right
+    poi_positions[0, 0] = 1.0; poi_positions[0, 1] = 1.0  # Bottom left
+    poi_positions[1, 0] = 1.0; poi_positions[1, 1] = (yd - 2.0)  # Top left
+    poi_positions[2, 0] = (xd - 2.0); poi_positions[2, 1] = 1.0  # Bottom right
+    poi_positions[3, 0] = (xd - 2.0); poi_positions[3, 1] = (yd - 2.0)  # Top right
 
-    for i in range(4, num_pois):
-        poi_positions[i, 0] = random.uniform(xd / 4, 3 * xd / 4)
-        poi_positions[i, 1] = random.uniform(yd / 4, 3 * yd / 4)
+    poi_id = 4
+    while poi_id < num_pois:
+        x = random.uniform(0, xd - 1)
+        y = random.uniform(0, yd - 1)
+
+        rover_id = 0
+        while rover_id < num_rovers:
+            rovx = rover_positions[rover_id, 0]; rovy = rover_positions[rover_id, 1]
+            xdist = x - rovx; ydist = y - rovy
+            distance = math.sqrt((xdist ** 2) + (ydist ** 2))
+
+            while distance < obs_rad:
+                x = random.uniform(0, xd - 1)
+                y = random.uniform(0, yd - 1)
+                rovx = rover_positions[rover_id, 0]; rovy = rover_positions[rover_id, 1]
+                xdist = x - rovx; ydist = y - rovy
+                distance = math.sqrt((xdist ** 2) + (ydist ** 2))
+                rover_id = -1
+
+            rover_id += 1
+
+        poi_positions[poi_id, 0] = x
+        poi_positions[poi_id, 1] = y
+
+        poi_id += 1
 
     return poi_positions
 
@@ -308,18 +326,18 @@ def init_poi_pos_concentric_squares(num_pois, xd, yd):
 
     # Inner-Bottom POI
     poi_positions[0, 0] = (xd / 2)
-    poi_positions[0, 1] = (yd / 2) - 6
+    poi_positions[0, 1] = (yd / 2) - 10
 
     # Inner-Right POI
-    poi_positions[1, 0] = (xd / 2) + 6
+    poi_positions[1, 0] = (xd / 2) + 10
     poi_positions[1, 1] = (yd / 2)
 
     # Inner-Top POI
     poi_positions[2, 0] = (xd / 2)
-    poi_positions[2, 1] = (yd / 2) + 6
+    poi_positions[2, 1] = (yd / 2) + 10
 
     # Inner-Left POI
-    poi_positions[3, 0] = (xd / 2) - 6
+    poi_positions[3, 0] = (xd / 2) - 10
     poi_positions[3, 1] = (yd / 2)
 
     # Outter-Bottom-Left POI
@@ -349,7 +367,7 @@ def init_poi_vals_random(num_pois):
     poi_vals = np.zeros(num_pois)
 
     for poi_id in range(num_pois):
-        poi_vals[poi_id] = random.randint(1, 10)
+        poi_vals[poi_id] = random.randint(2, 12)
 
     return poi_vals
 

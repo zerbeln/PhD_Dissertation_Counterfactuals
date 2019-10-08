@@ -46,12 +46,12 @@ class RoverDomain:
 
         if self.create_new_world_config == True:
             # Initialize rover positions
-            self.rover_pos = init_rover_pos_random_concentrated(self.nrovers, self.world_x, self.world_y)
+            self.rover_pos = init_rover_pos_twelve_grid(self.nrovers, self.world_x, self.world_y)
             self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
             # Initialize POI positions and values
-            self.poi_pos = init_poi_pos_circle(self.n_pois, self.world_x, self.world_y)
-            self.poi_values = init_poi_vals_half_and_half(self.n_pois)
+            self.poi_pos = init_poi_pos_twelve_grid(self.n_pois, self.world_x, self.world_y)
+            self.poi_values = init_poi_vals_random(self.n_pois)
             self.save_world_configuration()
         else:
             # Initialize rover positions

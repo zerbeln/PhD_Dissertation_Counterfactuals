@@ -90,7 +90,7 @@ class Ccea:
             policy_id = 0
             while policy_id < self.parent_psize:
                 rnum = random.uniform(0, 1)
-                if rnum >= self.eps:  # Choose best policy
+                if rnum > self.eps:  # Choose best policy
                     pol_index = np.argmax(self.fitness[pop_id])
                     self.parent_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
                 else:
