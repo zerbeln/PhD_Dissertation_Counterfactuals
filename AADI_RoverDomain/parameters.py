@@ -5,10 +5,10 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 1
-        self.generations = 100  # Number of generations for CCEA in each stat run
-        self.new_world_config = True  # False -> Reuse existing world config, True -> Use new world config
-        self.reward_type = "Global"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+        self.stat_runs = 15
+        self.generations = 1000  # Number of generations for CCEA in each stat run
+        self.new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
+        self.reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
         # Visualizer
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
@@ -35,19 +35,19 @@ class Parameters:
         self.mutation_prob = 0.1  # Probability that a member of the offspring population will be mutated
         self.mutation_rate = 0.01  # Percentage of bits which get flipped in an individual
         self.epsilon = 0.1  # For e-greedy selection in CCEA
-        self.parent_pop_size = 15
+        self.parent_pop_size = 20
         self.offspring_pop_size = 5
 
         # User specific parameters
         """
         Suggestions: high_val, low_val, high_low, value_incentives, partner_proximity, or none
         """
-        self.suggestion_type = "none"
-        self.new_suggestion = "high_val"
+        self.suggestion_type = "high_val"
+        self.new_suggestion = "value_incentives"
         self.gen_switch_point = 499  # What generation should the suggestion type switch at?
-        self.step_switch_point = 5  # What step should the suggestion type switch at?
+        self.step_switch_point = 8  # What step should the suggestion type switch at?
         self.gen_suggestion_switch = False  # Switch suggestion types at a specified generation
-        self.step_suggestion_switch = False  # Switch suggestion types at a specified rover step
+        self.step_suggestion_switch = True  # Switch suggestion types at a specified rover step
 
     def load_yaml(self, filename):
         """

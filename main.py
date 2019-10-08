@@ -75,7 +75,7 @@ def run_homogeneous_rovers():
         reward_history = []
 
         for gen in range(p.generations):
-            print("Gen: %i" % gen)
+            # print("Gen: %i" % gen)
             if p.gen_suggestion_switch and gen == p.gen_switch_point and p.reward_type == "SDPP":
                 suggestion = p.new_suggestion
 
