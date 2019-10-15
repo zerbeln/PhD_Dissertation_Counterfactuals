@@ -62,6 +62,7 @@ def run_homogeneous_rovers():
 
     rd.inital_world_setup()
     print("Reward Type: ", p.reward_type)
+    print("Coupling Requirement: ", p.coupling)
     if p.reward_type != "SDPP":
         assert(p.suggestion_type == "none")
 

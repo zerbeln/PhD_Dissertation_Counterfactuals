@@ -5,7 +5,7 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 15
+        self.stat_runs = 10
         self.generations = 1000  # Number of generations for CCEA in each stat run
         self.new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
@@ -32,7 +32,7 @@ class Parameters:
 
         # CCEA parameters
         self.mutation_prob = 1.0  # Probability that a member of the offspring population will be mutated
-        self.mutation_rate = 0.05  # Percentage of bits which get flipped in an individual
+        self.mutation_rate = 0.01  # Percentage of bits which get flipped in an individual
         self.epsilon = 0.1  # For e-greedy selection in CCEA
         self.parent_pop_size = 20
         self.offspring_pop_size = 20

@@ -110,14 +110,14 @@ cdef class Ccea:
 
         for pop_id in range(self.n_populations):
             policy_id = 0
-            while policy_id < self.parent_psize:
+            while policy_id < self.offspring_psize:
                 rnum = random.uniform(0, 1)
-                if rnum > self.eps:  # Choose best policy
+                if rnum > self.eps or policy_id == 0:  # Choose best policy and keep best policy
                     pol_index = np.argmax(self.fitness[pop_id])
-                    self.parent_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
+                    self.offspring_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
                 else:
                     parent = random.randint(0, (self.total_pop_size-1))  # Choose a random parent
-                    self.parent_pop[pop_id, policy_id] = self.pops[pop_id, parent].copy()
+                    self.offspring_pop[pop_id, policy_id] = self.pops[pop_id, parent].copy()
                 policy_id += 1
 
     cpdef down_select(self):  # Create a new offspring population using parents from top 50% of policies
@@ -125,10 +125,31 @@ cdef class Ccea:
         Select parent,s create offspring population, and perform mutation operations
         :return: None
         """
-        self.epsilon_greedy_select()  # Select K solutions using epsilon greedy
-        self.offspring_pop = self.parent_pop.copy()  # Produce K offspring
-        self.mutate()  # Mutate offspring population
+        self.rank_individuals()
+        self.epsilon_greedy_select()  # Select K successors using epsilon greedy
+        self.mutate()  # Mutate successors
         self.combine_pops()
+
+    cpdef rank_individuals(self):
+        """
+        Order individuals in the population based on their fitness scores
+        :return: None
+        """
+        cdef int pop_id, pol_id_a, pol_id_b, pol_id
+
+        for pop_id in range(self.n_populations):
+            for pol_id_a in range(self.total_pop_size-1):
+                pol_id_b = pol_id_a + 1
+                while pol_id_b < (self.total_pop_size):
+                    if pol_id_a != pol_id_b:
+                        if self.fitness[pop_id, pol_id_a] < self.fitness[pop_id, pol_id_b]:
+                            self.fitness[pop_id, pol_id_a], self.fitness[pop_id, pol_id_b] = self.fitness[pop_id, pol_id_b], self.fitness[pop_id, pol_id_a]
+                            self.pops[pop_id, pol_id_a], self.pops[pop_id, pol_id_b] = self.pops[pop_id, pol_id_b], self.pops[pop_id, pol_id_a]
+                    pol_id_b += 1
+
+            for pol_id in range(self.parent_psize):  # Keep k best individuals
+                self.parent_pop[pop_id, pol_id] = self.pops[pop_id, pol_id].copy()
+
 
     cpdef combine_pops(self):
         """
