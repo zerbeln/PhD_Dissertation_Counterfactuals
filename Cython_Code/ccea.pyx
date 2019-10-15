@@ -112,12 +112,12 @@ cdef class Ccea:
             policy_id = 0
             while policy_id < self.offspring_psize:
                 rnum = random.uniform(0, 1)
-                if rnum > self.eps or policy_id == 0:  # Choose best policy and keep best policy
+                if rnum > self.eps:  # Choose best policy
                     pol_index = np.argmax(self.fitness[pop_id])
                     self.offspring_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
                 else:
-                    parent = random.randint(0, (self.total_pop_size-1))  # Choose a random parent
-                    self.offspring_pop[pop_id, policy_id] = self.pops[pop_id, parent].copy()
+                    parent = random.randint(0, (self.parent_psize-1))  # Choose a random parent
+                    self.offspring_pop[pop_id, policy_id] = self.parent_pop[pop_id, parent].copy()
                 policy_id += 1
 
     cpdef down_select(self):  # Create a new offspring population using parents from top 50% of policies

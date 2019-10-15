@@ -15,6 +15,7 @@ cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, 
     cdef int npoi = int(p.num_pois)
     cdef double summed_observer_distances, x_distance, y_distance, distance
     cdef int cpl = int(p.coupling)
+    cdef double cpl_double = p.coupling
     cdef int total_steps = int(p.num_steps + 1)  # The +1 is to account for the initial position
     cdef double inf = 1000.00
     cdef double min_dist = p.min_distance
@@ -60,6 +61,7 @@ cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, 
     for poi_id in range(npoi):
         if poi_observed[poi_id] == 1:
             global_reward += poi_values[poi_id]
+            # global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/cpl_double)
 
     return global_reward
 
