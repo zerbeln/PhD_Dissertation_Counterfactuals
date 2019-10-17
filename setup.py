@@ -1,7 +1,7 @@
 from distutils.core import setup
 from Cython.Build import cythonize
 
-setup(ext_modules=cythonize('Cython_Code/ccea.pyx'))
-setup(ext_modules=cythonize('Cython_Code/neural_network.pyx'))
-setup(ext_modules=cythonize('Cython_Code/homogeneous_rewards.pyx'))
-setup(ext_modules=cythonize('Cython_Code/suggestions.pyx'))
+setup(ext_modules=cythonize('Cython_Code/ccea.pyx', compiler_directives={'language_level' : "3"}))
+setup(ext_modules=cythonize('Cython_Code/neural_network.pyx', compiler_directives={'language_level' : "3"}))
+setup(ext_modules=cythonize('Cython_Code/homogeneous_rewards.pyx', compiler_directives={'language_level' : "3"}))
+setup(ext_modules=cythonize('Cython_Code/suggestions.pyx', compiler_directives={'language_level' : "3"}))

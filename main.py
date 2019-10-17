@@ -5,9 +5,9 @@
 
 # For Cython Code
 import pyximport; pyximport.install(language_level=3)
-from Cython_Code.ccea import Ccea
-from Cython_Code.neural_network import NeuralNetwork
-from Cython_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
+from ccea import Ccea
+from neural_network import NeuralNetwork
+from homogeneous_rewards import calc_global, calc_difference, calc_dpp
 
 from AADI_RoverDomain.parameters import Parameters
 from AADI_RoverDomain.rover_domain import RoverDomain
