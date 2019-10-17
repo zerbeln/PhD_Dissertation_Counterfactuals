@@ -113,7 +113,7 @@ cdef class Ccea:
                 for w in range(self.policy_size):
                     rnum = random.uniform(0, 1)
                     if rnum <= self.mut_chance:
-                        mutation = (random.uniform(-0.5, 0.5) * self.offspring_pop[pop_id, pol_id, w])
+                        mutation = (random.uniform(-self.mut_rate, self.mut_rate) * self.offspring_pop[pop_id, pol_id, w])
                         self.offspring_pop[pop_id, pol_id, w] += mutation
 
     cpdef epsilon_greedy_select(self):  # Choose K solutions
