@@ -31,7 +31,7 @@ class Parameters:
         self.num_outputs = 2
 
         # CCEA parameters
-        self.mutation_prob = 1.0  # Probability that a member of the offspring population will be mutated
+        self.mutation_prob = 0.1  # Probability that a member of the offspring population will be mutated
         self.mutation_rate = 0.01  # Percentage of bits which get flipped in an individual
         self.epsilon = 0.1  # For e-greedy selection in CCEA
         self.parent_pop_size = 20

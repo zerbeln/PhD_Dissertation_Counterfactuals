@@ -100,6 +100,22 @@ cdef class Ccea:
                         self.offspring_pop[pop_index, policy_index, target] = weight
                 policy_index += 1
 
+    cpdef weight_mutate(self):
+        """
+        Mutate offspring populations (each weight has a probability of mutation)
+        :return: 
+        """
+        cdef int pop_id, pol_id, w
+        cdef double rnum, mutation
+
+        for pop_id in range(self.n_populations):
+            for pol_id in range(self.offspring_psize):
+                for w in range(self.policy_size):
+                    rnum = random.uniform(0, 1)
+                    if rnum <= self.mut_chance:
+                        mutation = np.random.normal(0, 1) * self.offspring_pop[pop_id, pol_id, w]
+                        self.offspring_pop[pop_id, pol_id, w] += mutation
+
     cpdef epsilon_greedy_select(self):  # Choose K solutions
         """
         Select parents from which an offspring population will be created
@@ -127,7 +143,7 @@ cdef class Ccea:
         """
         self.rank_individuals()
         self.epsilon_greedy_select()  # Select K successors using epsilon greedy
-        self.mutate()  # Mutate successors
+        self.weight_mutate()  # Mutate successors
         self.combine_pops()
 
     cpdef rank_individuals(self):

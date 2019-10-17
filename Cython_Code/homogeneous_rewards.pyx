@@ -60,8 +60,7 @@ cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, 
 
     for poi_id in range(npoi):
         if poi_observed[poi_id] == 1:
-            global_reward += poi_values[poi_id]
-            # global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/cpl_double)
+            global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/cpl_double)
 
     return global_reward
 
