@@ -1,56 +1,68 @@
 import sys
 import math
 import os
+import cython
 from AADI_RoverDomain.rover_setup import *
 
 
-class RoverDomain:
+cdef class RoverDomain:
+    cdef double world_x, world_y, min_dist, obs_radius, angle_res
+    cdef int create_new_world_config
+    cdef str rover_sensors
+    cdef int nrovers, n_pois, c_req, rover_steps, n_rover_inputs
+    cdef public int istep
 
-    def __init__(self, p):
+    cdef public double [:, :] rover_pos
+    cdef double [:, :] rover_initial_pos
+    cdef public double [:, :, :] rover_path
+    cdef public double [:, :] poi_pos
+    cdef public double [:] poi_values
+
+    def __cinit__(self, object p):
 
         # World attributes
         self.world_x = p.x_dim
         self.world_y = p.y_dim
-        self.nrovers = p.num_rovers
-        self.n_pois = p.num_pois
-        self.observation_space = np.zeros((1, int(2 * 360 / p.angle_resolution)))
-        self.c_req = p.coupling
+        self.nrovers = int(p.num_rovers)
+        self.n_pois = int(p.num_pois)
+        self.c_req = int(p.coupling)
         self.min_dist = p.min_distance
         self.obs_radius = p.min_observation_dist
         self.istep = 0  # Current Step counter
 
         # Rover parameters
         self.create_new_world_config = p.new_world_config
-        self.rover_steps = p.num_steps
-        self.n_rover_inputs = p.num_inputs
+        self.rover_steps = int(p.num_steps)
+        self.n_rover_inputs = int(p.num_inputs)
         self.angle_res = p.angle_resolution
         self.rover_sensors = p.sensor_model
 
         # Rover position vectors
-        self.rover_pos = np.zeros((p.num_rovers, 3))
-        self.rover_initial_pos = np.zeros((p.num_rovers, 3))
+        self.rover_pos = np.zeros((self.nrovers, 3))
+        self.rover_initial_pos = np.zeros((self.nrovers, 3))
 
         # Rover path trace for trajectory-wide global reward computation and vizualization purposes
-        self.rover_path = np.zeros(((p.num_steps + 1), self.nrovers, 3))
+        self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))
 
         # POI position and value vectors
-        self.poi_pos = np.zeros((p.num_pois, 2))
-        self.poi_values = np.zeros(p.num_pois)
-        self.poi_rewards = np.zeros(p.num_pois)
+        self.poi_pos = np.zeros((self.n_pois, 2))
+        self.poi_values = np.zeros(self.n_pois)
 
-    def inital_world_setup(self):
+    cpdef inital_world_setup(self):
         """
         Set rover starting positions, POI positions and POI values
         :return: none
         """
 
+        cdef int rover_id
+
         if self.create_new_world_config == 1:
             # Initialize rover positions
-            self.rover_pos = init_rover_pos_random_concentrated(self.nrovers, self.world_x, self.world_y)
+            self.rover_pos = init_rover_pos_twelve_grid(self.nrovers, self.world_x, self.world_y)
             self.rover_initial_pos = self.rover_pos.copy()  # Track initial setup
 
             # Initialize POI positions and values
-            self.poi_pos = init_poi_pos_circle(self.n_pois, self.world_x, self.world_y)
+            self.poi_pos = init_poi_pos_twelve_grid(self.n_pois, self.world_x, self.world_y)
             self.poi_values = init_poi_vals_random(self.n_pois)
             self.save_world_configuration()
         else:
@@ -64,18 +76,20 @@ class RoverDomain:
 
         self.istep = 0
         self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))  # Tracks rover trajectories
-        self.poi_rewards = np.zeros(self.n_pois)
 
         for rover_id in range(self.nrovers):  # Record intial positions in rover path
             self.rover_path[self.istep, rover_id, 0] = self.rover_pos[rover_id, 0]
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
-    def save_world_configuration(self):
+    cpdef save_world_configuration(self):
         """
         Saves world configuration to a txt files in a folder called Output_Data
         :Output: Three txt files for Rover starting positions, POI postions, and POI values
         """
+        cdef str dir_name, rcoords_name, pcoords_name, pvals_name
+        cdef int r_id, p_id
+
         dir_name = 'Output_Data/'  # Intended directory for output files
 
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it
@@ -110,12 +124,13 @@ class RoverDomain:
         poi_coords.close()
         poi_values.close()
 
-    def reset_to_init(self):
+    cpdef reset_to_init(self):
         """
         Resets rovers to starting positions (does not alter the world's initial state)
         :return: none
         """
-        self.poi_rewards = np.zeros(self.n_pois)
+        cdef int rover_id
+
         self.rover_pos = self.rover_initial_pos.copy()
         self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))
         self.istep = 0
@@ -125,11 +140,16 @@ class RoverDomain:
             self.rover_path[self.istep, rover_id, 1] = self.rover_pos[rover_id, 1]
             self.rover_path[self.istep, rover_id, 2] = self.rover_pos[rover_id, 2]
 
-    def step(self, joint_action):
+    cpdef step(self, double [:, :] joint_action):
         """
         :param joint_action: np array containing output from NN. Array size is (nrovers, 2)
         :return: Joint state of rovers (NN inputs), Done, and Global Reward
         """
+        cdef double x, y, theta
+        cdef int rover_id, done
+
+        cdef double [:, :] joint_state
+
         self.istep += 1
         joint_action = np.clip(joint_action, -1.0, 1.0)
 
@@ -138,11 +158,11 @@ class RoverDomain:
 
             x = joint_action[rover_id, 0]
             y = joint_action[rover_id, 1]
-            theta = math.atan(y/x) * (180/math.pi)
-            if theta < 0:
-                theta += 360
-            if theta > 360:
-                theta -= 360
+            theta = math.atan(y/x) * (180.0/math.pi)
+            if theta < 0.0:
+                theta += 360.0
+            if theta > 360.0:
+                theta -= 360.0
             if math.isnan(theta):
                 theta = 0.0
 
@@ -170,22 +190,28 @@ class RoverDomain:
 
         return joint_state, done
 
-    def get_joint_state(self):
+    cpdef get_joint_state(self):
         """
         joint_state is an array of size [nrovers][8] containing inputs for NN
         :return: joint_state
         """
 
-        joint_state = np.zeros((self.nrovers, self.n_rover_inputs))
+        cdef double self_x, self_y, self_orient, poi_x, poi_y, poi_value, angle, dist, rov_x, rov_y
+        cdef double num_poi_double, num_agents_double
+        cdef int rover_id, poi_id, bracket, other_rover_id, num_agents
+        cdef double [:, :] joint_state = np.zeros((self.nrovers, self.n_rover_inputs))
+        cdef double [:] rover_state, poi_state
+        cdef list temp_poi_dist_list, temp_rover_dist_list
 
         for rover_id in range(self.nrovers):
-            self_x = self.rover_pos[rover_id, 0]; self_y = self.rover_pos[rover_id, 1]
+            self_x = self.rover_pos[rover_id, 0]
+            self_y = self.rover_pos[rover_id, 1]
             self_orient = self.rover_pos[rover_id, 2]
 
-            rover_state = [0.0 for _ in range(int(360 / self.angle_res))]
-            poi_state = [0.0 for _ in range(int(360 / self.angle_res))]
-            temp_poi_dist_list = [[] for _ in range(int(360 / self.angle_res))]
-            temp_rover_dist_list = [[] for _ in range(int(360 / self.angle_res))]
+            rover_state = np.zeros(int(360.0 / self.angle_res))
+            poi_state = np.zeros(int(360.0 / self.angle_res))
+            temp_poi_dist_list = [[] for _ in range(int(360.0 / self.angle_res))]
+            temp_rover_dist_list = [[] for _ in range(int(360.0 / self.angle_res))]
 
             # Log POI distances into brackets
             for poi_id in range(self.n_pois):
@@ -199,8 +225,8 @@ class RoverDomain:
                     continue  # Observability radius
 
                 angle -= self_orient
-                if angle < 0:
-                    angle += 360
+                if angle < 0.0:
+                    angle += 360.0
 
                 bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_poi_dist_list):
@@ -217,14 +243,15 @@ class RoverDomain:
                     continue
                 rov_x = self.rover_pos[other_rover_id, 0]
                 rov_y = self.rover_pos[other_rover_id, 1]
+
                 angle, dist = self.get_angle_dist(self_x, self_y, rov_x, rov_y)
 
                 if dist >= self.obs_radius:
                     continue  # Observability radius
 
                 angle -= self_orient
-                if angle < 0:
-                    angle += 360
+                if angle < 0.0:
+                    angle += 360.0
 
                 if dist < self.min_dist:  # Clip distance to not overwhelm sigmoid in NN
                     dist = self.min_dist
@@ -239,9 +266,10 @@ class RoverDomain:
             for bracket in range(int(360 / self.angle_res)):
                 # POIs
                 num_poi = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
+                num_poi_double = len(temp_poi_dist_list[bracket])
                 if num_poi > 0:
                     if self.rover_sensors == 'density':
-                        poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi  # Density Sensor
+                        poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_double  # Density Sensor
                     elif self.rover_sensors == 'summed':
                         poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
                     elif self.rover_sensors == 'closest':
@@ -254,9 +282,10 @@ class RoverDomain:
 
                 # Rovers
                 num_agents = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
+                num_agents_double = len(temp_rover_dist_list[bracket])
                 if num_agents > 0:
                     if self.rover_sensors == 'density':
-                        rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents  # Density Sensor
+                        rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents_double  # Density Sensor
                     elif self.rover_sensors == 'summed':
                         rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
                     elif self.rover_sensors == 'closest':
@@ -270,7 +299,8 @@ class RoverDomain:
         return joint_state
 
 
-    def get_angle_dist(self, rovx, rovy, x, y):
+    @cython.cdivision(True)
+    cpdef get_angle_dist(self, double rovx, double rovy, double x, double y):
         """
         Computes angles and distance between two predators relative to (1,0) vector (x-axis)
         :param rovx: X-Position of rover
@@ -279,13 +309,17 @@ class RoverDomain:
         :param y: Y-Position of POI or other rover
         :return: angle, dist
         """
-        vx = x - rovx; vy = y - rovy
-        angle = math.atan(vy/vx)*(180/math.pi)
+        cdef double vx, vy, angle, dist
 
-        if angle < 0:
-            angle += 360
-        if angle > 360:
-            angle -= 360
+        vx = x - rovx; vy = y - rovy
+        angle = math.atan(vy/vx)*(180.0/math.pi)
+        if vx == 0 or vy == 0:
+            print(vx, vy, angle)
+
+        if angle < 0.0:
+            angle += 360.0
+        if angle > 360.0:
+            angle -= 360.0
         if math.isnan(angle):
             angle = 0.0
 
@@ -294,12 +328,15 @@ class RoverDomain:
         return angle, dist
 
 
-    def calc_global(self):
+    cpdef calc_global(self):
         """
         Calculates global reward for current world state.
         :return: global_reward
         """
-        global_reward = 0.0
+        cdef double global_reward = 0.0
+        cdef int poi_id, observer_count, agent_id
+        cdef double x_distance, y_distance, distance
+        cdef double [:] rover_distances
 
         for poi_id in range(self.n_pois):
             rover_distances = np.zeros(self.nrovers)

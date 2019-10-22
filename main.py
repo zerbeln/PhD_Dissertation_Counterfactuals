@@ -8,9 +8,10 @@ import pyximport; pyximport.install(language_level=3)
 from ccea import Ccea
 from neural_network import NeuralNetwork
 from homogeneous_rewards import calc_global, calc_difference, calc_dpp
+from rover_domain import RoverDomain
 
 from AADI_RoverDomain.parameters import Parameters
-from AADI_RoverDomain.rover_domain import RoverDomain
+# from AADI_RoverDomain.rover_domain import RoverDomain
 import csv; import os; import sys
 import numpy as np
 
@@ -83,11 +84,11 @@ def run_homogeneous_rovers():
             cc.select_policy_teams()
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
                 rd.reset_to_init()  # Resets rovers to initial configuration
-                done = False; rd.istep = 0
+                done = 0; rd.istep = 0
                 joint_state = rd.get_joint_state()
 
-                while not done:
-                    for rover_id in range(rd.nrovers):
+                while done == 0:
+                    for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, policy_id], rover_id)
                     joint_state, done = rd.step(nn.out_layer)
@@ -95,7 +96,7 @@ def run_homogeneous_rovers():
                 # Update fitness of policies using reward information
                 global_reward = calc_global(p, rd.rover_path, rd.poi_values, rd.poi_pos)
                 if p.reward_type == "Global":
-                    for rover_id in range(rd.nrovers):
+                    for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = global_reward
                 elif p.reward_type == "Difference":
@@ -113,10 +114,10 @@ def run_homogeneous_rovers():
 
             # Testing Phase (test best policies found so far)
             rd.reset_to_init()  # Reset rovers to initial positions
-            done = False; rd.istep = 0
+            done = 0; rd.istep = 0
             joint_state = rd.get_joint_state()
-            while not done:
-                for rover_id in range(rd.nrovers):
+            while done == 0:
+                for rover_id in range(p.num_rovers):
                     pol_index = np.argmax(cc.fitness[rover_id])
                     nn.run_neural_network(joint_state[rover_id], cc.pops[rover_id, pol_index], rover_id)
                 joint_state, done = rd.step(nn.out_layer)

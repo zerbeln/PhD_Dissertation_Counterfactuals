@@ -55,11 +55,11 @@ def init_rover_pos_random_concentrated(nrovers, xd, yd):
 
     return rover_positions
 
-def init_rover_pos_twelve_grid(nrovers, xd, yd):
+def init_rover_pos_twelve_grid(nrovers, xd, yd):  # This setup function has some issues
     rover_positions = np.zeros((nrovers, 3))
 
     for rover_id in range(nrovers):
-        rover_positions[rover_id, 0] = xd - 1
+        rover_positions[rover_id, 0] = xd - random.uniform(0, 1)
         rover_positions[rover_id, 1] = random.uniform((yd / 2) - 5, (yd / 2) + 5)
         rover_positions[rover_id, 2] = random.uniform(0, 360)  # Rover orientation
 

@@ -6,8 +6,8 @@ class Parameters:
     def __init__(self):
         # Run Parameters
         self.stat_runs = 10
-        self.generations = 100  # Number of generations for CCEA in each stat run
-        self.new_world_config = False  # False -> Reuse existing world config, True -> Use new world config
+        self.generations = 1000  # Number of generations for CCEA in each stat run
+        self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
         # Visualizer
@@ -21,7 +21,7 @@ class Parameters:
         self.min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
         self.x_dim = 30  # X-Dimension of the rover map
         self.y_dim = 30  # Y-Dimension of the rover map
-        self.min_observation_dist = 2.0  # Minimum distance rovers must be to observe POIs
+        self.min_observation_dist = 1.0  # Minimum distance rovers must be to observe POIs
         self.angle_resolution = 90  # Resolution of sensors (determines number of sectors)
         self.sensor_model = "summed"  # Should either be "density" or "closest" or "summed"
 
@@ -31,8 +31,8 @@ class Parameters:
         self.num_outputs = 2
 
         # CCEA parameters
-        self.mutation_prob = 0.1  # Probability that a member of the offspring population will be mutated
-        self.mutation_rate = 0.1  # Percentage of bits which get flipped in an individual
+        self.mutation_prob = 0.1  # Probability that a mutation will occur
+        self.mutation_rate = 0.01  # How much a weight is allowed to change
         self.epsilon = 0.1  # For e-greedy selection in CCEA
         self.parent_pop_size = 20
         self.offspring_pop_size = 20
