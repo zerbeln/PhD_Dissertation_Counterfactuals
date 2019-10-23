@@ -5,7 +5,7 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 10
+        self.stat_runs = 20
         self.generations = 1000  # Number of generations for CCEA in each stat run
         self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
@@ -16,12 +16,12 @@ class Parameters:
         # Domain parameters
         self.num_rovers = 14  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
         self.coupling = 3  # Number of rovers required to view a POI for credit
-        self.num_pois = 12  # Number of POIs on map
+        self.num_pois = 6  # Number of POIs on map
         self.num_steps = 20  # Number of steps rovers take each episode
         self.min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
         self.x_dim = 30  # X-Dimension of the rover map
         self.y_dim = 30  # Y-Dimension of the rover map
-        self.min_observation_dist = 1.0  # Minimum distance rovers must be to observe POIs
+        self.min_observation_dist = 2.0  # Minimum distance rovers must be to observe POIs
         self.angle_resolution = 90  # Resolution of sensors (determines number of sectors)
         self.sensor_model = "summed"  # Should either be "density" or "closest" or "summed"
 

@@ -2,6 +2,7 @@
 # import Python_Code.ccea as ccea
 # import Python_Code.neural_net as neural_network
 # from Python_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
+# from AADI_RoverDomain.rover_domain_python import RoverDomain
 
 # For Cython Code
 import pyximport; pyximport.install(language_level=3)
@@ -11,7 +12,6 @@ from homogeneous_rewards import calc_global, calc_difference, calc_dpp
 from rover_domain import RoverDomain
 
 from AADI_RoverDomain.parameters import Parameters
-# from AADI_RoverDomain.rover_domain import RoverDomain
 import csv; import os; import sys
 import numpy as np
 

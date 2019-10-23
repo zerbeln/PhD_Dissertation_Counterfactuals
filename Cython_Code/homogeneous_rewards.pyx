@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from Cython_Code.suggestions import get_counterfactual_partners
+from suggestions import get_counterfactual_partners
 
 cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, double [:, :] poi_positions):
     """
