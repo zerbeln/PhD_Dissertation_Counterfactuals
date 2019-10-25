@@ -109,22 +109,20 @@ def run_visualizer(episode_reward):
     y_map = p.y_dim + 10
     image_adjust = 100  # Adjusts the image so that everything is centered
     pygame.init()
-    game_display = pygame.display.set_mode((x_map*scale_factor, y_map*scale_factor))
     pygame.display.set_caption('Rover Domain')
     robot_image = pygame.image.load('./robot.png')
     background = pygame.image.load('./background.png')
-    greenflag = pygame.image.load('./greenflag.png')
-    redflag = pygame.image.load('./redflag.png')
     color_array = generate_color_array(p.num_rovers)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
-    poi_status = [False for _ in range(p.num_pois)]
 
     rover_path = import_rover_paths(p)
     poi_pos = import_poi_positions(p)
     poi_values = import_poi_values(p)
 
     for srun in range(p.stat_runs):
+        game_display = pygame.display.set_mode((x_map * scale_factor, y_map * scale_factor))
+        poi_status = [False for _ in range(p.num_pois)]
         for tstep in range(p.num_steps):
             draw(game_display, background, 0, 0)
             for poi_id in range(p.num_pois):  # Draw POI and POI values
@@ -147,12 +145,12 @@ def run_visualizer(episode_reward):
                 if poi_status[poi_id]:
                     # draw(game_display, greenflag, poi_x, poi_y)  # POI observed
                     pygame.draw.circle(game_display, (50, 205, 50), (poi_x, poi_y), 10)
-                    pygame.draw.circle(game_display, (255, 255, 255), (poi_x, poi_y), 3 * scale_factor, 1)
+                    pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), 3 * scale_factor, 1)
                 else:
                     # draw(game_display, redflag, poi_x, poi_y)  # POI not observed
                     pygame.draw.circle(game_display, (220, 20, 60), (poi_x, poi_y), 10)
-                    pygame.draw.circle(game_display, (255, 255, 255), (poi_x, poi_y), 3 * scale_factor, 1)
-                textsurface = myfont.render(str(poi_values[poi_id]), False, (255, 255, 255))
+                    pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), 3 * scale_factor, 1)
+                textsurface = myfont.render(str(poi_values[poi_id]), False, (0, 0, 0))
                 target_x = int(poi_pos[poi_id, 0]*scale_factor) + image_adjust
                 target_y = int(poi_pos[poi_id, 1]*scale_factor) + image_adjust
                 draw(game_display, textsurface, target_x, target_y)
@@ -179,9 +177,9 @@ def run_visualizer(episode_reward):
             pygame.display.update()
             time.sleep(0.1)
 
-        scoresurface = myfont.render('The system reward obtained is ' + str(round(episode_reward, 2)), False, (0, 0, 0))
-        draw(game_display, scoresurface, x_map*scale_factor-500, 20)
-        pygame.display.update()
+        # scoresurface = myfont.render('The system reward obtained is ' + str(round(episode_reward, 2)), False, (0, 0, 0))
+        # draw(game_display, scoresurface, x_map*scale_factor-500, 20)
+        # pygame.display.update()
 
         dir_name = 'Screenshots/'  # Intended directory for output files
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it

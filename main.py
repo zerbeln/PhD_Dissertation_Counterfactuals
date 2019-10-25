@@ -9,7 +9,7 @@ import pyximport; pyximport.install(language_level=3)
 from ccea import Ccea
 from neural_network import NeuralNetwork
 from homogeneous_rewards import calc_global, calc_difference, calc_dpp
-from rover_domain import RoverDomain
+from rover_domain_cython import RoverDomain
 
 from AADI_RoverDomain.parameters import Parameters
 import csv; import os; import sys
