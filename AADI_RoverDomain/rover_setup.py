@@ -65,6 +65,16 @@ def init_rover_pos_twelve_grid(nrovers, xd, yd):  # This setup function has some
 
     return rover_positions
 
+def init_rover_pos_bottom_center(nrovers, xd, yd):
+    rover_positions = np.zeros((nrovers, 3))
+
+    for rover_id in range(nrovers):
+        rover_positions[rover_id, 0] = random.uniform((xd / 2) - 5, (xd / 2) + 5)
+        rover_positions[rover_id, 1] = random.uniform(0, 2)
+        rover_positions[rover_id, 2] = random.uniform(0, 360)  # Rover orientation
+
+    return rover_positions
+
 def init_rover_pos_txt_file(nrovers):
     rover_positions = np.zeros((nrovers, 3))
 
@@ -135,7 +145,7 @@ def init_poi_pos_circle(num_pois, xd, yd):
         POI positions are set in a circle around the center of the map at a specified radius.
         :return: poi_positions: np array of size (npoi, 2)
     """
-    radius = 14.0
+    radius = 15.0
     interval = 360/num_pois
 
     poi_positions = np.zeros((num_pois, 2))
@@ -157,7 +167,7 @@ def init_poi_pos_concentric_circles(num_pois, xd, yd):
         :return: poi_positions: np array of size (npoi, 2)
     """
     assert(num_pois == 12)
-    inner_radius = 8.0
+    inner_radius = 6.5
     outter_radius = 15.0
     interval = 360 / (num_pois/2)
 
@@ -165,7 +175,7 @@ def init_poi_pos_concentric_circles(num_pois, xd, yd):
 
     x = xd / 2
     y = yd / 2
-    inner_theta = 30.0
+    inner_theta = 0.0
     outter_theta = 0.0
 
     for poi_id in range(num_pois):
@@ -190,8 +200,8 @@ def init_poi_pos_two_poi(num_pois, xd, yd):
 
     poi_positions = np.zeros((num_pois, 2))
 
-    poi_positions[0, 0] = 0.0; poi_positions[0, 1] = yd/2
-    poi_positions[1, 0] = (xd-1); poi_positions[1, 1] = yd/2
+    poi_positions[0, 0] = 1.0; poi_positions[0, 1] = yd/2
+    poi_positions[1, 0] = (xd-2); poi_positions[1, 1] = yd/2
 
     return poi_positions
 
@@ -263,40 +273,30 @@ def init_poi_values_txt_file(num_pois):
     return poi_vals
 
 
-def init_poi_pos_random_and_square(num_pois, xd, yd, num_rovers, rover_positions, obs_rad):
-    num_pois = num_pois
+def init_poi_pos_clusters(num_pois, xd, yd):
     poi_positions = np.zeros((num_pois, 2))
 
-    poi_positions[0, 0] = 1.0; poi_positions[0, 1] = 1.0  # Bottom left
-    poi_positions[1, 0] = 1.0; poi_positions[1, 1] = (yd - 2.0)  # Top left
-    poi_positions[2, 0] = (xd - 2.0); poi_positions[2, 1] = 1.0  # Bottom right
-    poi_positions[3, 0] = (xd - 2.0); poi_positions[3, 1] = (yd - 2.0)  # Top right
+    assert(num_pois == 12)
 
-    poi_id = 4
-    while poi_id < num_pois:
-        x = random.uniform(0, xd - 1)
-        y = random.uniform(0, yd - 1)
+    # First Cluster
+    poi_positions[0, 0] = xd/4; poi_positions[0, 1] = (yd/2.0)
+    poi_positions[1, 0] = (xd/4) - 1; poi_positions[1, 1] = (yd/2.0) - 1.0
+    poi_positions[2, 0] = (xd/4) + 1; poi_positions[2, 1] = (yd/2.0) - 1.0
 
-        rover_id = 0
-        while rover_id < num_rovers:
-            rovx = rover_positions[rover_id, 0]; rovy = rover_positions[rover_id, 1]
-            xdist = x - rovx; ydist = y - rovy
-            distance = math.sqrt((xdist ** 2) + (ydist ** 2))
+    # Second Cluster
+    poi_positions[3, 0] = (3*xd/4); poi_positions[3, 1] = (yd/2)
+    poi_positions[4, 0] = (3*xd/4) - 1; poi_positions[4, 1] = (yd/2.0) + 1.0
+    poi_positions[5, 0] = (3*xd/4) + 1; poi_positions[5, 1] = (yd/2.0) + 1.0
 
-            while distance < obs_rad:
-                x = random.uniform(0, xd - 1)
-                y = random.uniform(0, yd - 1)
-                rovx = rover_positions[rover_id, 0]; rovy = rover_positions[rover_id, 1]
-                xdist = x - rovx; ydist = y - rovy
-                distance = math.sqrt((xdist ** 2) + (ydist ** 2))
-                rover_id = -1
+    # Third Cluster
+    poi_positions[6, 0] = 0.0; poi_positions[6, 1] = yd
+    poi_positions[7, 0] = 1.0; poi_positions[7, 1] = yd - 1.0
+    poi_positions[8, 0] = 2.0; poi_positions[8, 1] = yd + 1.0
 
-            rover_id += 1
-
-        poi_positions[poi_id, 0] = x
-        poi_positions[poi_id, 1] = y
-
-        poi_id += 1
+    # Fourth Cluster
+    poi_positions[9, 0] = xd-1.0; poi_positions[9, 1] = yd
+    poi_positions[10, 0] = (xd - 2.0); poi_positions[10, 1] = yd - 1.0
+    poi_positions[11, 0] = (xd - 3.0); poi_positions[11, 1] = yd + 1.0
 
     return poi_positions
 
@@ -367,7 +367,7 @@ def init_poi_vals_random(num_pois):
     poi_vals = np.zeros(num_pois)
 
     for poi_id in range(num_pois):
-        poi_vals[poi_id] = random.randint(2, 12)
+        poi_vals[poi_id] = random.randint(1, 12)
 
     return poi_vals
 
@@ -406,9 +406,9 @@ def init_poi_vals_half_and_half(num_pois):
 
     for poi_id in range(num_pois):
         if poi_id%2 == 0:
-            poi_vals[poi_id] *= 12.0
+            poi_vals[poi_id] *= 10.0
         else:
-            poi_vals[poi_id] *= 5.0
+            poi_vals[poi_id] *= 1.0
 
     return poi_vals
 
@@ -437,9 +437,9 @@ def init_poi_vals_concentric_circles(num_pois):
     poi_vals = np.zeros(num_pois)
     for poi_id in range(num_pois):
         if poi_id < 6:
-            poi_vals[poi_id] = 2.0
+            poi_vals[poi_id] = -2.0
         else:
-            poi_vals[poi_id] = 12.0
+            poi_vals[poi_id] = 10.0
 
     return poi_vals
 
@@ -467,5 +467,32 @@ def init_poi_vals_four_corners(num_pois):
             poi_vals[poi_id] = 6.0
         else:
             poi_vals[poi_id] = 12.0
+
+    return poi_vals
+
+def init_poi_vals_clusters(num_pois):
+
+    assert(num_pois == 12)
+    poi_vals = np.zeros(num_pois)
+
+    # First Cluster
+    poi_vals[0] = 3.0
+    poi_vals[1] = 3.0
+    poi_vals[2] = 3.0
+
+    # Second Cluster
+    poi_vals[3] = 8.0
+    poi_vals[4] = 8.0
+    poi_vals[5] = 8.0
+
+    # Third Cluster
+    poi_vals[6] = 3.0
+    poi_vals[7] = 3.0
+    poi_vals[8] = 3.0
+
+    # Fourth Cluster
+    poi_vals[9] = 8.0
+    poi_vals[10] = 8.0
+    poi_vals[11] = 8.0
 
     return poi_vals

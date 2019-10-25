@@ -1,5 +1,4 @@
 import numpy as np
-import math
 import sys
 
 cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi_values, int n_counters, double obs_rad):
@@ -101,49 +100,6 @@ cpdef value_based_incentives(double rover_dist, int poi_id, double [:] poi_value
 
     return partners
 
-cpdef partner_proximity_suggestions(double rover_dist, int n_counters, int self_id, double [:, :, :] rover_paths, int nrovers, int step_id, double min_dist, double obs_rad):
-    """
-    :param rover_dist: 
-    :param n_counters: 
-    :param self_id: 
-    :param rover_paths: 
-    :param nrovers: 
-    :param step_id: 
-    :param min_dist: 
-    :param obs_rad: 
-    :return: 
-    """
-    cdef int partner_id, count, rover_id
-    cdef double x_dist, y_dist, rover_x, rover_y, dist, self_x, self_y
-    cdef double [:] partners = np.zeros(n_counters)
-    count = 0
-
-    # Calculate distance between self and other rovers
-    self_x = rover_paths[step_id, self_id, 0]
-    self_y = rover_paths[step_id, self_id, 1]
-    for rover_id in range(nrovers):
-        if rover_id == self_id:
-            continue
-        rover_x = rover_paths[step_id, rover_id, 0]
-        rover_y = rover_paths[step_id, rover_id, 1]
-        x_dist = rover_x - self_x
-        y_dist = rover_y - self_y
-        dist = math.sqrt((x_dist**2)+(y_dist**2))
-        if dist < obs_rad:
-            count += 1
-
-    if count > 0 and rover_dist < obs_rad:
-        for partner_id in range(n_counters):
-            partners[partner_id] = min_dist
-    if count == 0 and rover_dist < obs_rad:
-        for partner_id in range(n_counters):
-            partners[partner_id] = obs_rad - 0.01
-    else:
-        for partner_id in range(n_counters):
-            partners[partner_id] = 100.00
-
-    return partners
-
 cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters, double xd):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
@@ -213,8 +169,6 @@ cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, doub
         partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters, obs_rad)
     elif suggestion == "val_based":
         partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters, min_dist, obs_rad)
-    elif suggestion == "partner_prox":
-        partners = partner_proximity_suggestions(rover_dist, n_counters, self_id, rover_paths, nrovers, step_id, min_dist, obs_rad)
     else:
         sys.exit('Incorrect Suggestion Type')
 

@@ -5,8 +5,8 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 20
-        self.generations = 1000  # Number of generations for CCEA in each stat run
+        self.stat_runs = 30
+        self.generations = 1500  # Number of generations for CCEA in each stat run
         self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
@@ -14,10 +14,10 @@ class Parameters:
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
 
         # Domain parameters
-        self.num_rovers = 14  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+        self.num_rovers = 12  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
         self.coupling = 3  # Number of rovers required to view a POI for credit
-        self.num_pois = 6  # Number of POIs on map
-        self.num_steps = 20  # Number of steps rovers take each episode
+        self.num_pois = 12  # Number of POIs on map
+        self.num_steps = 30  # Number of steps rovers take each episode
         self.min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
         self.x_dim = 30  # X-Dimension of the rover map
         self.y_dim = 30  # Y-Dimension of the rover map
@@ -39,12 +39,12 @@ class Parameters:
 
         # User specific parameters
         """
-        Suggestions: high_val, low_val, high_low, val_based, partner_prox, or none (none is standard D++)_
+        Suggestions: high_val, low_val, high_low, val_based, or none (none is standard D++)_
         """
         self.suggestion_type = "none"
         self.new_suggestion = "high_val"
-        self.gen_switch_point = 499  # What generation should the suggestion type switch at?
-        self.step_switch_point = 8  # What step should the suggestion type switch at?
+        self.gen_switch_point = 750  # What generation should the suggestion type switch at?
+        self.step_switch_point = 15  # What step should the suggestion type switch at?
         self.gen_suggestion_switch = False  # Switch suggestion types at a specified generation
         self.step_suggestion_switch = False  # Switch suggestion types at a specified rover step
 
