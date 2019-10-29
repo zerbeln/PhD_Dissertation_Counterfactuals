@@ -168,7 +168,15 @@ cdef class RoverDomain:
 
             # Update rover position
             self.rover_pos[rover_id, 0] += x
+            if self.rover_pos[rover_id, 0] > (self.world_x-1.0):
+                self.rover_pos[rover_id, 0] = (self.world_x-1.0)
+            if self.rover_pos[rover_id, 0] < 0.0:
+                self.rover_pos[rover_id, 0] = 0.0
             self.rover_pos[rover_id, 1] += y
+            if self.rover_pos[rover_id, 1] > (self.world_y-1.0):
+                self.rover_pos[rover_id, 1] = (self.world_y-1.0)
+            if self.rover_pos[rover_id, 1] < 0.0:
+                self.rover_pos[rover_id, 1] = 0.0
             self.rover_pos[rover_id, 2] = theta
 
 
@@ -313,8 +321,6 @@ cdef class RoverDomain:
 
         vx = x - rovx; vy = y - rovy
         angle = math.atan(vy/vx)*(180.0/math.pi)
-        if vx == 0 or vy == 0:
-            print(vx, vy, angle)
 
         if angle < 0.0:
             angle += 360.0

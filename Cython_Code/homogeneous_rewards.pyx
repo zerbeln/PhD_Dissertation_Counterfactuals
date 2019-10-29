@@ -233,10 +233,11 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
 
     for agent_id in range(nrovers):
         if dpp_rewards[agent_id] > difference_rewards[agent_id]:
+            dpp_rewards[agent_id] = 0.0
             poi_observer_distances = np.zeros((npoi, total_steps))
             poi_observed = np.zeros(npoi)
 
-            for n_counters in range(cpl-1):
+            for n_counters in range(cpl):
                 if n_counters == 0:  # 0 counterfactual partnrs is identical to G
                     n_counters = 1
                 for poi_id in range(npoi):
@@ -290,6 +291,8 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 temp_dpp_reward = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] < temp_dpp_reward:
                     dpp_rewards[agent_id] = temp_dpp_reward
+                if dpp_rewards[agent_id] > difference_rewards[agent_id]:
+                    n_counters = cpl + 1  # Stop iterrating
         else:
             dpp_rewards[agent_id] = difference_rewards[agent_id]  # Returns difference reward
 

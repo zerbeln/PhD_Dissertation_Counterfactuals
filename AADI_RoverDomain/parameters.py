@@ -5,7 +5,7 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 30
+        self.stat_runs = 15
         self.generations = 1500  # Number of generations for CCEA in each stat run
         self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
