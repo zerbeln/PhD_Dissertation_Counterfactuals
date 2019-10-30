@@ -229,8 +229,8 @@ cdef class RoverDomain:
 
                 angle, dist = self.get_angle_dist(self_x, self_y, poi_x, poi_y)
 
-                if dist >= self.obs_radius:
-                    continue  # Observability radius
+                # if dist >= self.obs_radius:
+                #     continue  # Observability radius
 
                 angle -= self_orient
                 if angle < 0.0:
@@ -238,7 +238,7 @@ cdef class RoverDomain:
 
                 bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_poi_dist_list):
-                    print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
+                    # print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
                     bracket = len(temp_poi_dist_list) - 1
                 if dist < self.min_dist:  # Clip distance to not overwhelm tanh in NN
                     dist = self.min_dist
@@ -254,8 +254,8 @@ cdef class RoverDomain:
 
                 angle, dist = self.get_angle_dist(self_x, self_y, rov_x, rov_y)
 
-                if dist >= self.obs_radius:
-                    continue  # Observability radius
+                # if dist >= self.obs_radius:
+                #     continue  # Observability radius
 
                 angle -= self_orient
                 if angle < 0.0:
@@ -266,7 +266,7 @@ cdef class RoverDomain:
 
                 bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_rover_dist_list):
-                    print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
+                    # print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
                     bracket = len(temp_rover_dist_list) - 1
                 temp_rover_dist_list[bracket].append(1/dist)
 
