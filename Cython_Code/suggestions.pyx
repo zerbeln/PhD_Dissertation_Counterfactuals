@@ -48,7 +48,7 @@ cpdef high_value_only(double rover_dist, int poi_id, double [:] poi_values, int 
             partners[partner_id] = rover_dist
     else:
         for partner_id in range(n_counters):
-            partners[partner_id] = 100.0
+            partners[partner_id] = -1.0
 
     return partners
 
@@ -69,7 +69,7 @@ cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n
             partners[partner_id] = rover_dist
     else:
         for partner_id in range(n_counters):
-            partners[partner_id] = 100.0
+            partners[partner_id] = -1.0
 
     return partners
 

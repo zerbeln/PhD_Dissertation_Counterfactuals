@@ -210,7 +210,9 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
-                    if counterfactual_agents[partner_id] < min_obs_distance:
+                    if counterfactual_agents[partner_id] < 0:
+                                observer_count -= 1
+                    elif counterfactual_agents[partner_id] < min_obs_distance:
                         observer_count += 1
 
                 # Update whether or not POI has been observed
@@ -269,8 +271,11 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
-                            if counterfactual_agents[partner_id] < min_obs_distance:
+                            if counterfactual_agents[partner_id] < 0:
+                                observer_count -= 1
+                            elif counterfactual_agents[partner_id] < min_obs_distance:
                                 observer_count += 1
+
 
                         # Determine if coupling has been satisfied
                         if observer_count >= cpl:

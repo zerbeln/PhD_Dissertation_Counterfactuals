@@ -61,7 +61,7 @@ def run_homogeneous_rovers():
     if p.gen_suggestion_switch and p.step_suggestion_switch:
         sys.exit('Gen Switch and Step Switch are both True')
 
-    rd.inital_world_setup()
+    # rd.inital_world_setup()
     print("Reward Type: ", p.reward_type)
     print("Coupling Requirement: ", p.coupling)
     if p.reward_type != "SDPP":
@@ -71,6 +71,7 @@ def run_homogeneous_rovers():
         print("Run: %i" % srun)
 
         # Reset CCEA and NN new stat run
+        rd.inital_world_setup()
         cc.reset_populations()  # Randomly initialize ccea populations
         nn.reset_nn()  # Initialize NN architecture
         suggestion = p.suggestion_type
@@ -78,8 +79,10 @@ def run_homogeneous_rovers():
 
         for gen in range(p.generations):
             # print("Gen: %i" % gen)
-            if p.gen_suggestion_switch and gen == p.gen_switch_point and p.reward_type == "SDPP":
-                suggestion = p.new_suggestion
+            if p.gen_suggestion_switch and gen == p.gen_switch_point:
+                rd.poi_val_change()
+                if p.reward_type == "SDPP":
+                    suggestion = p.new_suggestion
 
             cc.select_policy_teams()
             for team_number in range(cc.total_pop_size):  # Each policy in CCEA is tested in teams
