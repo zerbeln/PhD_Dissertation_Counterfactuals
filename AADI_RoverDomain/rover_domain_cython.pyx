@@ -194,8 +194,6 @@ cdef class RoverDomain:
 
         joint_state = self.get_joint_state()
 
-        # g_reward = self.calc_global_reward_alpha()
-
         return joint_state, done
 
     cpdef get_joint_state(self):
@@ -233,12 +231,13 @@ cdef class RoverDomain:
                 #     continue  # Observability radius
 
                 angle -= self_orient
+                if angle > 360.0:
+                    angle -= 360.0
                 if angle < 0.0:
                     angle += 360.0
 
                 bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_poi_dist_list):
-                    # print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_poi_dist_list))
                     bracket = len(temp_poi_dist_list) - 1
                 if dist < self.min_dist:  # Clip distance to not overwhelm tanh in NN
                     dist = self.min_dist
@@ -258,6 +257,8 @@ cdef class RoverDomain:
                 #     continue  # Observability radius
 
                 angle -= self_orient
+                if angle > 360.0:
+                    angle -= 360.0
                 if angle < 0.0:
                     angle += 360.0
 
@@ -266,7 +267,6 @@ cdef class RoverDomain:
 
                 bracket = int(angle / self.angle_res)
                 if bracket >= len(temp_rover_dist_list):
-                    # print("ERROR: BRACKET EXCEED LIST", bracket, len(temp_rover_dist_list))
                     bracket = len(temp_rover_dist_list) - 1
                 temp_rover_dist_list[bracket].append(1/dist)
 
@@ -334,8 +334,8 @@ cdef class RoverDomain:
         return angle, dist
 
     cpdef poi_val_change(self):
-        self.poi_values[0] = 1.0
-        self.poi_values[1] = 10.0
+        self.poi_values[0] = -1.0
+        self.poi_values[1] = 8.0
 
 
     cpdef calc_global(self):

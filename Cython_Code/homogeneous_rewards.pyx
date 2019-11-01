@@ -210,9 +210,9 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
-                    if counterfactual_agents[partner_id] < 0:
-                                observer_count -= 1
-                    elif counterfactual_agents[partner_id] < min_obs_distance:
+                    # if counterfactual_agents[partner_id] < 0:
+                    #     observer_count -= 1
+                    if counterfactual_agents[partner_id] < min_obs_distance:
                         observer_count += 1
 
                 # Update whether or not POI has been observed
@@ -234,7 +234,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(nrovers):
-        if dpp_rewards[agent_id] > difference_rewards[agent_id]:
+        if dpp_rewards[agent_id] > difference_rewards[agent_id] or dpp_rewards[agent_id] < 0:
             dpp_rewards[agent_id] = 0.0
             poi_observer_distances = np.zeros((npoi, total_steps))
             poi_observed = np.zeros(npoi)
@@ -271,11 +271,10 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
-                            if counterfactual_agents[partner_id] < 0:
-                                observer_count -= 1
-                            elif counterfactual_agents[partner_id] < min_obs_distance:
+                            # if counterfactual_agents[partner_id] < 0:
+                            #     observer_count -= 1
+                            if counterfactual_agents[partner_id] < min_obs_distance:
                                 observer_count += 1
-
 
                         # Determine if coupling has been satisfied
                         if observer_count >= cpl:
@@ -293,9 +292,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 for poi_id in range(npoi):
                     if poi_observed[poi_id] == 1:
                         counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
-                temp_dpp_reward = (counterfactual_global_reward - global_reward)/n_counters
-                if dpp_rewards[agent_id] < temp_dpp_reward:
-                    dpp_rewards[agent_id] = temp_dpp_reward
+                dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] > difference_rewards[agent_id]:
                     n_counters = cpl + 1  # Stop iterrating
         else:
