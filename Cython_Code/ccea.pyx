@@ -113,7 +113,7 @@ cdef class Ccea:
                 for w in range(self.policy_size):
                     rnum = random.uniform(0, 1)
                     if rnum <= self.mut_chance:
-                        mutation = (random.uniform(-self.mut_rate, self.mut_rate) * self.offspring_pop[pop_id, pol_id, w])
+                        mutation = (np.random.normal(0, self.mut_rate) * self.offspring_pop[pop_id, pol_id, w])
                         self.offspring_pop[pop_id, pol_id, w] += mutation
 
     cpdef epsilon_greedy_select(self):  # Choose K solutions
@@ -126,14 +126,14 @@ cdef class Ccea:
 
         for pop_id in range(self.n_populations):
             policy_id = 0
-            while policy_id < self.offspring_psize:
+            while policy_id < self.parent_psize:
                 rnum = random.uniform(0, 1)
                 if rnum > self.eps:  # Choose best policy
                     pol_index = np.argmax(self.fitness[pop_id])
-                    self.offspring_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
+                    self.parent_pop[pop_id, policy_id] = self.pops[pop_id, pol_index].copy()
                 else:
-                    parent = random.randint(0, (self.parent_psize-1))  # Choose a random parent
-                    self.offspring_pop[pop_id, policy_id] = self.parent_pop[pop_id, parent].copy()
+                    parent = random.randint(1, (self.total_pop_size-1))  # Choose a random parent
+                    self.parent_pop[pop_id, policy_id] = self.pops[pop_id, parent].copy()
                 policy_id += 1
 
     cpdef down_select(self):  # Create a new offspring population using parents from top 50% of policies
@@ -143,6 +143,7 @@ cdef class Ccea:
         """
         self.rank_individuals()
         self.epsilon_greedy_select()  # Select K successors using epsilon greedy
+        self.offspring_pop = self.parent_pop.copy()
         self.weight_mutate()  # Mutate successors
         self.combine_pops()
 
@@ -163,8 +164,8 @@ cdef class Ccea:
                             self.pops[pop_id, pol_id_a], self.pops[pop_id, pol_id_b] = self.pops[pop_id, pol_id_b], self.pops[pop_id, pol_id_a]
                     pol_id_b += 1
 
-            for pol_id in range(self.parent_psize):  # Keep k best individuals
-                self.parent_pop[pop_id, pol_id] = self.pops[pop_id, pol_id].copy()
+            # for pol_id in range(self.parent_psize):  # Keep k best individuals
+            #     self.parent_pop[pop_id, pol_id] = self.pops[pop_id, pol_id].copy()
 
 
     cpdef combine_pops(self):
@@ -175,6 +176,7 @@ cdef class Ccea:
         cdef int pop_id, off_pol_id, pol_id
 
         for pop_id in range(self.n_populations):
+            # self.pops[pop_id] = np.concatenate((self.parent_pop[pop_id], self.offspring_pop[pop_id]), Axis=0)
             off_pol_id = 0
             for pol_id in range(self.total_pop_size):
                 if pol_id < self.parent_psize:

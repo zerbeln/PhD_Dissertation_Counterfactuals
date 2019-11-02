@@ -334,8 +334,8 @@ cdef class RoverDomain:
         return angle, dist
 
     cpdef poi_val_change(self):
-        self.poi_values[0] = -1.0
-        self.poi_values[1] = 8.0
+        self.poi_values[0] = 0.0
+        self.poi_values[1] = 4.0
 
 
     cpdef calc_global(self):

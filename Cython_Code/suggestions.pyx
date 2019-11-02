@@ -15,19 +15,19 @@ cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi
     cdef double [:] partners = np.zeros(n_counters)
 
     if rover_id % 2 == 0:  # Even IDed rovers pursue higher value targets
-        if poi_values[poi_id] > 5.0 and rover_dist < obs_rad:
+        if poi_values[poi_id] > 5.0:
             for partner_id in range(n_counters):
-                partners[partner_id] = 1.0
+                partners[partner_id] = rover_dist
         else:
             for partner_id in range(n_counters):
-                partners[partner_id] = 100.0
+                partners[partner_id] = -rover_dist
     else:
-        if poi_values[poi_id] <= 5.0 and rover_dist < obs_rad:  # Odd IDed rovers pursue lower value targets
+        if poi_values[poi_id] <= 5.0:  # Odd IDed rovers pursue lower value targets
             for partner_id in range(n_counters):
-                partners[partner_id] = 1.0
+                partners[partner_id] = rover_dist
         else:
             for partner_id in range(n_counters):
-                partners[partner_id] = 100.0
+                partners[partner_id] = -rover_dist
 
     return partners
 
@@ -48,7 +48,7 @@ cpdef high_value_only(double rover_dist, int poi_id, double [:] poi_values, int 
             partners[partner_id] = rover_dist
     else:
         for partner_id in range(n_counters):
-            partners[partner_id] = -10.0
+            partners[partner_id] = -rover_dist
 
     return partners
 
@@ -69,7 +69,7 @@ cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n
             partners[partner_id] = rover_dist
     else:
         for partner_id in range(n_counters):
-            partners[partner_id] = -10.0
+            partners[partner_id] = -rover_dist
 
     return partners
 

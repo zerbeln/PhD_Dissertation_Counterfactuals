@@ -14,7 +14,7 @@ class Parameters:
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
 
         # Domain parameters
-        self.num_rovers = 3  # Number of rovers on map (GETS MULTIPLIED BY NUMBER OF TYPES)
+        self.num_rovers = 3  # Number of rovers on map
         self.coupling = 3  # Number of rovers required to view a POI for credit
         self.num_pois = 2  # Number of POIs on map
         self.num_steps = 25  # Number of steps rovers take each episode
@@ -32,7 +32,7 @@ class Parameters:
 
         # CCEA parameters
         self.mutation_prob = 0.1  # Probability that a mutation will occur
-        self.mutation_rate = 0.01  # How much a weight is allowed to change
+        self.mutation_rate = 0.05  # How much a weight is allowed to change
         self.epsilon = 0.1  # For e-greedy selection in CCEA
         self.parent_pop_size = 20
         self.offspring_pop_size = 20

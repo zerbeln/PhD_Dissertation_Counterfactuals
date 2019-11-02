@@ -210,9 +210,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
-                    # if counterfactual_agents[partner_id] < 0:
-                    #     observer_count -= 1
-                    if counterfactual_agents[partner_id] < min_obs_distance:
+                    if abs(counterfactual_agents[partner_id]) < min_obs_distance:
                         observer_count += 1
 
                 # Update whether or not POI has been observed
@@ -223,6 +221,8 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                         summed_observer_distances += min(rover_distances)
                         od_index = np.argmin(rover_distances)
                         rover_distances[od_index] = inf
+                    if summed_observer_distances == 0.0:
+                        summed_observer_distances = -1.0
                     poi_observer_distances[poi_id, step_index] = summed_observer_distances
                 else:
                     poi_observer_distances[poi_id, step_index] = inf
@@ -271,9 +271,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
-                            # if counterfactual_agents[partner_id] < 0:
-                            #     observer_count -= 1
-                            if counterfactual_agents[partner_id] < min_obs_distance:
+                            if abs(counterfactual_agents[partner_id]) < min_obs_distance:
                                 observer_count += 1
 
                         # Determine if coupling has been satisfied
@@ -284,6 +282,8 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                                 summed_observer_distances += min(rover_distances)
                                 od_index = np.argmin(rover_distances)
                                 rover_distances[od_index] = inf
+                            if summed_observer_distances == 0.0:
+                                summed_observer_distances = -1.0
                             poi_observer_distances[poi_id, step_index] = summed_observer_distances
                         else:
                             poi_observer_distances[poi_id, step_index] = inf
