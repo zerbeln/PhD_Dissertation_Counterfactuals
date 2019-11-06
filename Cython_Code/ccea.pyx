@@ -164,9 +164,6 @@ cdef class Ccea:
                             self.pops[pop_id, pol_id_a], self.pops[pop_id, pol_id_b] = self.pops[pop_id, pol_id_b], self.pops[pop_id, pol_id_a]
                     pol_id_b += 1
 
-            # for pol_id in range(self.parent_psize):  # Keep k best individuals
-            #     self.parent_pop[pop_id, pol_id] = self.pops[pop_id, pol_id].copy()
-
 
     cpdef combine_pops(self):
         """
@@ -176,7 +173,6 @@ cdef class Ccea:
         cdef int pop_id, off_pol_id, pol_id
 
         for pop_id in range(self.n_populations):
-            # self.pops[pop_id] = np.concatenate((self.parent_pop[pop_id], self.offspring_pop[pop_id]), Axis=0)
             off_pol_id = 0
             for pol_id in range(self.total_pop_size):
                 if pol_id < self.parent_psize:

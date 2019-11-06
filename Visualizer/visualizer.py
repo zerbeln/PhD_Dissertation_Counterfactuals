@@ -7,6 +7,7 @@ import time
 import math
 import sys
 import os
+import csv
 sys.path.append('../')
 from AADI_RoverDomain.parameters import Parameters
 
@@ -100,8 +101,19 @@ def import_poi_values(p):
 
     return poi_vals
 
+def create_output_files(filename, in_vec):
+    dir_name = 'Output_Data/'
 
-def run_visualizer(episode_reward):
+    if not os.path.exists(dir_name):  # If directory does not exist, create it
+        os.makedirs(dir_name)
+
+    save_file_name = os.path.join(dir_name, filename)
+    with open(save_file_name, 'a+', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(in_vec)
+
+
+def run_visualizer():
     p = Parameters()
     scale_factor = 20  # Scaling factor for images
     width = -15  # robot icon widths
@@ -120,6 +132,7 @@ def run_visualizer(episode_reward):
     poi_pos = import_poi_positions(p)
     poi_values = import_poi_values(p)
 
+    poi_convergence = [0, 0, 0]
     for srun in range(p.stat_runs):
         game_display = pygame.display.set_mode((x_map * scale_factor, y_map * scale_factor))
         poi_status = [False for _ in range(p.num_pois)]
@@ -143,11 +156,9 @@ def run_visualizer(episode_reward):
                     poi_status[poi_id] = True
 
                 if poi_status[poi_id]:
-                    # draw(game_display, greenflag, poi_x, poi_y)  # POI observed
                     pygame.draw.circle(game_display, (50, 205, 50), (poi_x, poi_y), 10)
                     pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), int(p.min_observation_dist * scale_factor), 1)
                 else:
-                    # draw(game_display, redflag, poi_x, poi_y)  # POI not observed
                     pygame.draw.circle(game_display, (220, 20, 60), (poi_x, poi_y), 10)
                     pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), int(p.min_observation_dist * scale_factor), 1)
                 textsurface = myfont.render(str(poi_values[poi_id]), False, (0, 0, 0))
@@ -177,9 +188,13 @@ def run_visualizer(episode_reward):
             pygame.display.update()
             time.sleep(0.1)
 
-        # scoresurface = myfont.render('The system reward obtained is ' + str(round(episode_reward, 2)), False, (0, 0, 0))
-        # draw(game_display, scoresurface, x_map*scale_factor-500, 20)
-        # pygame.display.update()
+        counter = 0
+        for poi_id in range(p.num_pois):
+            if poi_status[poi_id]:
+                poi_convergence[poi_id] += 1
+                counter += 1
+        if counter == 0:
+            poi_convergence[2] += 1
 
         dir_name = 'Screenshots/'  # Intended directory for output files
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it
@@ -193,5 +208,7 @@ def run_visualizer(episode_reward):
                 if event.type == pygame.QUIT:
                     p.running = False
 
+    create_output_files('POI_Choice.csv', poi_convergence)
 
-run_visualizer(20)
+
+run_visualizer()
