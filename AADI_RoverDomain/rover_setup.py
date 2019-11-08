@@ -276,27 +276,16 @@ def init_poi_values_txt_file(num_pois):
 def init_poi_pos_clusters(num_pois, xd, yd):
     poi_positions = np.zeros((num_pois, 2))
 
-    assert(num_pois == 12)
+    # assert(num_pois == 12)
 
-    # First Cluster
-    poi_positions[0, 0] = xd/4; poi_positions[0, 1] = (yd/2.0)
-    poi_positions[1, 0] = (xd/4) - 1; poi_positions[1, 1] = (yd/2.0) - 1.0
-    poi_positions[2, 0] = (xd/4) + 1; poi_positions[2, 1] = (yd/2.0) - 1.0
+    # Low Values Pois
+    poi_positions[0, 0] = 5.0; poi_positions[0, 1] = 15.0
+    poi_positions[1, 0] = 7.0 ; poi_positions[1, 1] = 17.0
+    poi_positions[2, 0] = 6.0; poi_positions[2, 1] = 11.0
 
-    # Second Cluster
-    poi_positions[3, 0] = (3*xd/4); poi_positions[3, 1] = (yd/2)
-    poi_positions[4, 0] = (3*xd/4) - 1; poi_positions[4, 1] = (yd/2.0) + 1.0
-    poi_positions[5, 0] = (3*xd/4) + 1; poi_positions[5, 1] = (yd/2.0) + 1.0
-
-    # Third Cluster
-    poi_positions[6, 0] = 0.0; poi_positions[6, 1] = yd
-    poi_positions[7, 0] = 1.0; poi_positions[7, 1] = yd - 1.0
-    poi_positions[8, 0] = 2.0; poi_positions[8, 1] = yd + 1.0
-
-    # Fourth Cluster
-    poi_positions[9, 0] = xd-1.0; poi_positions[9, 1] = yd
-    poi_positions[10, 0] = (xd - 2.0); poi_positions[10, 1] = yd - 1.0
-    poi_positions[11, 0] = (xd - 3.0); poi_positions[11, 1] = yd + 1.0
+    # High Value POIs
+    poi_positions[3, 0] = 20.0; poi_positions[3, 1] = 35.0
+    poi_positions[4, 0] = 35.0; poi_positions[4, 1] = 25.0
 
     return poi_positions
 
@@ -472,7 +461,6 @@ def init_poi_vals_four_corners(num_pois):
 
 def init_poi_vals_clusters(num_pois):
 
-    assert(num_pois == 12)
     poi_vals = np.zeros(num_pois)
 
     # First Cluster
@@ -480,19 +468,18 @@ def init_poi_vals_clusters(num_pois):
     poi_vals[1] = 3.0
     poi_vals[2] = 3.0
 
-    # Second Cluster
+    # Others
     poi_vals[3] = 8.0
-    poi_vals[4] = 8.0
-    poi_vals[5] = 8.0
+    poi_vals[4] = 9.0
 
     # Third Cluster
-    poi_vals[6] = 3.0
-    poi_vals[7] = 3.0
-    poi_vals[8] = 3.0
-
-    # Fourth Cluster
-    poi_vals[9] = 8.0
-    poi_vals[10] = 8.0
-    poi_vals[11] = 8.0
+    # poi_vals[6] = 3.0
+    # poi_vals[7] = 3.0
+    # poi_vals[8] = 3.0
+    #
+    # # Fourth Cluster
+    # poi_vals[9] = 8.0
+    # poi_vals[10] = 8.0
+    # poi_vals[11] = 8.0
 
     return poi_vals

@@ -132,7 +132,7 @@ def run_visualizer():
     poi_pos = import_poi_positions(p)
     poi_values = import_poi_values(p)
 
-    poi_convergence = [0, 0, 0]
+    poi_convergence = [0 for i in range(p.num_pois + 1)]
     for srun in range(p.stat_runs):
         game_display = pygame.display.set_mode((x_map * scale_factor, y_map * scale_factor))
         poi_status = [False for _ in range(p.num_pois)]
@@ -194,7 +194,7 @@ def run_visualizer():
                 poi_convergence[poi_id] += 1
                 counter += 1
         if counter == 0:
-            poi_convergence[2] += 1
+            poi_convergence[p.num_pois] += 1
 
         dir_name = 'Screenshots/'  # Intended directory for output files
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it

@@ -5,7 +5,7 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 30
+        self.stat_runs = 15
         self.generations = 1000  # Number of generations for CCEA in each stat run
         self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
@@ -14,10 +14,10 @@ class Parameters:
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
 
         # Domain parameters
-        self.num_rovers = 12  # Number of rovers on map
+        self.num_rovers = 6  # Number of rovers on map
         self.coupling = 3  # Number of rovers required to view a POI for credit
-        self.num_pois = 12  # Number of POIs on map
-        self.num_steps = 45  # Number of steps rovers take each episode
+        self.num_pois = 5  # Number of POIs on map
+        self.num_steps = 40  # Number of steps rovers take each episode
         self.min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
         self.x_dim = 30  # X-Dimension of the rover map
         self.y_dim = 30  # Y-Dimension of the rover map
