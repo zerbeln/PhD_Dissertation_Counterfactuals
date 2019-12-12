@@ -20,14 +20,14 @@ cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi
                 partners[partner_id] = rover_dist
         else:
             for partner_id in range(n_counters):
-                partners[partner_id] = -rover_dist
+                partners[partner_id] = 100.00
     else:
         if poi_values[poi_id] <= 5.0:  # Odd IDed rovers pursue lower value targets
             for partner_id in range(n_counters):
                 partners[partner_id] = rover_dist
         else:
             for partner_id in range(n_counters):
-                partners[partner_id] = -rover_dist
+                partners[partner_id] = 100.00
 
     return partners
 
@@ -48,7 +48,7 @@ cpdef high_value_only(double rover_dist, int poi_id, double [:] poi_values, int 
             partners[partner_id] = rover_dist
     else:
         for partner_id in range(n_counters):
-            partners[partner_id] = -rover_dist
+            partners[partner_id] = 100.00
 
     return partners
 
@@ -69,7 +69,7 @@ cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n
             partners[partner_id] = rover_dist
     else:
         for partner_id in range(n_counters):
-            partners[partner_id] = -rover_dist
+            partners[partner_id] = 100.00
 
     return partners
 
@@ -158,10 +158,7 @@ cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, doub
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
-    if suggestion == "none":
-        for partner_id in range(n_counters):
-            partners[partner_id] = rover_dist
-    elif suggestion == "high_val":
+    if suggestion == "high_val":
         partners = high_value_only(rover_dist, poi_id, poi_values, n_counters)
     elif suggestion == "low_val":
         partners = low_value_only(rover_dist, poi_id, poi_values, n_counters)

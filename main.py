@@ -8,7 +8,7 @@
 import pyximport; pyximport.install(language_level=3)
 from ccea import Ccea
 from neural_network import NeuralNetwork
-from homogeneous_rewards import calc_global, calc_difference, calc_dpp
+from homogeneous_rewards import calc_global, calc_difference, calc_dpp, calc_sdpp
 from rover_domain_cython import RoverDomain
 
 from AADI_RoverDomain.parameters import Parameters
@@ -64,8 +64,6 @@ def run_homogeneous_rovers():
     # rd.inital_world_setup()
     print("Reward Type: ", p.reward_type)
     print("Coupling Requirement: ", p.coupling)
-    if p.reward_type != "SDPP":
-        assert(p.suggestion_type == "none")
 
     for srun in range(p.stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
@@ -107,11 +105,16 @@ def run_homogeneous_rovers():
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = d_reward[rover_id]
-                elif p.reward_type == "DPP" or p.reward_type == "SDPP":
-                    dpp_reward = calc_dpp(p, rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, suggestion)
+                elif p.reward_type == "DPP":
+                    dpp_reward = calc_dpp(p, rd.rover_path, rd.poi_values, rd.poi_pos, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(cc.team_selection[rover_id, team_number])
                         cc.fitness[rover_id, policy_id] = dpp_reward[rover_id]
+                elif p.reward_type == "SDPP":
+                    sdpp_reward = calc_sdpp(p, rd.rover_path, rd.poi_values, rd.poi_pos, global_reward, suggestion)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(cc.team_selection[rover_id, team_number])
+                        cc.fitness[rover_id, policy_id] = sdpp_reward[rover_id]
                 else:
                     sys.exit('Incorrect Reward Type')
 
