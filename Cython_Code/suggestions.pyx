@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 
-cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi_values, int n_counters, double obs_rad):
+cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:, :] pois, int n_counters, double obs_rad):
     """
     Rovers with even IDs go for high value POIs, Rovers with odd IDs go for low value POIs
     :param rover_dist:
@@ -15,14 +15,14 @@ cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi
     cdef double [:] partners = np.zeros(n_counters)
 
     if rover_id % 2 == 0:  # Even IDed rovers pursue higher value targets
-        if poi_values[poi_id] > 5.0:
+        if pois[poi_id, 2] > 5.0:
             for partner_id in range(n_counters):
                 partners[partner_id] = rover_dist
         else:
             for partner_id in range(n_counters):
                 partners[partner_id] = 100.00
     else:
-        if poi_values[poi_id] <= 5.0:  # Odd IDed rovers pursue lower value targets
+        if pois[poi_id, 2] <= 5.0:  # Odd IDed rovers pursue lower value targets
             for partner_id in range(n_counters):
                 partners[partner_id] = rover_dist
         else:
@@ -31,7 +31,7 @@ cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:] poi
 
     return partners
 
-cpdef high_value_only(double rover_dist, int poi_id, double [:] poi_values, int n_counters):
+cpdef high_value_only(double rover_dist, int poi_id, double [:, :] pois, int n_counters):
     """
     Suggestions give rover stepping stone reward only for high value POIs
     :param rover_dist:
@@ -43,7 +43,7 @@ cpdef high_value_only(double rover_dist, int poi_id, double [:] poi_values, int 
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
-    if poi_values[poi_id] > 5.0:
+    if pois[poi_id, 2] > 5.0:
         for partner_id in range(n_counters):
             partners[partner_id] = rover_dist
     else:
@@ -52,7 +52,7 @@ cpdef high_value_only(double rover_dist, int poi_id, double [:] poi_values, int 
 
     return partners
 
-cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n_counters):
+cpdef low_value_only(double rover_dist, int poi_id, double [:, :] pois, int n_counters):
     """
     Suggestions give rover stepping stone reward only for low value POIs
     :param rover_dist:
@@ -64,7 +64,7 @@ cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
-    if poi_values[poi_id] <= 5.0:
+    if pois[poi_id, 2] <= 5.0:
         for partner_id in range(n_counters):
             partners[partner_id] = rover_dist
     else:
@@ -74,7 +74,7 @@ cpdef low_value_only(double rover_dist, int poi_id, double [:] poi_values, int n
     return partners
 
 
-cpdef value_based_incentives(double rover_dist, int poi_id, double [:] poi_values, int n_counters, double min_dist, double obs_rad):
+cpdef value_based_incentives(double rover_dist, int poi_id, double [:, :] pois, int n_counters, double min_dist, double obs_rad):
     """
     :param rover_dist: 
     :param poi_id: 
@@ -88,7 +88,7 @@ cpdef value_based_incentives(double rover_dist, int poi_id, double [:] poi_value
     cdef double [:] partners = np.zeros(n_counters)
 
     if rover_dist < obs_rad:
-        if poi_values[poi_id] > 5:
+        if pois[poi_id, 2] > 5:
             for partner_id in range(n_counters):
                 partners[partner_id] = min_dist
         else:
@@ -100,7 +100,7 @@ cpdef value_based_incentives(double rover_dist, int poi_id, double [:] poi_value
 
     return partners
 
-cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters, double xd):
+cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] pois, int n_counters, double xd):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
     cdef double x_middle
@@ -108,7 +108,7 @@ cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, 
     partners = np.zeros(n_counters)
     x_middle = xd/2
 
-    if poi_pos[poi_id, 0] < x_middle:
+    if pois[poi_id, 0] < x_middle:
         for partner_id in range(n_counters):
             partners[partner_id] = rover_dist
     else:
@@ -117,7 +117,7 @@ cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, 
 
     return partners
 
-cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos, int n_counters, double xd):
+cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] pois, int n_counters, double xd):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
     cdef double x_middle
@@ -125,7 +125,7 @@ cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos,
     partners = np.zeros(n_counters)
     x_middle = xd/2
 
-    if poi_pos[poi_id, 0] > x_middle:
+    if pois[poi_id, 0] > x_middle:
         for partner_id in range(n_counters):
             partners[partner_id] = rover_dist
     else:
@@ -134,7 +134,7 @@ cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] poi_pos,
 
     return partners
 
-cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :] poi_pos, int n_counters, double xd):
+cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :] pois, int n_counters, double xd):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
     cdef double x_middle
@@ -142,10 +142,10 @@ cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :
     partners = np.zeros(n_counters)
     x_middle = xd/2
 
-    if rover_id % 2 == 0 and poi_pos[poi_id, 0] > x_middle:
+    if rover_id % 2 == 0 and pois[poi_id, 0] > x_middle:
         for partner_id in range(n_counters):
             partners[partner_id] = rover_dist
-    elif rover_id % 2 != 0 and poi_pos[poi_id, 0] < x_middle:
+    elif rover_id % 2 != 0 and pois[poi_id, 0] < x_middle:
         for partner_id in range(n_counters):
             partners[partner_id] = rover_dist
     else:
@@ -154,18 +154,18 @@ cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :
 
     return partners
 
-cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, double rover_dist, double [:, :, :] rover_paths, int poi_id, double [:] poi_values, int step_id, str suggestion, double min_dist, double obs_rad):
+cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, double rover_dist, double [:, :, :] rover_paths, int poi_id, double [:, :] pois, int step_id, str suggestion, double min_dist, double obs_rad):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
 
     if suggestion == "high_val":
-        partners = high_value_only(rover_dist, poi_id, poi_values, n_counters)
+        partners = high_value_only(rover_dist, poi_id, pois, n_counters)
     elif suggestion == "low_val":
-        partners = low_value_only(rover_dist, poi_id, poi_values, n_counters)
+        partners = low_value_only(rover_dist, poi_id, pois, n_counters)
     elif suggestion == "high_low":
-        partners = low_high_split(rover_dist, self_id, poi_id, poi_values, n_counters, obs_rad)
+        partners = low_high_split(rover_dist, self_id, poi_id, pois, n_counters, obs_rad)
     elif suggestion == "val_based":
-        partners = value_based_incentives(rover_dist, poi_id, poi_values, n_counters, min_dist, obs_rad)
+        partners = value_based_incentives(rover_dist, poi_id, pois, n_counters, min_dist, obs_rad)
     else:
         sys.exit('Incorrect Suggestion Type')
 

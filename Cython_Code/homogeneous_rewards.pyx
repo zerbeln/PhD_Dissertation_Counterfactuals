@@ -2,7 +2,7 @@ import numpy as np
 import math
 from suggestions import get_counterfactual_partners
 
-cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, double [:, :] poi_positions):
+cpdef calc_global(object p, double [:, :, :] rover_paths, double[:, :] pois):
     """
     Calculate the global reward for the entire rover trajectory
     :param rover_paths:
@@ -33,8 +33,8 @@ cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, 
 
             for agent_id in range(nrovers):
                 # Calculate distance between agent and POI
-                x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, agent_id, 0]
-                y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, agent_id, 1]
+                x_distance = pois[poi_id, 0] - rover_paths[step_index, agent_id, 0]
+                y_distance = pois[poi_id, 1] - rover_paths[step_index, agent_id, 1]
                 distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                 if distance < min_dist:
@@ -60,13 +60,13 @@ cpdef calc_global(object p, double [:, :, :] rover_paths, double[:] poi_values, 
 
     for poi_id in range(npoi):
         if poi_observed[poi_id] == 1:
-            global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/cpl_double)
+            global_reward += pois[poi_id, 2] / (min(poi_observer_distances[poi_id])/cpl_double)
 
     return global_reward
 
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
-cpdef calc_difference(object p, double [:, :, :] rover_paths, double [:] poi_values, double [:, :] poi_positions, double global_reward):
+cpdef calc_difference(object p, double [:, :, :] rover_paths, double [:, :] pois, double global_reward):
     """
     Calcualte each rover's difference reward from entire rover trajectory
     :param rover_paths:
@@ -105,8 +105,8 @@ cpdef calc_difference(object p, double [:, :, :] rover_paths, double [:] poi_val
                 for other_agent_id in range(nrovers):
                     if agent_id != other_agent_id:  # Remove current rover's trajectory
                         # Calculate separation distance between poi and agent
-                        x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                        y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                        x_distance = pois[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
+                        y_distance = pois[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
                         distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                         if distance < min_dist:
@@ -135,14 +135,14 @@ cpdef calc_difference(object p, double [:, :, :] rover_paths, double [:] poi_val
         counterfactual_global_reward = 0.0
         for poi_id in range(npoi):
             if poi_observed[poi_id] == 1:
-                counterfactual_global_reward += poi_values[poi_id] / (min(poi_observer_distances[poi_id])/cpl_double)
+                counterfactual_global_reward += pois[poi_id, 2] / (min(poi_observer_distances[poi_id])/cpl_double)
         difference_rewards[agent_id] = global_reward - counterfactual_global_reward
 
     return difference_rewards
 
 
 # D++ REWARD ----------------------------------------------------------------------------------------------------------
-cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, double [:, :] poi_positions, double global_reward):
+cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:, :] pois, double global_reward):
     """
     Calculate D++ rewards for each rover across entire trajectory
     :param sgst: 
@@ -171,7 +171,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
     cdef double [:, :] poi_observer_distances
     cdef double [:] poi_observed
 
-    difference_rewards = calc_difference(p, rover_paths, poi_values, poi_positions, global_reward)
+    difference_rewards = calc_difference(p, rover_paths, pois, global_reward)
     dpp_rewards = np.zeros(nrovers)
 
     # Calculate Dpp Reward with (TotalAgents - 1) Counterfactuals
@@ -188,8 +188,8 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 # Count how many agents observe poi, update closest distances
                 for other_agent_id in range(nrovers):
                     # Calculate separation distance between poi and agent
-                    x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                    y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                    x_distance = pois[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
+                    y_distance = pois[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
                     distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                     if distance < min_dist:
@@ -222,7 +222,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
         counterfactual_global_reward = 0.0
         for poi_id in range(npoi):
             if poi_observed[poi_id] == 1:
-                counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
+                counterfactual_global_reward += pois[poi_id, 2]/(min(poi_observer_distances[poi_id])/cpl_double)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(nrovers):
@@ -242,8 +242,8 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                         # Count how many agents observe poi, update closest distances
                         for other_agent_id in range(nrovers):
                             # Calculate separation distance between poi and agent
-                            x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                            y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                            x_distance = pois[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
+                            y_distance = pois[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
                             distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                             if distance < min_dist:
@@ -276,7 +276,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
                 counterfactual_global_reward = 0.0
                 for poi_id in range(npoi):
                     if poi_observed[poi_id] == 1:
-                        counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
+                        counterfactual_global_reward += pois[poi_id, 2]/(min(poi_observer_distances[poi_id])/cpl_double)
                 dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] > difference_rewards[agent_id]:
                     n_counters = cpl + 1  # Stop iterrating
@@ -286,7 +286,7 @@ cpdef calc_dpp(object p, double [:, :, :] rover_paths, double [:]poi_values, dou
     return dpp_rewards
 
 # S-D++ REWARD ----------------------------------------------------------------------------------------------------------
-cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, double [:, :] poi_positions, double global_reward, str sgst):
+cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:, :] pois, double global_reward, str sgst):
     """
     Calculate S-D++ rewards for each rover across entire trajectory
     :param sgst: 
@@ -316,7 +316,7 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
     cdef double [:, :] poi_observer_distances
     cdef double [:] poi_observed
 
-    difference_rewards = calc_difference(p, rover_paths, poi_values, poi_positions, global_reward)
+    difference_rewards = calc_difference(p, rover_paths, pois, global_reward)
     dpp_rewards = np.zeros(nrovers)
 
     # Calculate Dpp Reward with (TotalAgents - 1) Counterfactuals
@@ -337,8 +337,8 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
                 # Count how many agents observe poi, update closest distances
                 for other_agent_id in range(nrovers):
                     # Calculate separation distance between poi and agent
-                    x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                    y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                    x_distance = pois[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
+                    y_distance = pois[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
                     distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                     if distance < min_dist:
@@ -350,7 +350,7 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
                         observer_count += 1
 
                 # Add in counterfactual partners
-                counterfactual_agents = get_counterfactual_partners(n_counters, nrovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, step_index, suggestion, min_dist, min_obs_distance)
+                counterfactual_agents = get_counterfactual_partners(n_counters, nrovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, pois, step_index, suggestion, min_dist, min_obs_distance)
                 for partner_id in range(n_counters):
                     rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
@@ -374,7 +374,7 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
         counterfactual_global_reward = 0.0
         for poi_id in range(npoi):
             if poi_observed[poi_id] == 1:
-                counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
+                counterfactual_global_reward += pois[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(nrovers):
@@ -398,8 +398,8 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
                         # Count how many agents observe poi, update closest distances
                         for other_agent_id in range(nrovers):
                             # Calculate separation distance between poi and agent
-                            x_distance = poi_positions[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                            y_distance = poi_positions[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                            x_distance = pois[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
+                            y_distance = pois[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
                             distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                             if distance < min_dist:
@@ -411,7 +411,7 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
                                 observer_count += 1
 
                         # Add in counterfactual partners
-                        counterfactual_agents = get_counterfactual_partners(n_counters, nrovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi_values, step_index, suggestion, min_dist, min_obs_distance)
+                        counterfactual_agents = get_counterfactual_partners(n_counters, nrovers, agent_id, rover_distances[agent_id], rover_paths, poi_id, pois, step_index, suggestion, min_dist, min_obs_distance)
                         for partner_id in range(n_counters):
                             rover_distances[nrovers + partner_id] = counterfactual_agents[partner_id]
 
@@ -435,7 +435,7 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:]poi_values, do
                 counterfactual_global_reward = 0.0
                 for poi_id in range(npoi):
                     if poi_observed[poi_id] == 1:
-                        counterfactual_global_reward += poi_values[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
+                        counterfactual_global_reward += pois[poi_id, 2]/(min(poi_observer_distances[poi_id])/cpl_double)
                 dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward)/n_counters
                 if dpp_rewards[agent_id] > difference_rewards[agent_id]:
                     n_counters = cpl + 1  # Stop iterrating
