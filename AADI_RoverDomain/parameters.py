@@ -6,8 +6,8 @@ class Parameters:
     def __init__(self):
         # Run Parameters
         self.stat_runs = 1
-        self.generations = 1  # Number of generations for CCEA in each stat run
-        self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
+        self.generations = 100  # Number of generations for CCEA in each stat run
+        self.new_world_config = 1  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
         # Visualizer
@@ -36,6 +36,7 @@ class Parameters:
         self.epsilon = 0.1  # For e-greedy selection in CCEA
         self.parent_pop_size = 20
         self.offspring_pop_size = 20
+        self.total_pop_size = self.parent_pop_size + self.offspring_pop_size
 
         # User specific parameters
         """

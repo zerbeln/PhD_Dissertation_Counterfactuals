@@ -33,16 +33,16 @@ cdef class RoverDomain:
         # POI position and value vectors
         self.pois = np.zeros((self.num_pois, 3))
 
-    cpdef inital_world_setup(self):
+    cpdef inital_world_setup(self, dict rovers):
         """
-        Set rover starting positions, POI positions and POI values
+        Set POI positions and POI values
         :return: none
         """
         self.pois = np.zeros((self.num_pois, 3))
         if self.create_new_world_config == 1:
             # Initialize POI positions and values
-            self.init_poi_pos_clusters()
-            self.init_poi_vals_clusters()
+            self.init_poi_pos_random(rovers)
+            self.init_poi_vals_random()
             self.save_poi_configuration()
         else:
             # Initialize POI positions and values
@@ -53,13 +53,21 @@ cdef class RoverDomain:
     cpdef clear_rover_path(self):
         self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))  # Tracks rover trajectories
 
+    cpdef update_rover_path(self, dict rovers, int steps):
+        cpdef int rover_id
+
+        for rover_id in range(self.num_rovers):
+            self.rover_path[steps+1, rover_id, 0] = rovers["Rover{0}".format(rover_id)].rover_x
+            self.rover_path[steps+1, rover_id, 1] = rovers["Rover{0}".format(rover_id)].rover_y
+            self.rover_path[steps+1, rover_id, 2] = rovers["Rover{0}".format(rover_id)].rover_theta
+
     cpdef save_poi_configuration(self):
         """
-        Saves world configuration to a txt files in a folder called Output_Data
-        :Output: Three txt files for Rover starting positions, POI postions, and POI values
+        Saves world configuration to a csv file in a folder called Output_Data
+        :Output: One CSV file containing POI postions and POI values
         """
         cdef str dir_name, pfile_name
-        cdef int p_id
+        cdef int poi_id
 
         dir_name = 'Output_Data/'  # Intended directory for output files
 
@@ -70,11 +78,12 @@ cdef class RoverDomain:
 
         with open(pfile_name, 'a+', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            for p_id in range(self.num_pois):
-                writer.writerow(self.pois[p_id, :])
+            for poi_id in range(self.num_pois):
+                writer.writerow(self.pois[poi_id, :])
 
     cpdef use_saved_poi_configuration(self):
         cdef list config_input
+        cdef int poi_id
 
         config_input = []
         with open('Output_Data/POI_Config.csv') as csvfile:
@@ -106,7 +115,7 @@ cdef class RoverDomain:
                 # Calculate distance between agent and POI
                 x_distance = self.pois[poi_id, 0] - rovers["Rover{0".format(agent_id)].rover_x
                 y_distance = self.pois[poi_id, 1] - rovers["Rover{0".format(agent_id)].rover_y
-                distance = math.sqrt((x_distance * x_distance) + (y_distance * y_distance))
+                distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                 if distance < self.min_dist:
                     distance = self.min_dist
@@ -124,7 +133,7 @@ cdef class RoverDomain:
         return global_reward
 
     # POI POSITION FUNCTIONS ------------------------------------------------------------------------------------------
-    cpdef init_poi_pos_random(self, rovers):  # Randomly set POI on the map
+    cpdef init_poi_pos_random(self, dict rovers):  # Randomly set POI on the map
         """
         POI positions set randomly across the map (but not in range of any rover)
         :return: self.pois: np array of size (npoi, 2)

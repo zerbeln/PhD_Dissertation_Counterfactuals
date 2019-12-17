@@ -96,7 +96,7 @@ cdef class Rover:
         self.ry_init = random.uniform(0.0, 2.0)
         self.rt_init = random.uniform(0.0, 360.0)  # Rover orientation
 
-    cpdef step(self, double [:, :] joint_action, double wx, double wy):
+    cpdef step(self, double [:] joint_action, double wx, double wy):
         """
         :param joint_action: np array containing output from NN. Array size is (nrovers, 2)
         :return: Joint state of rovers (NN inputs), Done, and Global Reward
@@ -106,30 +106,24 @@ cdef class Rover:
         joint_action = np.clip(joint_action, -1.0, 1.0)
 
         # Update rover positions
-        x = joint_action[self.self_id, 0]
-        y = joint_action[self.self_id, 1]
+        x = joint_action[0]
+        y = joint_action[1]
         theta = math.atan(y/x) * (180.0/math.pi)
+
         if theta < 0.0:
             theta += 360.0
-        if theta > 360.0:
+        elif theta > 360.0:
             theta -= 360.0
-        if math.isnan(theta):
+        elif math.isnan(theta):
             theta = 0.0
 
         # Update rover position
-        self.rover_x += x
-        if self.rover_x > (wx-1.0):
-            self.rover_x = (wx-1.0)
-        if self.rover_x < 0.0:
-            self.rover_x = 0.0
-        self.rover_y += y
-        if self.rover_y > (wy-1.0):
-            self.rover_y = (wy-1.0)
-        if self.rover_y < 0.0:
-            self.rover_y = 0.0
+        if 0.0 <= (self.rover_x + x) < (wx-1.0) and 0.0 <= (self.rover_y + y) < (wy-1.0):
+            self.rover_x += x
+            self.rover_y += y
         self.rover_theta = theta
 
-    cpdef get_joint_state(self, dict rovers, double[:, :] pois, int num_rovers, int num_poi):
+    cpdef rover_sensor_scan(self, dict rovers, double[:, :] pois, int num_rovers, int num_poi):
         cdef double poi_x, poi_y, poi_value, angle, dist, rov_x, rov_y
         cdef double num_poi_double, num_agents_double
         cdef int rover_id, poi_id, bracket, other_rover_id, num_agents
@@ -150,10 +144,10 @@ cdef class Rover:
             angle, dist = self.get_angle_dist(self.rover_x, self.rover_y, poi_x, poi_y)
 
             angle -= self.rover_theta
-            if angle > 360.0:
-                angle -= 360.0
             if angle < 0.0:
                 angle += 360.0
+            elif angle > 360.0:
+                angle -= 360.0
 
             bracket = int(angle/self.angle_res)
             if bracket >= len(temp_poi_dist_list):
@@ -173,10 +167,11 @@ cdef class Rover:
             angle, dist = self.get_angle_dist(self.rover_x, self.rover_y, rov_x, rov_y)
 
             angle -= self.rover_theta
-            if angle > 360.0:
-                angle -= 360.0
             if angle < 0.0:
                 angle += 360.0
+            elif angle > 360.0:
+                angle -= 360.0
+
 
             if dist < 1.0:  # Clip distance to not overwhelm sigmoid in NN
                 dist = 1.0
@@ -237,11 +232,11 @@ cdef class Rover:
 
         if angle < 0.0:
             angle += 360.0
-        if angle > 360.0:
+        elif angle > 360.0:
             angle -= 360.0
-        if math.isnan(angle):
+        elif math.isnan(angle):
             angle = 0.0
 
-        dist = math.sqrt((vx * vx) + (vy * vy))
+        dist = math.sqrt((vx**2) + (vy**2))
 
         return angle, dist
