@@ -150,3 +150,6 @@ cdef class Ccea:
             else:
                 self.pops[pol_id] = self.offspring_pop[off_pol_id].copy()
                 off_pol_id += 1
+
+    cpdef reset_fitness(self):
+        self.fitness = np.zeros(self.total_pop_size)

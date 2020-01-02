@@ -374,7 +374,7 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:, :] pois, doub
         counterfactual_global_reward = 0.0
         for poi_id in range(npoi):
             if poi_observed[poi_id] == 1:
-                counterfactual_global_reward += pois[poi_id]/(min(poi_observer_distances[poi_id])/cpl_double)
+                counterfactual_global_reward += pois[poi_id, 2]/(min(poi_observer_distances[poi_id])/cpl_double)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(nrovers):

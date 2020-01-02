@@ -5,29 +5,29 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 30
-        self.generations = 3000  # Number of generations for CCEA in each stat run
+        self.stat_runs = 10
+        self.generations = 1000  # Number of generations for CCEA in each stat run
         self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
-        self.reward_type = "DPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
+        self.reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
         # Visualizer
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
 
         # Domain parameters
-        self.num_rovers = 15  # Number of rovers on map
+        self.num_rovers = 3  # Number of rovers on map
         self.coupling = 3  # Number of rovers required to view a POI for credit
-        self.num_pois = 8  # Number of POIs on map
-        self.num_steps = 45  # Number of steps rovers take each episode
+        self.num_pois = 2  # Number of POIs on map
+        self.num_steps = 35  # Number of steps rovers take each episode
         self.min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
-        self.x_dim = 50.0  # X-Dimension of the rover map
-        self.y_dim = 50.0  # Y-Dimension of the rover map
+        self.x_dim = 30.0  # X-Dimension of the rover map
+        self.y_dim = 30.0  # Y-Dimension of the rover map
         self.min_observation_dist = 3.0  # Minimum distance rovers must be to observe POIs
         self.angle_resolution = 90  # Resolution of sensors (determines number of sectors)
         self.sensor_model = "summed"  # Should either be "density" or "closest" or "summed"
 
         # Neural network parameters
-        self.num_inputs = 8
-        self.num_nodes = 9
+        self.num_inputs = 9
+        self.num_nodes = 10
         self.num_outputs = 2
 
         # CCEA parameters

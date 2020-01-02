@@ -36,7 +36,7 @@ cdef class NeuralNetwork:
         self.hid_layer = np.zeros(self.n_nodes, dtype=np.float64)
         self.out_layer = np.zeros(self.n_outputs, dtype=np.float64)
 
-    cpdef get_inputs(self, double [:] state_vec):  # Get inputs from state-vector
+    cpdef get_inputs(self, double [:] state_vec, double suggestion):  # Get inputs from state-vector
         """
         Assign inputs from rover sensors to the input layer of the NN
         :param state_vec: Inputs from rover sensors
@@ -44,8 +44,15 @@ cdef class NeuralNetwork:
         :return: None
         """
         cdef int i
-        for i in range(self.n_inputs):
-            self.in_layer[i] = state_vec[i]
+        if self.n_inputs > 8:  # Rover is receiving suggestions
+            for i in range(self.n_inputs):
+                if i < self.n_inputs-1:
+                    self.in_layer[i] = state_vec[i]
+                else:
+                    self.in_layer[i] = suggestion
+        else:  # Rover is not receiving suggestions
+            for i in range(self.n_inputs):
+                self.in_layer[i] = state_vec[i]
 
     cpdef get_weights(self, double [:] nn_weights):  # Get weights from CCEA population
         """
@@ -129,7 +136,7 @@ cdef class NeuralNetwork:
         sig = 1/(1 + np.exp(-inp))
         return sig
 
-    cpdef run_neural_network(self, double [:] state_vec, double [:] weight_vec):
+    cpdef run_neural_network(self, double [:] state_vec, double [:] weight_vec, double suggestion):
         """
         Run through NN for given rover
         :param rover_input: Inputs from rover sensors
@@ -137,6 +144,6 @@ cdef class NeuralNetwork:
         :param rover_id: Rover identifier
         :return: None
         """
-        self.get_inputs(state_vec)
+        self.get_inputs(state_vec, suggestion)
         self.get_weights(weight_vec)
         self.get_outputs()

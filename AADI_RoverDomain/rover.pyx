@@ -14,7 +14,7 @@ cdef class Rover:
 
     def __cinit__(self, object p, rov_id):
         self.sensor_range = p.min_observation_dist
-        self.sensor_readings = np.zeros(p.num_inputs)
+        self.sensor_readings = np.zeros(8)
         self.self_id = rov_id
         self.max_steps = p.num_steps
         self.angle_res = p.angle_resolution

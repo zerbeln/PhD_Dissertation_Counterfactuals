@@ -41,7 +41,7 @@ cdef class RoverDomain:
         self.pois = np.zeros((self.num_pois, 3))
         if self.create_new_world_config == 1:
             # Initialize POI positions and values
-            self.init_poi_pos_random(rovers)
+            self.init_poi_pos_two_poi()
             self.init_poi_vals_random()
             self.save_poi_configuration()
         else:
