@@ -36,7 +36,7 @@ cdef class Ccea:
         Create new populations (for beginning of stat run)
         :return: None
         """
-        cdef int pop_index, policy_index, w
+        cdef int policy_index, w
         cdef double weight
 
         self.pops = np.zeros((self.total_pop_size, self.policy_size))
@@ -61,7 +61,7 @@ cdef class Ccea:
         Choose teams of individuals from among populations to be tested
         :return: None
         """
-        cdef policy_id, k, target
+        cdef int policy_id, k, target
         self.team_selection = np.ones(self.total_pop_size) * (-1)
 
         for policy_id in range(self.total_pop_size):
@@ -124,7 +124,7 @@ cdef class Ccea:
         Order individuals in the population based on their fitness scores
         :return: None
         """
-        cdef int pol_id_a, pol_id_b, pol_id
+        cdef int pol_id_a, pol_id_b
 
         for pol_id_a in range(self.total_pop_size-1):
             pol_id_b = pol_id_a + 1

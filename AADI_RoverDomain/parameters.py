@@ -5,19 +5,19 @@ class Parameters:
 
     def __init__(self):
         # Run Parameters
-        self.stat_runs = 10
-        self.generations = 1000  # Number of generations for CCEA in each stat run
-        self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
+        self.stat_runs = 1
+        self.generations = 10  # Number of generations for CCEA in each stat run
+        self.new_world_config = 1  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
         self.reward_type = "SDPP"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
         # Visualizer
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
 
         # Domain parameters
-        self.num_rovers = 3  # Number of rovers on map
-        self.coupling = 3  # Number of rovers required to view a POI for credit
+        self.num_rovers = 6  # Number of rovers on map
+        self.coupling = 6  # Number of rovers required to view a POI for credit
         self.num_pois = 2  # Number of POIs on map
-        self.num_steps = 35  # Number of steps rovers take each episode
+        self.num_steps = 25  # Number of steps rovers take each episode
         self.min_distance = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
         self.x_dim = 30.0  # X-Dimension of the rover map
         self.y_dim = 30.0  # Y-Dimension of the rover map
@@ -26,8 +26,8 @@ class Parameters:
         self.sensor_model = "summed"  # Should either be "density" or "closest" or "summed"
 
         # Neural network parameters
-        self.num_inputs = 9
-        self.num_nodes = 10
+        self.num_inputs = 8
+        self.num_nodes = 9
         self.num_outputs = 2
 
         # CCEA parameters
@@ -42,7 +42,7 @@ class Parameters:
         """
         Suggestions: high_val, low_val, high_low, val_based, or none (none is standard D++)_
         """
-        self.suggestion_type = "none"
+        self.suggestion_type = "high_val"
         self.new_suggestion = "high_val"
         self.gen_switch_point = 300  # What generation should the suggestion type switch at?
         self.step_switch_point = 30  # What step should the suggestion type switch at?
