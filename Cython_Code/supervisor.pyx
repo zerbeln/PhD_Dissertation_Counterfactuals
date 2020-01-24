@@ -170,3 +170,14 @@ cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, doub
         sys.exit('Incorrect Suggestion Type')
 
     return partners
+
+cpdef get_counterfactual_action(double rover_dist, int poi_id, double[:, :] pois):
+    cdef double c_action
+
+
+    if pois[poi_id, 2] > 5.0:
+        c_action = 100.00
+    else:
+        c_action = rover_dist
+
+    return c_action

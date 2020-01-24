@@ -1,14 +1,7 @@
-# For Python Code
-# import Python_Code.ccea as ccea
-# import Python_Code.neural_net as neural_network
-# from Python_Code.homogeneous_rewards import calc_global, calc_difference, calc_dpp
-# from AADI_RoverDomain.rover_domain_python import RoverDomain
-
-# For Cython Code
 import pyximport; pyximport.install(language_level=3)
 from ccea import Ccea
 from neural_network import NeuralNetwork
-from homogeneous_rewards import calc_global, calc_difference, calc_dpp, calc_sdpp
+from homogeneous_rewards import calc_global, calc_difference, calc_dpp, calc_sdpp, calc_sd_reward
 from rover_domain_cython import RoverDomain
 from rover import Rover
 
@@ -65,13 +58,6 @@ def save_rover_path(p, rover_path):  # Save path rovers take using best policy f
 
 
 def run_homogeneous_rovers():
-    # For Python code
-    # p = Parameters()
-    # cc = ccea.Ccea(p)
-    # nn = neural_network.NeuralNetwork(p)
-    # rd = RoverDomain(p)
-
-    # For Cython Code
     p = Parameters()
     rd = RoverDomain(p)
 
@@ -137,6 +123,11 @@ def run_homogeneous_rovers():
                     for rover_id in range(p.num_rovers):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] = d_reward[rover_id]
+                elif p.reward_type == "SDIF":
+                    d_reward = calc_sd_reward(p, rd.rover_path, rd.pois, global_reward)
+                    for rover_id in range(p.num_rovers):
+                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                        rovers["EA{0}".format(rover_id)].fitness[policy_id] = d_reward[rover_id]
                 elif p.reward_type == "DPP":
                     dpp_reward = calc_dpp(p, rd.rover_path, rd.pois, global_reward)
                     for rover_id in range(p.num_rovers):
@@ -181,6 +172,8 @@ def run_homogeneous_rovers():
             save_reward_history(reward_history, "DPP_Reward.csv")
         if p.reward_type == "SDPP":
             save_reward_history(reward_history, "SDPP_Reward.csv")
+        if p.reward_type == "SDIF":
+            save_reward_history(reward_history, "SDIF_Reward.csv")
 
 
 def main():
