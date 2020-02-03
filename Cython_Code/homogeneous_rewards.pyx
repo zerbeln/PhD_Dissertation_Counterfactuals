@@ -199,6 +199,8 @@ cpdef calc_sd_reward(object p, double [:, :, :] rover_paths, double [:, :] pois,
                         distance = math.sqrt((x_distance**2) + (y_distance**2))
 
                         rover_distances[agent_id] = get_counterfactual_action(distance, poi_id, pois)
+                        if rover_distances[agent_id] < min_obs_distance:
+                            observer_count += 1
 
                 # Determine if coupling is satisfied
                 if observer_count >= cpl:
@@ -410,9 +412,6 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:, :] pois, doub
                 observer_count = 0
                 rover_distances = np.zeros(nrovers + n_counters)
 
-                if p.step_suggestion_switch and p.step_switch_point == step_index:
-                    suggestion = p.new_suggestion
-
                 # Calculate linear distances between POI and agents, count observers
                 for other_agent_id in range(nrovers):
                     x_distance = pois[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
@@ -471,9 +470,6 @@ cpdef calc_sdpp(object p, double [:, :, :] rover_paths, double [:, :] pois, doub
                     for step_index in range(total_steps):
                         observer_count = 0
                         rover_distances = np.zeros(nrovers + n_counters)
-
-                        if p.step_suggestion_switch and p.step_switch_point == step_index and p.reward_type == "SDPP":
-                            suggestion = p.new_suggestion
 
                         # Calculate linear distances between POI and agents, count observers
                         for other_agent_id in range(nrovers):

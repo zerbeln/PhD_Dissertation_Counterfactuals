@@ -178,6 +178,6 @@ cpdef get_counterfactual_action(double rover_dist, int poi_id, double[:, :] pois
     if pois[poi_id, 2] > 5.0:
         c_action = 100.00
     else:
-        c_action = rover_dist
+        c_action = 1.0
 
     return c_action

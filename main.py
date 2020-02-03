@@ -57,7 +57,7 @@ def save_rover_path(p, rover_path):  # Save path rovers take using best policy f
     rpath.close()
 
 
-def run_homogeneous_rovers():
+def rovers_global_only(reward_type):
     p = Parameters()
     rd = RoverDomain(p)
 
@@ -72,11 +72,7 @@ def run_homogeneous_rovers():
     if p.new_world_config == 1:
         save_rover_configuration(rovers, p.num_rovers)
 
-    # Checks to make sure gen switch and step switch are not both engaged
-    if p.gen_suggestion_switch and p.step_suggestion_switch:
-        sys.exit('Gen Switch and Step Switch are both True')
-
-    print("Reward Type: ", p.reward_type)
+    print("Reward Type: ", reward_type)
     print("Coupling Requirement: ", p.coupling)
 
     for srun in range(p.stat_runs):  # Perform statistical runs
@@ -86,14 +82,432 @@ def run_homogeneous_rovers():
         rd.inital_world_setup(rovers)
         for rover_id in range(p.num_rovers):  # Randomly initialize ccea populations
             rovers["EA{0}".format(rover_id)].reset_population()
-        suggestion = p.suggestion_type
         reward_history = []
 
         for gen in range(p.generations):
             # print("Gen: %i" % gen)
-            if p.gen_suggestion_switch and gen == p.gen_switch_point:
-                if p.reward_type == "SDPP":
-                    suggestion = p.new_suggestion
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].select_policy_teams()
+            for team_number in range(p.total_pop_size):  # Each policy in CCEA is tested in teams
+                rd.clear_rover_path()
+                for rover_id in range(p.num_rovers):
+                    rovers["Rover{0}".format(rover_id)].reset_rover()
+                    rovers["NN{0}".format(rover_id)].reset_nn()
+                rd.update_rover_path(rovers, -1)  # Record starting position of each rover
+                for steps in range(p.num_steps):
+                    for rover_id in range(p.num_rovers):  # Rover scans environment
+                        rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                    for rover_id in range(p.num_rovers):  # Rover processes scan information and acts
+                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                        rovers["NN{0}".format(rover_id)].run_neural_network(
+                            rovers["Rover{0}".format(rover_id)].sensor_readings,
+                            rovers["EA{0}".format(rover_id)].pops[policy_id])
+                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim,
+                                                                 p.y_dim)
+                    rd.update_rover_path(rovers, steps)
+
+                # Update fitness of policies using reward information
+                global_reward = calc_global(p, rd.rover_path, rd.pois)
+                for rover_id in range(p.num_rovers):
+                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                    rovers["EA{0}".format(rover_id)].fitness[policy_id] = global_reward
+
+            # Testing Phase (test best policies found so far)
+            rd.clear_rover_path()
+            for rover_id in range(p.num_rovers):
+                rovers["Rover{0}".format(rover_id)].reset_rover()
+            rd.update_rover_path(rovers, -1)
+            for steps in range(p.num_steps):
+                for rover_id in range(p.num_rovers):  # Rover scans environment
+                    rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                for rover_id in range(p.num_rovers):  # Rover processes information froms can and acts
+                    policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
+                    rovers["NN{0}".format(rover_id)].run_neural_network(
+                        rovers["Rover{0}".format(rover_id)].sensor_readings,
+                        rovers["EA{0}".format(rover_id)].pops[policy_id])
+                    rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
+                rd.update_rover_path(rovers, steps)
+
+            global_reward = calc_global(p, rd.rover_path, rd.pois)
+            reward_history.append(global_reward)
+
+            if gen == (p.generations - 1):  # Save path at end of final generation
+                save_rover_path(p, rd.rover_path)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
+
+        save_reward_history(reward_history, "Global_Reward.csv")
+
+def rovers_difference_rewards(reward_type):
+    p = Parameters()
+    rd = RoverDomain(p)
+
+    # Create dictionary for each instance of rover and corresponding NN and EA population
+    rovers = {}
+    for rover_id in range(p.num_rovers):
+        rovers["Rover{0}".format(rover_id)] = Rover(p, rover_id)
+        rovers["NN{0}".format(rover_id)] = NeuralNetwork(p)
+        rovers["EA{0}".format(rover_id)] = Ccea(p)
+
+    # Save rover starting positions when a new configuration is created
+    if p.new_world_config == 1:
+        save_rover_configuration(rovers, p.num_rovers)
+
+    print("Reward Type: ", reward_type)
+    print("Coupling Requirement: ", p.coupling)
+
+    for srun in range(p.stat_runs):  # Perform statistical runs
+        print("Run: %i" % srun)
+
+        # Reset CCEA and NN new stat run
+        rd.inital_world_setup(rovers)
+        for rover_id in range(p.num_rovers):  # Randomly initialize ccea populations
+            rovers["EA{0}".format(rover_id)].reset_population()
+        reward_history = []
+
+        for gen in range(p.generations):
+            # print("Gen: %i" % gen)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].select_policy_teams()
+            for team_number in range(p.total_pop_size):  # Each policy in CCEA is tested in teams
+                rd.clear_rover_path()
+                for rover_id in range(p.num_rovers):
+                    rovers["Rover{0}".format(rover_id)].reset_rover()
+                    rovers["NN{0}".format(rover_id)].reset_nn()
+                rd.update_rover_path(rovers, -1)  # Record starting position of each rover
+                for steps in range(p.num_steps):
+                    for rover_id in range(p.num_rovers):  # Rover scans environment
+                        rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                    for rover_id in range(p.num_rovers):  # Rover processes scan information and acts
+                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                        rovers["NN{0}".format(rover_id)].run_neural_network(
+                            rovers["Rover{0}".format(rover_id)].sensor_readings,
+                            rovers["EA{0}".format(rover_id)].pops[policy_id])
+                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
+                    rd.update_rover_path(rovers, steps)
+
+                # Update fitness of policies using reward information
+                global_reward = calc_global(p, rd.rover_path, rd.pois)
+                d_reward = calc_difference(p, rd.rover_path, rd.pois, global_reward)
+                for rover_id in range(p.num_rovers):
+                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                    rovers["EA{0}".format(rover_id)].fitness[policy_id] = d_reward[rover_id]
+
+
+            # Testing Phase (test best policies found so far)
+            rd.clear_rover_path()
+            for rover_id in range(p.num_rovers):
+                rovers["Rover{0}".format(rover_id)].reset_rover()
+            rd.update_rover_path(rovers, -1)
+            for steps in range(p.num_steps):
+                for rover_id in range(p.num_rovers):  # Rover scans environment
+                    rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                for rover_id in range(p.num_rovers):  # Rover processes information froms can and acts
+                    policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
+                    rovers["NN{0}".format(rover_id)].run_neural_network(
+                        rovers["Rover{0}".format(rover_id)].sensor_readings,
+                        rovers["EA{0}".format(rover_id)].pops[policy_id])
+                    rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim,
+                                                             p.y_dim)
+                rd.update_rover_path(rovers, steps)
+
+            global_reward = calc_global(p, rd.rover_path, rd.pois)
+            reward_history.append(global_reward)
+
+            if gen == (p.generations - 1):  # Save path at end of final generation
+                save_rover_path(p, rd.rover_path)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
+
+        save_reward_history(reward_history, "Difference_Reward.csv")
+
+def rovers_suggestions_difference(reward_type):
+    p = Parameters()
+    rd = RoverDomain(p)
+
+    # Create dictionary for each instance of rover and corresponding NN and EA population
+    rovers = {}
+    for rover_id in range(p.num_rovers):
+        rovers["Rover{0}".format(rover_id)] = Rover(p, rover_id)
+        rovers["NN{0}".format(rover_id)] = NeuralNetwork(p)
+        rovers["EA{0}".format(rover_id)] = Ccea(p)
+
+    # Save rover starting positions when a new configuration is created
+    if p.new_world_config == 1:
+        save_rover_configuration(rovers, p.num_rovers)
+
+    print("Reward Type: ", reward_type)
+    print("Coupling Requirement: ", p.coupling)
+
+    for srun in range(p.stat_runs):  # Perform statistical runs
+        print("Run: %i" % srun)
+
+        # Reset CCEA and NN new stat run
+        rd.inital_world_setup(rovers)
+        for rover_id in range(p.num_rovers):  # Randomly initialize ccea populations
+            rovers["EA{0}".format(rover_id)].reset_population()
+        reward_history = []
+
+        for gen in range(p.generations):
+            # print("Gen: %i" % gen)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].select_policy_teams()
+            for team_number in range(p.total_pop_size):  # Each policy in CCEA is tested in teams
+                rd.clear_rover_path()
+                for rover_id in range(p.num_rovers):
+                    rovers["Rover{0}".format(rover_id)].reset_rover()
+                    rovers["NN{0}".format(rover_id)].reset_nn()
+                rd.update_rover_path(rovers, -1)  # Record starting position of each rover
+                for steps in range(p.num_steps):
+                    for rover_id in range(p.num_rovers):  # Rover scans environment
+                        rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                    for rover_id in range(p.num_rovers):  # Rover processes scan information and acts
+                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                        rovers["NN{0}".format(rover_id)].run_neural_network(
+                            rovers["Rover{0}".format(rover_id)].sensor_readings,
+                            rovers["EA{0}".format(rover_id)].pops[policy_id])
+                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim,
+                                                                 p.y_dim)
+                    rd.update_rover_path(rovers, steps)
+
+                # Update fitness of policies using reward information
+                global_reward = calc_global(p, rd.rover_path, rd.pois)
+                d_reward = calc_sd_reward(p, rd.rover_path, rd.pois, global_reward)
+                for rover_id in range(p.num_rovers):
+                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                    rovers["EA{0}".format(rover_id)].fitness[policy_id] = d_reward[rover_id]
+
+            # Testing Phase (test best policies found so far)
+            rd.clear_rover_path()
+            for rover_id in range(p.num_rovers):
+                rovers["Rover{0}".format(rover_id)].reset_rover()
+            rd.update_rover_path(rovers, -1)
+            for steps in range(p.num_steps):
+                for rover_id in range(p.num_rovers):  # Rover scans environment
+                    rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                for rover_id in range(p.num_rovers):  # Rover processes information froms can and acts
+                    policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
+                    rovers["NN{0}".format(rover_id)].run_neural_network(
+                        rovers["Rover{0}".format(rover_id)].sensor_readings,
+                        rovers["EA{0}".format(rover_id)].pops[policy_id])
+                    rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
+                rd.update_rover_path(rovers, steps)
+
+            global_reward = calc_global(p, rd.rover_path, rd.pois)
+            reward_history.append(global_reward)
+
+            if gen == (p.generations - 1):  # Save path at end of final generation
+                save_rover_path(p, rd.rover_path)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
+
+        save_reward_history(reward_history, "SDIF_Reward.csv")
+
+def rovers_dplusplus_rewards(reward_type):
+    p = Parameters()
+    rd = RoverDomain(p)
+
+    # Create dictionary for each instance of rover and corresponding NN and EA population
+    rovers = {}
+    for rover_id in range(p.num_rovers):
+        rovers["Rover{0}".format(rover_id)] = Rover(p, rover_id)
+        rovers["NN{0}".format(rover_id)] = NeuralNetwork(p)
+        rovers["EA{0}".format(rover_id)] = Ccea(p)
+
+    # Save rover starting positions when a new configuration is created
+    if p.new_world_config == 1:
+        save_rover_configuration(rovers, p.num_rovers)
+
+    print("Reward Type: ", reward_type)
+    print("Coupling Requirement: ", p.coupling)
+
+    for srun in range(p.stat_runs):  # Perform statistical runs
+        print("Run: %i" % srun)
+
+        # Reset CCEA and NN new stat run
+        rd.inital_world_setup(rovers)
+        for rover_id in range(p.num_rovers):  # Randomly initialize ccea populations
+            rovers["EA{0}".format(rover_id)].reset_population()
+        reward_history = []
+
+        for gen in range(p.generations):
+            # print("Gen: %i" % gen)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].select_policy_teams()
+            for team_number in range(p.total_pop_size):  # Each policy in CCEA is tested in teams
+                rd.clear_rover_path()
+                for rover_id in range(p.num_rovers):
+                    rovers["Rover{0}".format(rover_id)].reset_rover()
+                    rovers["NN{0}".format(rover_id)].reset_nn()
+                rd.update_rover_path(rovers, -1)  # Record starting position of each rover
+                for steps in range(p.num_steps):
+                    for rover_id in range(p.num_rovers):  # Rover scans environment
+                        rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                    for rover_id in range(p.num_rovers):  # Rover processes scan information and acts
+                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                        rovers["NN{0}".format(rover_id)].run_neural_network(
+                            rovers["Rover{0}".format(rover_id)].sensor_readings,
+                            rovers["EA{0}".format(rover_id)].pops[policy_id])
+                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
+                    rd.update_rover_path(rovers, steps)
+
+                # Update fitness of policies using reward information
+                global_reward = calc_global(p, rd.rover_path, rd.pois)
+                dpp_reward = calc_dpp(p, rd.rover_path, rd.pois, global_reward)
+                for rover_id in range(p.num_rovers):
+                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                    rovers["EA{0}".format(rover_id)].fitness[policy_id] = dpp_reward[rover_id]
+
+            # Testing Phase (test best policies found so far)
+            rd.clear_rover_path()
+            for rover_id in range(p.num_rovers):
+                rovers["Rover{0}".format(rover_id)].reset_rover()
+            rd.update_rover_path(rovers, -1)
+            for steps in range(p.num_steps):
+                for rover_id in range(p.num_rovers):  # Rover scans environment
+                    rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                for rover_id in range(p.num_rovers):  # Rover processes information froms can and acts
+                    policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
+                    rovers["NN{0}".format(rover_id)].run_neural_network(
+                        rovers["Rover{0}".format(rover_id)].sensor_readings,
+                        rovers["EA{0}".format(rover_id)].pops[policy_id])
+                    rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
+                rd.update_rover_path(rovers, steps)
+
+            global_reward = calc_global(p, rd.rover_path, rd.pois)
+            reward_history.append(global_reward)
+
+            if gen == (p.generations - 1):  # Save path at end of final generation
+                save_rover_path(p, rd.rover_path)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
+
+        save_reward_history(reward_history, "DPP_Reward.csv")
+
+def rovers_suggestions_dpp(reward_type, suggestion_type):
+    p = Parameters()
+    rd = RoverDomain(p)
+
+    # Create dictionary for each instance of rover and corresponding NN and EA population
+    rovers = {}
+    for rover_id in range(p.num_rovers):
+        rovers["Rover{0}".format(rover_id)] = Rover(p, rover_id)
+        rovers["NN{0}".format(rover_id)] = NeuralNetwork(p)
+        rovers["EA{0}".format(rover_id)] = Ccea(p)
+
+    # Save rover starting positions when a new configuration is created
+    if p.new_world_config == 1:
+        save_rover_configuration(rovers, p.num_rovers)
+
+    print("Reward Type: ", reward_type)
+    print("Coupling Requirement: ", p.coupling)
+
+    for srun in range(p.stat_runs):  # Perform statistical runs
+        print("Run: %i" % srun)
+
+        # Reset CCEA and NN new stat run
+        rd.inital_world_setup(rovers)
+        for rover_id in range(p.num_rovers):  # Randomly initialize ccea populations
+            rovers["EA{0}".format(rover_id)].reset_population()
+        suggestion = suggestion_type
+        reward_history = []
+
+        for gen in range(p.generations):
+            # print("Gen: %i" % gen)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].select_policy_teams()
+            for team_number in range(p.total_pop_size):  # Each policy in CCEA is tested in teams
+                rd.clear_rover_path()
+                for rover_id in range(p.num_rovers):
+                    rovers["Rover{0}".format(rover_id)].reset_rover()
+                    rovers["NN{0}".format(rover_id)].reset_nn()
+                rd.update_rover_path(rovers, -1)  # Record starting position of each rover
+                for steps in range(p.num_steps):
+                    for rover_id in range(p.num_rovers):  # Rover scans environment
+                        rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                    for rover_id in range(p.num_rovers):  # Rover processes scan information and acts
+                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                        rovers["NN{0}".format(rover_id)].run_neural_network(
+                            rovers["Rover{0}".format(rover_id)].sensor_readings,
+                            rovers["EA{0}".format(rover_id)].pops[policy_id])
+                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim,
+                                                                 p.y_dim)
+                    rd.update_rover_path(rovers, steps)
+
+                # Update fitness of policies using reward information
+                global_reward = calc_global(p, rd.rover_path, rd.pois)
+                sdpp_reward = calc_sdpp(p, rd.rover_path, rd.pois, global_reward, suggestion)
+                for rover_id in range(p.num_rovers):
+                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
+                    rovers["EA{0}".format(rover_id)].fitness[policy_id] = sdpp_reward[rover_id]
+
+            # Testing Phase (test best policies found so far)
+            rd.clear_rover_path()
+            for rover_id in range(p.num_rovers):
+                rovers["Rover{0}".format(rover_id)].reset_rover()
+            rd.update_rover_path(rovers, -1)
+            for steps in range(p.num_steps):
+                for rover_id in range(p.num_rovers):  # Rover scans environment
+                    rovers["Rover{0}".format(rover_id)].rover_sensor_scan(rovers, rd.pois, p.num_rovers, p.num_pois)
+                for rover_id in range(p.num_rovers):  # Rover processes information froms can and acts
+                    policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
+                    rovers["NN{0}".format(rover_id)].run_neural_network(
+                        rovers["Rover{0}".format(rover_id)].sensor_readings,
+                        rovers["EA{0}".format(rover_id)].pops[policy_id])
+                    rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
+                rd.update_rover_path(rovers, steps)
+
+            global_reward = calc_global(p, rd.rover_path, rd.pois)
+            reward_history.append(global_reward)
+
+            if gen == (p.generations - 1):  # Save path at end of final generation
+                save_rover_path(p, rd.rover_path)
+
+            for rover_id in range(p.num_rovers):
+                rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
+
+        save_reward_history(reward_history, "SDPP_Reward.csv")
+
+def run_homogeneous_rovers(reward_type, suggestion_type):
+    p = Parameters()
+    rd = RoverDomain(p)
+
+    # Create dictionary for each instance of rover and corresponding NN and EA population
+    rovers = {}
+    for rover_id in range(p.num_rovers):
+        rovers["Rover{0}".format(rover_id)] = Rover(p, rover_id)
+        rovers["NN{0}".format(rover_id)] = NeuralNetwork(p)
+        rovers["EA{0}".format(rover_id)] = Ccea(p)
+
+    # Save rover starting positions when a new configuration is created
+    if p.new_world_config == 1:
+        save_rover_configuration(rovers, p.num_rovers)
+
+
+    print("Reward Type: ", reward_type)
+    print("Coupling Requirement: ", p.coupling)
+
+    for srun in range(p.stat_runs):  # Perform statistical runs
+        print("Run: %i" % srun)
+
+        # Reset CCEA and NN new stat run
+        rd.inital_world_setup(rovers)
+        for rover_id in range(p.num_rovers):  # Randomly initialize ccea populations
+            rovers["EA{0}".format(rover_id)].reset_population()
+        suggestion = suggestion_type
+        reward_history = []
+
+        for gen in range(p.generations):
+            # print("Gen: %i" % gen)
 
             for rover_id in range(p.num_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
@@ -114,26 +528,26 @@ def run_homogeneous_rovers():
 
                 # Update fitness of policies using reward information
                 global_reward = calc_global(p, rd.rover_path, rd.pois)
-                if p.reward_type == "Global":
+                if reward_type == "Global":
                     for rover_id in range(p.num_rovers):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] = global_reward
-                elif p.reward_type == "Difference":
+                elif reward_type == "Difference":
                     d_reward = calc_difference(p, rd.rover_path, rd.pois, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] = d_reward[rover_id]
-                elif p.reward_type == "SDIF":
+                elif reward_type == "SDIF":
                     d_reward = calc_sd_reward(p, rd.rover_path, rd.pois, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] = d_reward[rover_id]
-                elif p.reward_type == "DPP":
+                elif reward_type == "DPP":
                     dpp_reward = calc_dpp(p, rd.rover_path, rd.pois, global_reward)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] = dpp_reward[rover_id]
-                elif p.reward_type == "SDPP":
+                elif reward_type == "SDPP":
                     sdpp_reward = calc_sdpp(p, rd.rover_path, rd.pois, global_reward, suggestion)
                     for rover_id in range(p.num_rovers):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
@@ -164,19 +578,37 @@ def run_homogeneous_rovers():
             for rover_id in range(p.num_rovers):
                 rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
 
-        if p.reward_type == "Global":
+        if reward_type == "Global":
             save_reward_history(reward_history, "Global_Reward.csv")
-        if p.reward_type == "Difference":
+        if reward_type == "Difference":
             save_reward_history(reward_history, "Difference_Reward.csv")
-        if p.reward_type == "DPP":
+        if reward_type == "DPP":
             save_reward_history(reward_history, "DPP_Reward.csv")
-        if p.reward_type == "SDPP":
+        if reward_type == "SDPP":
             save_reward_history(reward_history, "SDPP_Reward.csv")
-        if p.reward_type == "SDIF":
+        if reward_type == "SDIF":
             save_reward_history(reward_history, "SDIF_Reward.csv")
 
 
-def main():
-    run_homogeneous_rovers()
+def main(reward_type="Global", suggestion="none"):
+    """
+    reward_type: Global, Difference, SDIF, DPP, SDPP
+    Suggestions: high_val, low_val, high_low, val_based, or none (none is standard D++)_
+    :param suggestion:
+    :return:
+    """
 
-main()  # Run the program
+    if reward_type == "Global":
+        rovers_global_only(reward_type)
+    elif reward_type == "Difference":
+        rovers_difference_rewards(reward_type)
+    elif reward_type == "SDIF":
+        rovers_suggestions_difference(reward_type)
+    elif reward_type == "DPP":
+        rovers_dplusplus_rewards(reward_type)
+    elif reward_type == "SDPP":
+        rovers_suggestions_dpp(reward_type, suggestion)
+    else:
+        sys.exit('Incorrect Reward Type')
+
+main(reward_type="SDIF", suggestion="none")  # Run the program

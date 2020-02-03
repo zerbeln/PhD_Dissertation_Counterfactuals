@@ -8,7 +8,6 @@ class Parameters:
         self.stat_runs = 30
         self.generations = 500  # Number of generations for CCEA in each stat run
         self.new_world_config = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
-        self.reward_type = "SDIF"  # Switch between reward functions "Global" "Difference" "DPP" "SDPP"
 
         # Visualizer
         self.running = False  # True keeps visualizer from closing until you 'X' out of window
@@ -37,17 +36,6 @@ class Parameters:
         self.parent_pop_size = 30
         self.offspring_pop_size = 30
         self.total_pop_size = self.parent_pop_size + self.offspring_pop_size
-
-        # User specific parameters
-        """
-        Suggestions: high_val, low_val, high_low, val_based, or none (none is standard D++)_
-        """
-        self.suggestion_type = "none"
-        self.new_suggestion = "none"
-        self.gen_switch_point = 300  # What generation should the suggestion type switch at?
-        self.step_switch_point = 30  # What step should the suggestion type switch at?
-        self.gen_suggestion_switch = False  # Switch suggestion types at a specified generation
-        self.step_suggestion_switch = False  # Switch suggestion types at a specified rover step
 
     def load_yaml(self, filename):
         """
