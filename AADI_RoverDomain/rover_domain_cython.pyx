@@ -12,6 +12,7 @@ cdef class RoverDomain:
 
     cdef public double [:, :, :] rover_path
     cdef public double [:, :] pois
+    cdef public double [:] poi_observations
 
     def __cinit__(self, object p):
 
@@ -32,6 +33,7 @@ cdef class RoverDomain:
 
         # POI position and value vectors
         self.pois = np.zeros((self.num_pois, 3))
+        self.poi_observations = np.zeros(self.num_pois)  # Used for spatial coupling of POIs
 
     cpdef inital_world_setup(self, dict rovers):
         """
@@ -41,7 +43,7 @@ cdef class RoverDomain:
         self.pois = np.zeros((self.num_pois, 3))
         if self.create_new_world_config == 1:
             # Initialize POI positions and values
-            self.init_poi_pos_two_poi()
+            self.init_poi_pos_circle()
             self.init_poi_vals_random()
             self.save_poi_configuration()
         else:

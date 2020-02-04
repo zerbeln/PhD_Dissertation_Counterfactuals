@@ -103,8 +103,7 @@ def rovers_global_only(reward_type):
                         rovers["NN{0}".format(rover_id)].run_neural_network(
                             rovers["Rover{0}".format(rover_id)].sensor_readings,
                             rovers["EA{0}".format(rover_id)].pops[policy_id])
-                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim,
-                                                                 p.y_dim)
+                        rovers["Rover{0}".format(rover_id)].step(rovers["NN{0}".format(rover_id)].out_layer, p.x_dim, p.y_dim)
                     rd.update_rover_path(rovers, steps)
 
                 # Update fitness of policies using reward information
