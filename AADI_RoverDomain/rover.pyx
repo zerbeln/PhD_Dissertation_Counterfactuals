@@ -12,6 +12,9 @@ cdef class Rover:
     cdef public double [:] sensor_readings
     cdef str sensor_type
 
+    # User Defined Variables:
+    cdef public double [:, :] rover_suggestions
+
     def __cinit__(self, object p, rov_id):
         self.sensor_range = p.min_observation_dist
         self.sensor_readings = np.zeros(8)
@@ -19,6 +22,9 @@ cdef class Rover:
         self.max_steps = p.num_steps
         self.angle_res = p.angle_resolution
         self.sensor_type = p.sensor_model
+
+        # User Defined Parameters:
+        self.rover_suggestions = np.zeros((p.num_poi, p.num_steps))
 
         # Initialization function
         if p.new_world_config == 1:
@@ -31,7 +37,6 @@ cdef class Rover:
             self.rover_x = self.rx_init
             self.rover_y = self.ry_init
             self.rover_theta = self.rt_init
-
 
     cpdef reset_rover(self):
         self.rover_x = self.rx_init

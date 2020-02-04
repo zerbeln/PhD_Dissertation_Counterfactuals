@@ -12,6 +12,8 @@ cdef class RoverDomain:
 
     cdef public double [:, :, :] rover_path
     cdef public double [:, :] pois
+
+    # User Defined Variables:
     cdef public double [:] poi_observations
 
     def __cinit__(self, object p):
@@ -32,7 +34,9 @@ cdef class RoverDomain:
         self.rover_path = np.zeros(((self.rover_steps + 1), self.nrovers, 3))
 
         # POI position and value vectors
-        self.pois = np.zeros((self.num_pois, 3))
+        self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+
+        # User Defined Parameters:
         self.poi_observations = np.zeros(self.num_pois)  # Used for spatial coupling of POIs
 
     cpdef inital_world_setup(self, dict rovers):

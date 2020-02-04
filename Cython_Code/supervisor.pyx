@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 
+# COUNTERFACTUAL PARTNER SUGGESTIONS ---------------------------------------------------------------------------------
 cpdef low_high_split(double rover_dist, int rover_id, int poi_id, double [:, :] pois, int n_counters, double obs_rad):
     """
     Rovers with even IDs go for high value POIs, Rovers with odd IDs go for low value POIs
@@ -100,60 +101,6 @@ cpdef value_based_incentives(double rover_dist, int poi_id, double [:, :] pois, 
 
     return partners
 
-cpdef go_left_suggestions(double rover_dist, int poi_id, double [:, :] pois, int n_counters, double xd):
-    cdef int partner_id
-    cdef double [:] partners = np.zeros(n_counters)
-    cdef double x_middle
-
-    partners = np.zeros(n_counters)
-    x_middle = xd/2
-
-    if pois[poi_id, 0] < x_middle:
-        for partner_id in range(n_counters):
-            partners[partner_id] = rover_dist
-    else:
-        for partner_id in range(n_counters):
-            partners[partner_id] = 100.00
-
-    return partners
-
-cpdef go_right_suggestions(double rover_dist, int poi_id, double [:, :] pois, int n_counters, double xd):
-    cdef int partner_id
-    cdef double [:] partners = np.zeros(n_counters)
-    cdef double x_middle
-
-    partners = np.zeros(n_counters)
-    x_middle = xd/2
-
-    if pois[poi_id, 0] > x_middle:
-        for partner_id in range(n_counters):
-            partners[partner_id] = rover_dist
-    else:
-        for partner_id in range(n_counters):
-            partners[partner_id] = 100.00
-
-    return partners
-
-cpdef left_right_split(double rover_dist, int rover_id, int poi_id, double [:, :] pois, int n_counters, double xd):
-    cdef int partner_id
-    cdef double [:] partners = np.zeros(n_counters)
-    cdef double x_middle
-
-    partners = np.zeros(n_counters)
-    x_middle = xd/2
-
-    if rover_id % 2 == 0 and pois[poi_id, 0] > x_middle:
-        for partner_id in range(n_counters):
-            partners[partner_id] = rover_dist
-    elif rover_id % 2 != 0 and pois[poi_id, 0] < x_middle:
-        for partner_id in range(n_counters):
-            partners[partner_id] = rover_dist
-    else:
-        for partner_id in range(n_counters):
-            partners[partner_id] = 100.00
-
-    return partners
-
 cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, double rover_dist, double [:, :, :] rover_paths, int poi_id, double [:, :] pois, int step_id, str suggestion, double min_dist, double obs_rad):
     cdef int partner_id
     cdef double [:] partners = np.zeros(n_counters)
@@ -171,13 +118,34 @@ cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, doub
 
     return partners
 
-cpdef get_counterfactual_action(double rover_dist, int poi_id, double[:, :] pois):
-    cdef double c_action
 
+# COUNTERFACTUAL ACTION SUGGESTIONS -----------------------------------------------------------------------------------
+cpdef high_val_action_suggestions(double rover_dist, int poi_id, double[:, :] pois):
+    cdef double c_action = 0.0
 
-    if pois[poi_id, 2] <= 5.0 or rover_dist > 3.0:
+    if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
         c_action = 100.00
     else:
         c_action = 1.0
+
+    return c_action
+
+cpdef low_val_action_suggestions(double rover_dist, int poi_id, double[:, :] pois):
+    cdef double c_action = 0.0
+
+    if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
+        c_action = 100.00
+    else:
+        c_action = 1.0
+
+    return c_action
+
+cpdef get_counterfactual_action(double rover_dist, int poi_id, double[:, :] pois, str suggestion):
+    cdef double c_action = 0.0
+
+    if suggestion == "high_val":
+        c_action = high_val_action_suggestions(rover_dist, poi_id, pois)
+    elif suggestion == "low_val":
+        c_action = low_val_action_suggestions(rover_dist, poi_id, pois)
 
     return c_action
