@@ -130,7 +130,7 @@ cpdef high_val_action_suggestions(double rover_dist, int poi_id, double[:, :] po
 
     return c_action
 
-cpdef low_val_action_suggestions(double rover_dist, int poi_id, double[:, :] pois):
+cpdef low_val_action_suggestions(double rover_dist, int poi_id, double [:, :] pois):
     cdef double c_action = 0.0
 
     if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
@@ -140,12 +140,55 @@ cpdef low_val_action_suggestions(double rover_dist, int poi_id, double[:, :] poi
 
     return c_action
 
-cpdef get_counterfactual_action(double rover_dist, int poi_id, double[:, :] pois, str suggestion):
+cpdef high_low_actions(double rover_dist, int rover_id, int poi_id, double [:, :] pois):
+    cdef double c_action = 0.0
+
+    if rover_id % 2 == 0:
+        if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+    else:
+        if pois[poi_id, 2] <= 5.0 or rover_dist > 3.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+
+    return c_action
+
+cpdef three_rov_three_poi(double rover_dist, int rover_id, int poi_id, double [:, :] pois):
+    cdef double c_action = 0.0
+
+    if rover_id == 0:
+        if rover_dist > 3.0:
+            c_action = 100.00
+        elif pois[poi_id, 2] > 5.0 and pois[poi_id, 2] < 10.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+    elif rover_id == 1:
+        if pois[poi_id, 2] <= 5.0 or rover_dist > 3.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+    else:
+        if pois[poi_id, 2] >= 10.0 or rover_dist > 3.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+
+    return c_action
+
+cpdef get_counterfactual_action(double rover_dist, int rov_id, int poi_id, double [:, :] pois, str suggestion):
     cdef double c_action = 0.0
 
     if suggestion == "high_val":
         c_action = high_val_action_suggestions(rover_dist, poi_id, pois)
     elif suggestion == "low_val":
         c_action = low_val_action_suggestions(rover_dist, poi_id, pois)
+    elif suggestion == "3R3P":
+        c_action = three_rov_three_poi(rover_dist, rov_id, poi_id, pois)
+    elif suggestion == "high_low":
+        high_low_actions(rover_dist, rov_id, poi_id, pois)
 
     return c_action
