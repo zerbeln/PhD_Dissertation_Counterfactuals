@@ -147,12 +147,12 @@ cpdef high_low_actions(double rover_dist, int rover_id, int poi_id, double [:, :
         if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
             c_action = 100.00
         else:
-            c_action = 1.0
+            c_action = rover_dist
     else:
         if pois[poi_id, 2] <= 5.0 or rover_dist > 3.0:
             c_action = 100.00
         else:
-            c_action = 1.0
+            c_action = rover_dist
 
     return c_action
 
@@ -173,6 +173,27 @@ cpdef three_rov_three_poi(double rover_dist, int rover_id, int poi_id, double [:
             c_action = 1.0
     else:
         if pois[poi_id, 2] >= 10.0 or rover_dist > 3.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+
+    return c_action
+
+cpdef three_rov_three_poi_internal(int rover_id, int poi_id, double [:, :] pois):
+    cdef double c_action = 0.0
+
+    if rover_id == 0:
+        if pois[poi_id, 2] > 5.0 and pois[poi_id, 2] < 10.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+    elif rover_id == 1:
+        if pois[poi_id, 2] <= 5.0:
+            c_action = 100.00
+        else:
+            c_action = 1.0
+    else:
+        if pois[poi_id, 2] >= 10.0:
             c_action = 100.00
         else:
             c_action = 1.0

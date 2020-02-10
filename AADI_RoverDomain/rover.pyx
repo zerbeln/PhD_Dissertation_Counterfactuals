@@ -24,7 +24,7 @@ cdef class Rover:
         self.sensor_type = p.sensor_model
 
         # User Defined Parameters:
-        self.rover_suggestions = np.zeros((p.num_pois, p.num_steps))
+        self.rover_suggestions = np.zeros((p.num_pois, p.num_steps+1))
 
         # Initialization function
         if p.new_world_config == 1:
