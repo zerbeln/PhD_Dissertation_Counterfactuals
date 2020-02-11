@@ -123,7 +123,7 @@ cpdef get_counterfactual_partners(int n_counters, int nrovers, int self_id, doub
 cpdef high_val_action_suggestions(double rover_dist, int poi_id, double[:, :] pois):
     cdef double c_action = 0.0
 
-    if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
+    if pois[poi_id, 2] > 5.0:
         c_action = 100.00
     else:
         c_action = 1.0
@@ -133,7 +133,7 @@ cpdef high_val_action_suggestions(double rover_dist, int poi_id, double[:, :] po
 cpdef low_val_action_suggestions(double rover_dist, int poi_id, double [:, :] pois):
     cdef double c_action = 0.0
 
-    if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
+    if pois[poi_id, 2] > 5.0:
         c_action = 100.00
     else:
         c_action = 1.0
@@ -144,12 +144,12 @@ cpdef high_low_actions(double rover_dist, int rover_id, int poi_id, double [:, :
     cdef double c_action = 0.0
 
     if rover_id % 2 == 0:
-        if pois[poi_id, 2] > 5.0 or rover_dist > 3.0:
+        if pois[poi_id, 2] > 5.0:
             c_action = 100.00
         else:
             c_action = rover_dist
     else:
-        if pois[poi_id, 2] <= 5.0 or rover_dist > 3.0:
+        if pois[poi_id, 2] <= 5.0:
             c_action = 100.00
         else:
             c_action = rover_dist
@@ -160,19 +160,17 @@ cpdef three_rov_three_poi(double rover_dist, int rover_id, int poi_id, double [:
     cdef double c_action = 0.0
 
     if rover_id == 0:
-        if rover_dist > 3.0:
-            c_action = 100.00
-        elif pois[poi_id, 2] > 5.0 and pois[poi_id, 2] < 10.0:
+        if pois[poi_id, 2] > 5.0 and pois[poi_id, 2] < 10.0:
             c_action = 100.00
         else:
             c_action = 1.0
     elif rover_id == 1:
-        if pois[poi_id, 2] <= 5.0 or rover_dist > 3.0:
+        if pois[poi_id, 2] <= 5.0:
             c_action = 100.00
         else:
             c_action = 1.0
     else:
-        if pois[poi_id, 2] >= 10.0 or rover_dist > 3.0:
+        if pois[poi_id, 2] >= 10.0:
             c_action = 100.00
         else:
             c_action = 1.0

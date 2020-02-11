@@ -60,7 +60,11 @@ cpdef calc_sd_reward(object p, double [:, :, :] rover_paths, double [:, :] pois,
                         y_distance = pois[poi_id, 1] - rover_paths[step_index, agent_id, 1]
                         distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                        rover_distances[agent_id] = get_counterfactual_action(distance, agent_id, poi_id, pois, sgst)
+                        if distance <= min_obs_distance:
+                            rover_distances[agent_id] = get_counterfactual_action(distance, agent_id, poi_id, pois, sgst)
+                        else:
+                            rover_distances[agent_id] = inf
+
                         if rover_distances[agent_id] < min_obs_distance:
                             observer_count += 1
 
@@ -441,7 +445,7 @@ cpdef sdif_internal(object p, int agent_id, double [:, :, :] rover_paths, double
                     if distance < min_obs_distance:
                         rover_distances[agent_id] = suggestions[poi_id, step_index]
                     else:
-                        rover_distances[agent_id] = distance
+                        rover_distances[agent_id] = inf
 
                     if rover_distances[agent_id] < min_obs_distance:
                         observer_count += 1
