@@ -8,36 +8,67 @@ from parameters import parameters as p
 
 class Rover:
     def __init__(self, rov_id):
-        self.sensor_range = p["min_obs_dist"]
+        # Rover Parameters
+        self.sensor_range = p["obs_rad"]
         self.sensor_readings = np.zeros(p["n_inputs"])
         self.self_id = rov_id
-        self.max_steps = p["n_steps"]
         self.angle_res = p["angle_res"]
         self.sensor_type = p["sensor_model"]
+        self.controller_type = p["ctrl_type"]
+        self.rover_actions = np.zeros(p["n_outputs"])
+        self.rover_x = 0.0
+        self.rover_y = 0.0
+        self.rover_theta = 0.0
+        self.rx_init = 0.0
+        self.ry_init = 0.0
+        self.rt_init = 0.0
+
+        # Rover Neuro-Controller
+        self.n_inputs = p["n_inputs"]
+        self.n_outputs = p["n_outputs"]
+        self.n_hnodes = p["n_hnodes"]  # Number of nodes in hidden layer
+        self.weights = {}
+        self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs)), [self.n_inputs, 1])
+        self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes)), [self.n_hnodes, 1])
+        self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs)), [self.n_outputs, 1])
+
+        # GRU Controller --------------------------------------------------------------------------------------
         self.mem_block_size = p["mem_block_size"]
         self.mem_block = np.zeros(p["mem_block_size"])
 
-        # User Defined Parameters:
-        self.rover_suggestions = np.zeros((p["n_poi"], p["n_steps"]+1))
+        # Network Outputs
+        self.out_layer = np.mat(np.zeros(self.n_outputs))
+        self.prev_out_layer = np.mat(np.zeros(self.n_outputs))
+        self.out_layer_weights = np.mat(np.zeros(self.mem_block_size))
+        self.out_bias_weights = np.mat(np.zeros(self.n_outputs))
 
-        # Initialization function
-        if p["new_world_config"] == 1:
-            self.init_rover_pos_random_concentrated()
-            self.rover_x = self.rx_init
-            self.rover_y = self.ry_init
-            self.rover_theta = self.rt_init
-        else:
-            self.use_saved_rover_config()
-            self.rover_x = self.rx_init
-            self.rover_y = self.ry_init
-            self.rover_theta = self.rt_init
+        # Input Gate
+        self.igate_weights = {}
+        self.igate_outputs = np.mat(np.zeros(self.mem_block_size))
 
-    def reset_rover(self):
-        self.rover_x = self.rx_init
-        self.rover_y = self.ry_init
-        self.rover_theta = self.rt_init
+        # Block Input
+        self.block_weights = {}
+        self.block_input = np.mat(np.zeros(self.mem_block_size))
+        self.block_output = np.mat(np.zeros(self.mem_block_size))
 
-    def use_saved_rover_config(self):
+        # Read Gate
+        self.rgate_weights = {}
+        self.rgate_outputs = np.mat(np.zeros(self.mem_block_size))
+
+        # Write Gate
+        self.wgate_weights = {}
+        self.wgate_outputs = np.mat(np.zeros(self.mem_block_size))
+
+        # Memory
+        self.decoded_memory = np.mat(np.zeros(self.mem_block_size))
+        self.encoded_memory = np.mat(np.zeros(self.mem_block_size))
+        self.decoder_weights = {}
+        self.encoder_weights = {}
+
+    def initialize_rover(self):
+        """
+        Load initial rover position from saved csvfile
+        """
         config_input = []
         with open('Output_Data/Rover_Config.csv') as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
@@ -49,75 +80,29 @@ class Rover:
         self.ry_init = float(config_input[self.self_id][1])
         self.rt_init = float(config_input[self.self_id][2])
 
-    def init_rover_pos_fixed_middle(self):  # Set rovers to fixed starting position
-        self.rx_init = 0.5*p["x_dim"]
-        self.ry_init = 0.5*p["y_dim"]
-        self.rt_init = random.uniform(0.0, 360.0)
+        self.rover_x = self.rx_init
+        self.rover_y = self.ry_init
+        self.rover_theta = self.rt_init
 
-    def init_rover_pos_random(self):  # Randomly set rovers on map
+    def reset_rover(self):
         """
-        Rovers given random starting positions and orientations
-        :return: rover_positions: np array of size (self.n_rovers, 3)
+        Resets the rover to its initial position in the world
         """
+        self.rover_x = self.rx_init
+        self.rover_y = self.ry_init
+        self.rover_theta = self.rt_init
+        self.mem_block = np.zeros(p["mem_block_size"])
 
-        self.rx_init = random.uniform(0.0, p["x_dim"]-1.0)
-        self.ry_init = random.uniform(0.0, p["y_dim"]-1.0)
-        self.rt_init = random.uniform(0.0, 360.0)
-
-
-    def init_rover_pos_random_concentrated(self):
+    def step(self):
         """
-        Rovers given random starting positions within a radius of the center. Starting orientations are random
-        :return: rover_positions: np array of size (self.n_rovers, 3)
-        """
-        radius = 4.0
-        center_x = p["x_dim"]/2.0
-        center_y = p["y_dim"]/2.0
-
-        x = random.uniform(0.0, p["x_dim"]-1.0)  # Rover X-Coordinate
-        y = random.uniform(0.0, p["y_dim"]-1.0)  # Rover Y-Coordinate
-
-        while x > (center_x + radius) or x < (center_x - radius):
-            x = random.uniform(0.0, p["x_dim"]-1.0)  # Rover X-Coordinate
-        while y > (center_y + radius) or y < (center_y - radius):
-            y = random.uniform(0.0, p["y_dim"]-1.0)  # Rover Y-Coordinate
-
-        self.rx_init = x  # Rover X-Coordinate
-        self.ry_init = y  # Rover Y-Coordinate
-        self.rt_init = random.uniform(0.0, 360.0)  # Rover orientation
-
-    def update_memory(self, nn_wgate, nn_encoded_mem):
-        """
-        GRU-MB agent updates the stored memory
-        :param nn_wgate:
-        :param nn_encoded_mem:
-        :return:
-        """
-        alpha = 0.1
-        wgate = np.reshape(nn_wgate, [1, self.mem_block_size])
-        enc_mem = np.reshape(nn_encoded_mem, [1, self.mem_block_size])
-
-        var1 = (1 - alpha) * (self.mem_block + np.multiply(wgate, enc_mem))
-        var2 = alpha * (np.multiply(wgate, enc_mem) + np.multiply((1 - wgate), self.mem_block))
-
-        self.mem_block = var1 + var2
-
-    def init_rover_pos_bottom_center(self):
-        self.rx_init = random.uniform((p["x_dim"]/2.0) - 5.0, (p["x_dim"]/2.0) + 5.0)
-        self.ry_init = random.uniform(0.0, 2.0)
-        self.rt_init = random.uniform(0.0, 360.0)  # Rover orientation
-
-    def step(self, joint_action):
-        """
-        :param joint_action: np array containing output from NN. Array size is (nrovers, 2)
         :return: Joint state of rovers (NN inputs), Done, and Global Reward
         """
 
-        joint_action = np.clip(joint_action, -1.0, 1.0)
+        joint_action = np.clip(self.rover_actions, -1.0, 1.0)
 
         # Update rover positions
-        x = joint_action[0, 0]
-        y = joint_action[0, 1]
+        x = joint_action[0]
+        y = joint_action[1]
         theta = math.atan(y/x) * (180.0/math.pi)
 
         if theta < 0.0:
@@ -239,3 +224,280 @@ class Rover:
         dist = math.sqrt((vx**2) + (vy**2))
 
         return angle, dist
+
+    # Rover Neuro-Controller functions --------------------------------------------------------------------------------
+    def run_neuro_controller(self):
+        """
+        Run the neuro-controller from a single function call
+        """
+        if self.controller_type == "NN":
+            self.get_inputs()
+            self.get_outputs()
+        elif self.controller_type == "GRU":
+            state_vec = self.sensor_readings.copy()
+            m_block = self.mem_block.copy()
+            self.run_input_gate(state_vec, m_block)
+            self.run_read_gate(state_vec, m_block)
+            self.create_block_inputs(state_vec, m_block)
+            self.memory_decoder(m_block)
+            self.hidden_activation()
+            self.run_write_gate(state_vec, m_block)
+            self.memory_encoder()
+            self.update_memory()
+            self.prev_out_layer = self.out_layer.copy()
+
+    def tanh(self, inp):  # Tanh function as activation function
+        """
+        tanh neural network activation function
+        :param inp: Node value before activation
+        :return: Node value after activation
+        """
+        tanh = (2 / (1 + np.exp(-2 * inp))) - 1
+
+        return tanh
+
+    def sigmoid(self, inp):  # Sigmoid function as activation function
+        """
+        sigmoid neural network activation function
+        :param inp: Node value before activation
+        :return: Node value after activation
+        """
+        sig = 1 / (1 + np.exp(-inp))
+
+        return sig
+
+    def get_weights(self, weights):
+        """
+        Apply weights to the neuro-controller
+        """
+        if self.controller_type == "NN":
+            self.get_nn_weights(weights)
+        elif self.controller_type == "GRU":
+            self.get_gru_weights(weights)
+
+    # Standard NN ------------------------------------------------------------------------------------------------
+    def get_inputs(self):  # Get inputs from state-vector
+        """
+        Transfer state information to the neuro-controller
+        :return:
+        """
+
+        for i in range(self.n_inputs):
+            self.input_layer[i, 0] = self.sensor_readings[i]
+
+    def get_nn_weights(self, nn_weights):
+        """
+        Apply chosen network weights to the agent's neuro-controller
+        :param nn_weights: Dictionary of network weights received from the CCEA
+        :return:
+        """
+        self.weights["Layer1"] = np.reshape(np.mat(nn_weights["L1"]), [self.n_hnodes, self.n_inputs])
+        self.weights["Layer2"] = np.reshape(np.mat(nn_weights["L2"]), [self.n_outputs, self.n_hnodes])
+        self.weights["input_bias"] = np.reshape(np.mat(nn_weights["b1"]), [self.n_hnodes, 1])
+        self.weights["hidden_bias"] = np.reshape(np.mat(nn_weights["b2"]), [self.n_outputs, 1])
+
+    def get_outputs(self):
+        """
+        Run NN to generate outputs
+        :return:
+        """
+        self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
+        for i in range(self.n_hnodes):
+            self.hidden_layer[i, 0] = self.tanh(self.hidden_layer[i, 0])
+
+        self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
+        for i in range(self.n_outputs):
+            self.output_layer[i, 0] = self.tanh(self.output_layer[i, 0])
+            self.rover_actions[i] = self.output_layer[i, 0]
+
+    # GRU ------------------------------------------------------------------------------------------------------------
+    def clear_outputs(self):
+        """
+        Clears the various outputs of gates (sets them to 0)
+        :return:
+        """
+        self.igate_outputs = np.mat(np.zeros(self.mem_block_size))
+        self.wgate_outputs = np.mat(np.zeros(self.mem_block_size))
+        self.rgate_outputs = np.mat(np.zeros(self.mem_block_size))
+        self.block_output = np.mat(np.zeros(self.mem_block_size))
+        self.out_layer = np.mat(np.zeros(self.n_outputs))
+        self.prev_out_layer = np.mat(np.zeros(self.n_outputs))
+
+    def get_gru_weights(self, weights):  # Get weights from CCEA population
+        """
+        Receive rover NN weights from CCEA
+        :return: None
+        """
+
+        # Output weights
+        self.out_bias_weights = np.mat(weights["b_out"])
+        self.out_layer_weights = np.mat(weights["p_out"])
+
+        # Input gate weights
+        n_mat = np.mat(weights["n_igate"])
+        self.igate_weights["K"] = np.reshape(np.mat(weights["k_igate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.igate_weights["R"] = np.reshape(np.mat(weights["r_igate"]), [self.mem_block_size, self.n_outputs])  # nx2
+        self.igate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.igate_weights["b"] = np.reshape(np.mat(weights["b_igate"]), [self.mem_block_size, 1])  # nx1
+
+        # Block Input
+        n_mat = np.mat(weights["n_block"])
+        self.block_weights["K"] = np.reshape(np.mat(weights["k_block"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.block_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.block_weights["b"] = np.reshape(np.mat(weights["b_block"]), [self.mem_block_size, 1])  # nx1
+
+        # Read gate weights
+        n_mat = np.mat(weights["n_rgate"])
+        self.rgate_weights["K"] = np.reshape(np.mat(weights["k_rgate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.rgate_weights["R"] = np.reshape(np.mat(weights["r_rgate"]), [self.mem_block_size, self.n_outputs])  # nx2
+        self.rgate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.rgate_weights["b"] = np.reshape(np.mat(weights["b_rgate"]), [self.mem_block_size, 1])  # nx1
+
+        # Write Gate Weights
+        n_mat = np.mat(weights["n_wgate"])
+        self.wgate_weights["K"] = np.reshape(np.mat(weights["k_wgate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.wgate_weights["R"] = np.reshape(np.mat(weights["r_wgate"]), [self.mem_block_size, self.n_outputs])  # nx2
+        self.wgate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.wgate_weights["b"] = np.reshape(np.mat(weights["b_wgate"]), [self.mem_block_size, 1])  # nx1
+
+        # Memory Weights
+        n_mat_dec = np.mat(weights["n_dec"])
+        n_mat_enc = np.mat(weights["z_enc"])
+        self.decoder_weights["N"] = np.reshape(n_mat_dec, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.decoder_weights["b"] = np.reshape(np.mat(weights["b_dec"]), [self.mem_block_size, 1])  # nx1
+        self.encoder_weights["Z"] = np.reshape(n_mat_enc, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.encoder_weights["b"] = np.reshape(np.mat(weights["b_enc"]), [self.mem_block_size, 1])  # nx1
+
+    def run_input_gate(self, state_vec, mem_block):
+        """
+        Process sensor inputs through input gate
+        :param mem:
+        :param state_vec:
+        :return:
+        """
+
+        x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
+        y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
+        b = self.igate_weights["b"]  # nx1
+
+        Ki_x = np.dot(self.igate_weights["K"], x)  # nx8 * 8x1 = nx1
+        Ri_y = np.dot(self.igate_weights["R"], y)  # nx2 * 2x1 = nx1
+        Ni_m = np.dot(self.igate_weights["N"], m)  # nxn * nx1 = nx1
+
+        self.igate_outputs = Ki_x + Ri_y + Ni_m + b  # nx1
+        for i in range(self.mem_block_size):
+            self.igate_outputs[i, 0] = self.sigmoid(self.igate_outputs[i, 0])
+
+    def run_read_gate(self, state_vec, mem_block):
+        """
+        Process read gate information
+        :return:
+        """
+
+        x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
+        y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
+        b = self.rgate_weights["b"]  # nx1
+
+        Kr_x = np.dot(self.rgate_weights["K"], x)  # nx8 * 8x1
+        Rr_y = np.dot(self.rgate_weights["R"], y)  # nx2 * 2x1
+        Nr_m = np.dot(self.rgate_weights["N"], m)  # nxn * 1x1
+
+        self.rgate_outputs = Kr_x + Rr_y + Nr_m + b  # nx1
+        for i in range(self.mem_block_size):
+            self.rgate_outputs[i, 0] = self.sigmoid(self.rgate_outputs[i, 0])
+
+    def run_write_gate(self, state_vec, mem_block):
+        """
+        Process write gate
+        :return:
+        """
+
+        x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
+        y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
+        b = self.wgate_weights["b"]  # nx1
+
+        Kw_x = np.dot(self.wgate_weights["K"], x)  # nx8 * 8x1
+        Rw_x = np.dot(self.wgate_weights["R"], y)  # nx2 * 2x1
+        Nw_x = np.dot(self.wgate_weights["N"], m)  # nxn * nx1
+
+        self.wgate_outputs = Kw_x + Rw_x + Nw_x + b  # nx1
+        for i in range(self.mem_block_size):
+            self.wgate_outputs[i, 0] = self.sigmoid(self.wgate_outputs[i, 0])
+
+    def create_block_inputs(self, state_vec, mem_block):
+        """
+        Create the input layer for the block (feedforward network)
+        :return:
+        """
+
+        x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
+        m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
+        b = self.block_weights["b"]  # nx1
+
+        Kp_x = np.dot(self.block_weights["K"], x)  # nx8 * 8x1
+        Np_m = np.dot(self.block_weights["N"], m)  # nxn * nx1
+
+        self.block_input = Kp_x + Np_m + b  # nx1
+        for i in range(self.mem_block_size):
+            self.block_input[i, 0] = self.sigmoid(self.block_input[i, 0])
+
+    def memory_decoder(self, mem_block):
+        """
+        Decode memory for hidden activation
+        :param mem_block:
+        :return:
+        """
+
+        m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])
+        Nd_m = np.dot(self.decoder_weights["N"], m)  # nxn * nx1
+        b = self.decoder_weights["b"]  # nx1
+
+        self.decoded_memory = Nd_m + b  # nx1
+        for i in range(self.mem_block_size):
+            self.decoded_memory[i, 0] = self.tanh(self.decoded_memory[i, 0])
+
+    def memory_encoder(self):
+        """
+        Encode memory for update
+        :return:
+        """
+        b = self.encoder_weights["b"]  # nx1
+        Z_h = np.dot(self.encoder_weights["Z"], self.block_output)  # nxn * nx1
+
+        self.encoded_memory = Z_h + b  # nx1
+        for i in range(self.mem_block_size):
+            self.encoded_memory[i, 0] = self.tanh(self.encoded_memory[i, 0])
+
+    def hidden_activation(self):
+        """
+        Run NN to receive rover action outputs
+        :return: None
+        """
+
+        r_d = np.multiply(self.rgate_outputs, self.decoded_memory)  # nx1
+        p_i = np.multiply(self.block_input, self.igate_outputs)  # nx1
+
+        self.block_output = r_d + p_i  # nx1
+
+        self.out_layer = np.dot(self.out_layer_weights, self.block_output) + self.out_bias_weights  # 1x1
+
+        for v in range(self.n_outputs):
+            self.out_layer[0, v] = self.tanh(self.out_layer[0, v])
+            self.rover_actions[v] = self.out_layer[0, v]
+
+    def update_memory(self):
+        """
+        GRU-MB agent updates the stored memory
+        :return:
+        """
+        alpha = 0.1
+        wgate = np.reshape(self.wgate_outputs, [1, self.mem_block_size])
+        enc_mem = np.reshape(self.encoded_memory, [1, self.mem_block_size])
+
+        var1 = (1 - alpha) * (self.mem_block + np.multiply(wgate, enc_mem))
+        var2 = alpha * (np.multiply(wgate, enc_mem) + np.multiply((1 - wgate), self.mem_block))
+
+        self.mem_block = var1 + var2

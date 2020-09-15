@@ -32,29 +32,29 @@ def calc_sd_reward(rover_paths, poi, global_reward, sgst):
                 for other_agent_id in range(p["n_rovers"]):
                     if agent_id != other_agent_id:  # Remove current rover's trajectory
                         # Calculate separation distance between poi and agent
-                        x_distance = poi[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                        y_distance = poi[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                        x_distance = poi[poi_id, 0] - rover_paths[other_agent_id, step_index, 0]
+                        y_distance = poi[poi_id, 1] - rover_paths[other_agent_id, step_index, 1]
                         distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                        if distance < p["min_dist"]:
-                            distance = p["min_dist"]
+                        if distance < p["min_distance"]:
+                            distance = p["min_distance"]
 
                         rover_distances[other_agent_id] = distance
 
                         # Check if agent observes poi
-                        if distance < p["min_obs_distance"]:
+                        if distance < p["obs_rad"]:
                             observer_count += 1
                     else:
-                        x_distance = poi[poi_id, 0] - rover_paths[step_index, agent_id, 0]
-                        y_distance = poi[poi_id, 1] - rover_paths[step_index, agent_id, 1]
+                        x_distance = poi[poi_id, 0] - rover_paths[agent_id, step_index, 0]
+                        y_distance = poi[poi_id, 1] - rover_paths[agent_id, step_index, 1]
                         distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                        if distance <= p["min_obs_distance"]:
+                        if distance <= p["obs_rad"]:
                             rover_distances[agent_id] = get_counterfactual_action(distance, agent_id, poi_id, poi, sgst)
                         else:
                             rover_distances[agent_id] = inf
 
-                        if rover_distances[agent_id] < p["min_obs_distance"]:
+                        if rover_distances[agent_id] < p["obs_rad"]:
                             observer_count += 1
 
                 # Determine if coupling is satisfied
@@ -77,6 +77,7 @@ def calc_sd_reward(rover_paths, poi, global_reward, sgst):
 
     return difference_rewards
 
+
 # S-D++ REWARD ----------------------------------------------------------------------------------------------------------
 def calc_sdpp(rover_paths, poi, global_reward, sgst):
     """
@@ -95,6 +96,7 @@ def calc_sdpp(rover_paths, poi, global_reward, sgst):
 
     # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
     n_counters = p["coupling"] - 1
+
     for agent_id in range(p["n_rovers"]):
         poi_observer_distances = np.zeros((p["n_poi"], total_steps))
         poi_observed = np.zeros(p["n_poi"])
@@ -106,25 +108,25 @@ def calc_sdpp(rover_paths, poi, global_reward, sgst):
 
                 # Calculate linear distances between POI and agents, count observers
                 for other_agent_id in range(p["n_rovers"]):
-                    x_distance = poi[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                    y_distance = poi[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                    x_distance = poi[poi_id, 0] - rover_paths[other_agent_id, step_index, 0]
+                    y_distance = poi[poi_id, 1] - rover_paths[other_agent_id, step_index, 1]
                     distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                    if distance < p["min_dist"]:
-                        distance = p["min_dist"]
+                    if distance < p["min_distance"]:
+                        distance = p["min_distance"]
 
                     rover_distances[other_agent_id] = distance
 
-                    if distance < p["min_obs_distance"]:
+                    if distance < p["obs_rad"]:
                         observer_count += 1
 
                 # Get suggestion from supervisor if rover has discovered a POI
-                if rover_distances[agent_id] <= p["min_obs_distance"]:
+                if rover_distances[agent_id] <= p["obs_rad"]:
                     counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], poi_id, poi, sgst)
                     for partner_id in range(n_counters):
                         rover_distances[p["n_rovers"] + partner_id] = counterfactual_agents[partner_id]
 
-                        if abs(counterfactual_agents[partner_id]) < p["min_obs_distance"]:
+                        if abs(counterfactual_agents[partner_id]) < p["obs_rad"]:
                             observer_count += 1
 
                 # Update POI observers
@@ -164,25 +166,25 @@ def calc_sdpp(rover_paths, poi, global_reward, sgst):
 
                         # Calculate linear distances between POI and agents, count observers
                         for other_agent_id in range(p["n_rovers"]):
-                            x_distance = poi[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                            y_distance = poi[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                            x_distance = poi[poi_id, 0] - rover_paths[other_agent_id, step_index, 0]
+                            y_distance = poi[poi_id, 1] - rover_paths[other_agent_id, step_index, 1]
                             distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                            if distance < p["min_dist"]:
-                                distance = p["min_dist"]
+                            if distance < p["min_distance"]:
+                                distance = p["min_distance"]
 
                             rover_distances[other_agent_id] = distance
 
-                            if distance < p["min_obs_distance"]:
+                            if distance < p["obs_rad"]:
                                 observer_count += 1
 
                         # Get suggestion from supervisor if rover has discovered a POI
-                        if rover_distances[agent_id] <= p["min_obs_distance"]:
-                            counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], rover_paths, poi_id, poi, sgst)
+                        if rover_distances[agent_id] <= p["obs_rad"]:
+                            counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], poi_id, poi, sgst)
                             for partner_id in range(n_counters):
                                 rover_distances[p["n_rovers"] + partner_id] = counterfactual_agents[partner_id]
 
-                                if abs(counterfactual_agents[partner_id]) < p["min_obs_distance"]:
+                                if abs(counterfactual_agents[partner_id]) < p["obs_rad"]:
                                     observer_count += 1
 
                         # Update POI observers
@@ -223,7 +225,7 @@ def sdpp_and_sd(rover_paths, poi, global_reward, sgst):
     """
     total_steps = int(p["n_steps"] + 1)  # The +1 is to account for the initial position (step 0)
     inf = 1000.00
-    difference_rewards = calc_sd_reward(rover_paths, poi, global_reward, sgst)
+    difference_rewards = calc_sd_reward(rover_paths, poi, global_reward, sgst, )
     dpp_rewards = np.zeros(p["n_rovers"])
 
     # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
@@ -239,25 +241,25 @@ def sdpp_and_sd(rover_paths, poi, global_reward, sgst):
 
                 # Calculate linear distances between POI and agents, count observers
                 for other_agent_id in range(p["n_rovers"]):
-                    x_distance = poi[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                    y_distance = poi[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                    x_distance = poi[poi_id, 0] - rover_paths[other_agent_id, step_index, 0]
+                    y_distance = poi[poi_id, 1] - rover_paths[other_agent_id, step_index, 1]
                     distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                    if distance < p["min_dist"]:
-                        distance = p["min_dist"]
+                    if distance < p["min_distance"]:
+                        distance = p["min_distance"]
 
                     rover_distances[other_agent_id] = distance
 
-                    if distance < p["min_obs_distance"]:
+                    if distance < p["obs_rad"]:
                         observer_count += 1
 
                 # Get suggestion from supervisor if rover has discovered a POI
-                if rover_distances[agent_id] <= p["min_obs_distance"]:
+                if rover_distances[agent_id] <= p["obs_rad"]:
                     counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], poi_id, poi, sgst)
                     for partner_id in range(n_counters):
                         rover_distances[p["n_rovers"] + partner_id] = counterfactual_agents[partner_id]
 
-                        if abs(counterfactual_agents[partner_id]) < p["min_obs_distance"]:
+                        if abs(counterfactual_agents[partner_id]) < p["obs_rad"]:
                             observer_count += 1
 
                 # Update POI observers
@@ -298,25 +300,25 @@ def sdpp_and_sd(rover_paths, poi, global_reward, sgst):
 
                         # Calculate linear distances between POI and agents, count observers
                         for other_agent_id in range(p["n_rovers"]):
-                            x_distance = poi[poi_id, 0] - rover_paths[step_index, other_agent_id, 0]
-                            y_distance = poi[poi_id, 1] - rover_paths[step_index, other_agent_id, 1]
+                            x_distance = poi[poi_id, 0] - rover_paths[other_agent_id, step_index, 0]
+                            y_distance = poi[poi_id, 1] - rover_paths[other_agent_id, step_index, 1]
                             distance = math.sqrt((x_distance**2) + (y_distance**2))
 
-                            if distance < p["min_dist"]:
-                                distance = p["min_dist"]
+                            if distance < p["min_distance"]:
+                                distance = p["min_distance"]
 
                             rover_distances[other_agent_id] = distance
 
-                            if distance < p["min_obs_distance"]:
+                            if distance < p["obs_rad"]:
                                 observer_count += 1
 
                         # Get suggestion from supervisor if rover has discovered a POI
-                        if rover_distances[agent_id] <= p["min_obs_distance"]:
+                        if rover_distances[agent_id] <= p["obs_rad"]:
                             counterfactual_agents = get_counterfactual_partners(n_counters, agent_id, rover_distances[agent_id], poi_id, poi, sgst)
                             for partner_id in range(n_counters):
                                 rover_distances[p["n_rovers"] + partner_id] = counterfactual_agents[partner_id]
 
-                                if abs(counterfactual_agents[partner_id]) < p["min_obs_distance"]:
+                                if abs(counterfactual_agents[partner_id]) < p["obs_rad"]:
                                     observer_count += 1
 
                         # Update POI observers

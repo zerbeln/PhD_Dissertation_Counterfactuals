@@ -249,7 +249,7 @@ class NeuralNetwork:
         self.out_layer = np.dot(self.out_layer_weights, self.block_output) + self.out_bias_weights  # 1x1
 
         for v in range(self.n_outputs):
-            self.out_layer[0, v] = self.sigmoid(self.out_layer[0, v])
+            self.out_layer[0, v] = self.tanh(self.out_layer[0, v])
 
     def tanh(self, inp):  # Tanh function as activation function
         """
