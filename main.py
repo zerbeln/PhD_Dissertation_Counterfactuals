@@ -544,4 +544,4 @@ def main(reward_type="Global", suggestion="none"):
         sys.exit('Incorrect Reward Type')
 
 
-main(reward_type="Difference", suggestion="low_val")  # Run the program
+main(reward_type="Global", suggestion="low_val")  # Run the program

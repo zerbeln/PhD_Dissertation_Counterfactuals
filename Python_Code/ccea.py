@@ -224,8 +224,8 @@ class Ccea:
         :return: None
         """
         self.rank_population()
-        # self.epsilon_greedy_select()  # Select K successors using epsilon greedy
-        self.binary_tournament_selection()
+        self.epsilon_greedy_select()  # Select K successors using epsilon greedy
+        # self.binary_tournament_selection()
         # self.random_selection()  # Select k successors using fit prop selection
         self.weight_mutate()  # Mutate successors
 
@@ -242,7 +242,6 @@ class Ccea:
 
 
 class GruCcea:
-
     def __init__(self):
         self.population = {}
         self.pop_size = int(p["pop_size"])
@@ -295,6 +294,12 @@ class GruCcea:
             policy["r_wgate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_outputs)
             policy["n_wgate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
             policy["b_wgate"] = np.random.normal(0, 0.5, self.mem_block_size)
+
+            # Suggestion Gate
+            # policy["k_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
+            # policy["r_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_outputs)
+            # policy["n_sgate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
+            # policy["b_sgate"] = np.random.normal(0, 0.5, self.mem_block_size)
 
             # Memory
             policy["n_dec"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
@@ -426,6 +431,41 @@ class GruCcea:
 
             starting_pol += 1
 
+    def mutate_sgate(self):
+        starting_pol = int(self.n_elites)
+        while starting_pol < self.pop_size:
+            for w in range(self.mem_block_size):
+                # Bias Weights
+                rnum1 = random.uniform(0, 1)
+                if rnum1 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["b_sgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["b_sgate"][w] += mutation
+
+                # K Matrix
+                rnum2 = random.uniform(0, 1)
+                if rnum2 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["k_sgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["k_sgate"][w] += mutation
+
+                # R Matrix
+                rnum3 = random.uniform(0, 1)
+                if rnum3 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["r_sgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["r_sgate"][w] += mutation
+
+            for w in range(self.mem_block_size ** 2):
+                # N Matrix
+                rnum = random.uniform(0, 1)
+                if rnum <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["n_sgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["n_sgate"][w] += mutation
+
+            starting_pol += 1
+
     def mutate_block(self):
         starting_pol = int(self.n_elites)
         while starting_pol < self.pop_size:
@@ -517,6 +557,7 @@ class GruCcea:
         self.mutate_igate()
         self.mutate_rgate()
         self.mutate_wgate()
+        # self.mutate_sgate()
         self.mutate_block()
         self.mutate_mem_weights()
 

@@ -4,9 +4,10 @@ parameters = {}
 parameters["stat_runs"] = 1
 parameters["generations"] = 1000  # Number of generations for CCEA in each stat run
 parameters["new_world_config"] = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
+parameters["n_suggestions"] = 2  # Number of suggestions a rover should learn
 
 # Visualizer
-parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
+parameters["vis_running"] = False  # True keeps visualizer from closing until you 'X' out of window
 
 # Domain parameters
 parameters["n_rovers"] = 3  # Number of rovers on map
@@ -24,10 +25,10 @@ parameters["ctrl_type"] = "GRU"  # NN or GRU
 parameters["angle_res"] = 90  # Resolution of sensors (determines number of sectors)
 
 # Neural network parameters
-parameters["n_inputs"] = 8
-parameters["n_hnodes"] = 9
+parameters["n_inputs"] = 12
+parameters["n_hnodes"] = 14
 parameters["n_outputs"] = 2
-parameters["mem_block_size"] = 9
+parameters["mem_block_size"] = 14
 
 # CCEA parameters
 parameters["pop_size"] = 60

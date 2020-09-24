@@ -26,6 +26,7 @@ class RoverDomain:
 
         # POI Information
         self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+        self.poi_visits = np.zeros((p["n_poi"], p["n_rovers"]))
 
     def inital_world_setup(self):
         """
@@ -50,6 +51,7 @@ class RoverDomain:
         self.final_rover_path = np.zeros((self.n_rovers, p["stat_runs"], (p["n_steps"] + 1), 3))
 
     def clear_rover_path(self):
+        self.poi_visits = np.zeros((p["n_poi"], p["n_rovers"]))
         self.rover_path = np.zeros((self.n_rovers, (p["n_steps"] + 1), 3))
 
     def update_rover_path(self, rovers, steps):
@@ -57,6 +59,19 @@ class RoverDomain:
             self.rover_path[rover_id, steps+1, 0] = rovers["Rover{0}".format(rover_id)].rover_x
             self.rover_path[rover_id, steps+1, 1] = rovers["Rover{0}".format(rover_id)].rover_y
             self.rover_path[rover_id, steps+1, 2] = rovers["Rover{0}".format(rover_id)].rover_theta
+
+            # self.determine_poi_visits(rovers, rover_id)
+
+    def determine_poi_visits(self, rovers, rover_id):
+        rov_x = rovers["Rover{0}".format(rover_id)].rover_x
+        rov_y = rovers["Rover{0}".format(rover_id)].rover_y
+        for poi_id in range(self.num_pois):
+            poi_x = self.pois[poi_id, 0]
+            poi_y = self.pois[poi_id, 1]
+            dist = math.sqrt((rov_x - poi_x)**2 + (rov_y - poi_y)**2)
+
+            if dist < self.obs_radius:
+                self.poi_visits[poi_id, rover_id] = 1
 
     def update_final_rover_path(self, srun, rovers, steps):
         for rover_id in range(self.n_rovers):
