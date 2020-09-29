@@ -2,7 +2,7 @@ parameters = {}
 
 # Run Parameters
 parameters["stat_runs"] = 1
-parameters["generations"] = 1000  # Number of generations for CCEA in each stat run
+parameters["generations"] = 2000  # Number of generations for CCEA in each stat run
 parameters["new_world_config"] = 0  # 0 = False -> Reuse existing world config, 1 = True -> Use new world config
 parameters["n_suggestions"] = 2  # Number of suggestions a rover should learn
 
@@ -33,6 +33,6 @@ parameters["mem_block_size"] = 12
 # CCEA parameters
 parameters["pop_size"] = 60
 parameters["mut_prob"] = 0.1  # Probability that a mutation will occur
-parameters["mut_rate"] = 0.05  # How much a weight is allowed to change
+parameters["mut_rate"] = 0.1  # How much a weight is allowed to change
 parameters["epsilon"] = 0.1  # For e-greedy selection in CCEA
 parameters["n_elites"] = 3

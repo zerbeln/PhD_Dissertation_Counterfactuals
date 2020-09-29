@@ -65,10 +65,6 @@ def use_saved_policies(suggestion_type):
 
     for srun in range(p["stat_runs"]):
         # Testing Phase (test best policies found so far)
-        if suggestion_type == "low_val":
-            sgst = 4
-        else:
-            sgst = 10
         for rover_id in range(p["n_rovers"]):
             rovers["Rover{0}".format(rover_id)].reset_rover()
             weights = load_saved_policies("RoverWeights{0}".format(rover_id))
@@ -76,7 +72,7 @@ def use_saved_policies(suggestion_type):
         rd.update_final_rover_path(srun, rovers, -1)
         for steps in range(p["n_steps"]):
             for rover_id in range(p["n_rovers"]):  # Rover scans environment
-                rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, sgst)
+                rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, suggestion_type)
             for rover_id in range(p["n_rovers"]):  # Rover processes information froms can and acts
                 rovers["Rover{0}".format(rover_id)].run_neuro_controller()
                 rovers["Rover{0}".format(rover_id)].step()
@@ -124,10 +120,8 @@ def memory_suggestions_dpp(suggestion_type):
                 for nt in range(p["n_suggestions"]):
                     if nt == 0:
                         suggestion = "low_val"
-                        sgst = 4
                     else:
                         suggestion = "high_val"
-                        sgst = 10
                     for rover_id in range(p["n_rovers"]):
                         rovers["Rover{0}".format(rover_id)].reset_rover()
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
@@ -136,7 +130,7 @@ def memory_suggestions_dpp(suggestion_type):
                     rd.update_rover_path(rovers, -1)  # Record starting position of each rover
                     for steps in range(p["n_steps"]):
                         for rover_id in range(p["n_rovers"]):  # Rover scans environment
-                            rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, sgst)
+                            rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, suggestion)
                         for rover_id in range(p["n_rovers"]):  # Rover processes scan information and acts
                             rovers["Rover{0}".format(rover_id)].run_neuro_controller()
                             rovers["Rover{0}".format(rover_id)].step()
@@ -144,7 +138,7 @@ def memory_suggestions_dpp(suggestion_type):
 
                     # Update fitness of policies using reward information
                     global_reward = calc_global(rd.rover_path, rd.pois)
-                    sdpp_reward = sdpp_and_sd(rd.rover_path, rd.pois, global_reward, suggestion)
+                    sdpp_reward = calc_sdpp(rd.rover_path, rd.pois, global_reward, suggestion)
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] += sdpp_reward[rover_id]
@@ -155,10 +149,6 @@ def memory_suggestions_dpp(suggestion_type):
 
             # Testing Phase (test best policies found so far)
             if gen % 5 == 0 or gen == p["generations"] - 1:
-                if suggestion_type == "low_val":
-                    sgst = 4
-                else:
-                    sgst = 10
                 for rover_id in range(p["n_rovers"]):
                     rovers["Rover{0}".format(rover_id)].reset_rover()
                     policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
@@ -169,7 +159,7 @@ def memory_suggestions_dpp(suggestion_type):
                 rd.update_final_rover_path(srun, rovers, -1)
                 for steps in range(p["n_steps"]):
                     for rover_id in range(p["n_rovers"]):  # Rover scans environment
-                        rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, sgst)
+                        rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, suggestion_type)
                     for rover_id in range(p["n_rovers"]):  # Rover processes information froms can and acts
                         rovers["Rover{0}".format(rover_id)].run_neuro_controller()
                         rovers["Rover{0}".format(rover_id)].step()
@@ -193,9 +183,7 @@ def run_rover_domain(train_new_policies=0, suggestion_type="high_val"):
     elif train_new_policies == 0:
         use_saved_policies(suggestion_type)
     else:
-        for i in range(10):
-            if i % 5 == 0:
-                print(i)
+        print("Incorrect Inputs")
 
 
 run_rover_domain(train_new_policies=1, suggestion_type="low_val")

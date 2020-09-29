@@ -96,6 +96,8 @@ class Rover:
         self.rover_x = self.rx_init
         self.rover_y = self.ry_init
         self.rover_theta = self.rt_init
+        self.sensor_readings = np.zeros(p["n_inputs"])
+        self.suggestion_inputs = np.zeros(p["n_inputs"])
         self.mem_block = np.zeros(p["mem_block_size"])
 
     def clear_memory(self):
@@ -127,15 +129,20 @@ class Rover:
         self.rover_theta = theta
 
     def scan_environment(self, rovers, pois, sgst):
-        self.poi_sensor_scan(pois)
-        self.rover_sensor_scan(rovers)
+        """
+        Constructs the state information that gets passed to the rover's neuro-controller
+        """
+        self.poi_sensor_scan(pois, sgst)
+        self.rover_sensor_scan(rovers, sgst)
 
-        for i in range(p["n_inputs"]):
-            self.suggestion_inputs[i] = sgst
-
-    def poi_sensor_scan(self, pois):
+    def poi_sensor_scan(self, pois, sgst):
+        """
+        Rover uses POI scanner to detect POIs in each quadrant
+        """
         poi_state = np.zeros(int(360.0 / self.angle_res))
+        suggestion_state = np.zeros(int(360.0 / self.angle_res))
         temp_poi_dist_list = [[] for _ in range(int(360.0 / self.angle_res))]
+        temp_poi_sgst_list = [[] for _ in range(int(360.0 / self.angle_res))]
 
         # Log POI distances into brackets
         for poi_id in range(p["n_poi"]):
@@ -153,6 +160,14 @@ class Rover:
                 bracket = len(temp_poi_dist_list) - 1
 
             temp_poi_dist_list[bracket].append(poi_value / dist)
+            if sgst == "high_val" and poi_value > 5.0:
+                temp_poi_sgst_list[bracket].append(poi_value / dist)
+            elif sgst == "high_val" and poi_value <= 5.0:
+                temp_poi_sgst_list[bracket].append(-10*poi_value / dist)
+            elif sgst == "low_val" and poi_value <= 5.0:
+                temp_poi_sgst_list[bracket].append(poi_value / dist)
+            elif sgst == "low_val" and poi_value > 5.0:
+                temp_poi_sgst_list[bracket].append(-10*poi_value / dist)
 
         # Encode the information into the state vector
         for bracket in range(int(360 / self.angle_res)):
@@ -161,19 +176,30 @@ class Rover:
             if num_poi > 0:
                 if self.sensor_type == 'density':
                     poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_double  # Density Sensor
+                    suggestion_state[bracket] = sum(temp_poi_sgst_list[bracket]) / num_poi_double
                 elif self.sensor_type == 'summed':
                     poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
+                    suggestion_state[bracket] = sum(temp_poi_sgst_list[bracket])
                 elif self.sensor_type == 'closest':
                     poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
+                    suggestion_state[bracket] = max(temp_poi_sgst_list[bracket])
                 else:
                     sys.exit('Incorrect sensor model')
             else:
                 poi_state[bracket] = -1.0
-            self.sensor_readings[bracket] = poi_state[bracket]
+                suggestion_state[bracket] = -1.0
 
-    def rover_sensor_scan(self, rovers):
+            self.sensor_readings[bracket] = poi_state[bracket]
+            self.suggestion_inputs[bracket] = suggestion_state[bracket]
+
+    def rover_sensor_scan(self, rovers, sgst):
+        """
+        Rover uses rover sensor to detect other rovers in each quadrant
+        """
         rover_state = np.zeros(int(360.0 / self.angle_res))
+        suggestion_state = np.zeros(int(360.0 / self.angle_res))
         temp_rover_dist_list = [[] for _ in range(int(360.0 / self.angle_res))]
+        temp_rover_sgst_list = [[] for _ in range(int(360.0 / self.angle_res))]
 
         # Log rover distances into brackets
         for rover_id in range(p["n_rovers"]):
@@ -193,6 +219,7 @@ class Rover:
             if bracket >= len(temp_rover_dist_list):
                 bracket = len(temp_rover_dist_list) - 1
             temp_rover_dist_list[bracket].append(1/dist)
+            temp_rover_sgst_list[bracket].append(1/dist)
 
         # Encode the information into the state vector
         for bracket in range(int(360/self.angle_res)):
@@ -201,15 +228,21 @@ class Rover:
             if num_agents > 0:
                 if self.sensor_type == 'density':
                     rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_agents_double  # Density Sensor
+                    suggestion_state[bracket] = sum(temp_rover_sgst_list[bracket]) / num_agents_double
                 elif self.sensor_type == 'summed':
                     rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
+                    suggestion_state[bracket] = sum(temp_rover_sgst_list[bracket])
                 elif self.sensor_type == 'closest':
                     rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
+                    suggestion_state[bracket] = max(temp_rover_sgst_list[bracket])
                 else:
                     sys.exit('Incorrect sensor model')
             else:
                 rover_state[bracket] = -1.0
+                suggestion_state[bracket] = -1.0
+
             self.sensor_readings[bracket + 4] = rover_state[bracket]
+            self.suggestion_inputs[bracket + 4] = suggestion_state[bracket]
 
     def get_angle_dist(self, rovx, rovy, x, y):
         """
