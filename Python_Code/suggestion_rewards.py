@@ -14,7 +14,7 @@ def calc_sd_reward(rover_paths, poi, global_reward, sgst):
     :param global_reward:  Reward given to the team from the world
     :return: difference_rewards (np array of size (n_rovers))
     """
-    total_steps = int(p["num_steps"] + 1)  # The +1 is to account for the initial position
+    total_steps = int(p["n_steps"] + 1)  # The +1 is to account for the initial position
     inf = 1000.00
 
     difference_rewards = np.zeros(p["n_rovers"])
@@ -78,7 +78,7 @@ def calc_sd_reward(rover_paths, poi, global_reward, sgst):
     return difference_rewards
 
 
-# S-D++ REWARD ----------------------------------------------------------------------------------------------------------
+# S-D++ REWARD -------------------------------------------------------------------------------------------------------
 def calc_sdpp(rover_paths, poi, global_reward, sgst):
     """
     Calculate S-D++ rewards for each rover across entire trajectory
@@ -278,7 +278,7 @@ def sdpp_and_sd(rover_paths, poi, global_reward, sgst):
 
         # Calculate D++ reward with n counterfactuals added
         counterfactual_global_reward = 0.0
-        for poi_id in range(p["coupling"]):
+        for poi_id in range(p["n_poi"]):
             if poi_observed[poi_id] == 1:
                 counterfactual_global_reward += poi[poi_id, 2]/(min(poi_observer_distances[poi_id])/p["coupling"])
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters

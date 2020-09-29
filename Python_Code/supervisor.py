@@ -120,7 +120,7 @@ def get_counterfactual_partners(n_counters, self_id, rover_dist, poi_id, pois, s
 
 
 # COUNTERFACTUAL ACTION SUGGESTIONS -----------------------------------------------------------------------------------
-def high_val_action_suggestions(rover_dist, poi_id, pois):
+def high_val_action_suggestions(poi_id, pois):
     c_action = 0.0
 
     if pois[poi_id, 2] > 5.0:
@@ -131,7 +131,7 @@ def high_val_action_suggestions(rover_dist, poi_id, pois):
     return c_action
 
 
-def low_val_action_suggestions(rover_dist, poi_id, pois):
+def low_val_action_suggestions(poi_id, pois):
     c_action = 0.0
 
     if pois[poi_id, 2] > 5.0:
@@ -159,7 +159,7 @@ def high_low_actions(rover_dist, rover_id, poi_id, pois):
     return c_action
 
 
-def three_rov_three_poi(rover_dist, rover_id, poi_id, pois):
+def three_rov_three_poi(rover_id, poi_id, pois):
     c_action = 0.0
 
     if rover_id == 0:
@@ -207,11 +207,11 @@ def get_counterfactual_action(rover_dist, rov_id, poi_id, pois, suggestion):
     c_action = 0.0
 
     if suggestion == "high_val":
-        c_action = high_val_action_suggestions(rover_dist, poi_id, pois)
+        c_action = high_val_action_suggestions(poi_id, pois)
     elif suggestion == "low_val":
-        c_action = low_val_action_suggestions(rover_dist, poi_id, pois)
+        c_action = low_val_action_suggestions(poi_id, pois)
     elif suggestion == "3R3P":
-        c_action = three_rov_three_poi(rover_dist, rov_id, poi_id, pois)
+        c_action = three_rov_three_poi(rov_id, poi_id, pois)
     elif suggestion == "high_low":
         high_low_actions(rover_dist, rov_id, poi_id, pois)
 

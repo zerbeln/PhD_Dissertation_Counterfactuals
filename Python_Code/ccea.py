@@ -274,32 +274,37 @@ class GruCcea:
 
             # Input Gate
             policy["k_igate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_inputs)
+            policy["s_igate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_inputs)
             policy["r_igate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_outputs)
             policy["n_igate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
             policy["b_igate"] = np.random.normal(0, 0.5, self.mem_block_size)
 
             # Block Input
             policy["k_block"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_inputs)
+            policy["s_block"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
             policy["n_block"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
             policy["b_block"] = np.random.normal(0, 0.5, self.mem_block_size)
 
             # Read Gate
             policy["k_rgate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_inputs)
+            policy["s_rgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
             policy["r_rgate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_outputs)
             policy["n_rgate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
             policy["b_rgate"] = np.random.normal(0, 0.5, self.mem_block_size)
 
             # Write Gate
             policy["k_wgate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_inputs)
+            policy["s_wgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
             policy["r_wgate"] = np.random.normal(0, 0.5, self.mem_block_size*self.n_outputs)
             policy["n_wgate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
             policy["b_wgate"] = np.random.normal(0, 0.5, self.mem_block_size)
 
             # Suggestion Gate
-            # policy["k_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
-            # policy["r_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_outputs)
-            # policy["n_sgate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
-            # policy["b_sgate"] = np.random.normal(0, 0.5, self.mem_block_size)
+            policy["k_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
+            policy["s_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_inputs)
+            policy["r_sgate"] = np.random.normal(0, 0.5, self.mem_block_size * self.n_outputs)
+            policy["n_sgate"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
+            policy["b_sgate"] = np.random.normal(0, 0.5, self.mem_block_size)
 
             # Memory
             policy["n_dec"] = np.random.normal(0, 0.5, self.mem_block_size ** 2)
@@ -351,6 +356,13 @@ class GruCcea:
                     mutation = (np.random.normal(0, self.mut_rate)) * weight
                     self.population["pop{0}".format(starting_pol)]["r_igate"][w] += mutation
 
+                # S Matrix
+                rnum4 = random.uniform(0, 1)
+                if rnum4 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["s_igate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["s_igate"][w] += mutation
+
             for w in range(self.mem_block_size ** 2):
                 # N Matrix
                 rnum = random.uniform(0, 1)
@@ -385,6 +397,13 @@ class GruCcea:
                     weight = self.population["pop{0}".format(starting_pol)]["r_rgate"][w]
                     mutation = (np.random.normal(0, self.mut_rate)) * weight
                     self.population["pop{0}".format(starting_pol)]["r_rgate"][w] += mutation
+
+                # S Matrix
+                rnum4 = random.uniform(0, 1)
+                if rnum4 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["s_rgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["s_rgate"][w] += mutation
 
             for w in range(self.mem_block_size ** 2):
                 # N Matrix
@@ -421,6 +440,13 @@ class GruCcea:
                     mutation = (np.random.normal(0, self.mut_rate)) * weight
                     self.population["pop{0}".format(starting_pol)]["r_wgate"][w] += mutation
 
+                # S Matrix
+                rnum4 = random.uniform(0, 1)
+                if rnum4 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["s_wgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["s_wgate"][w] += mutation
+
             for w in range(self.mem_block_size ** 2):
                 # N Matrix
                 rnum = random.uniform(0, 1)
@@ -456,6 +482,13 @@ class GruCcea:
                     mutation = (np.random.normal(0, self.mut_rate)) * weight
                     self.population["pop{0}".format(starting_pol)]["r_sgate"][w] += mutation
 
+                # S Matrix
+                rnum4 = random.uniform(0, 1)
+                if rnum4 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["s_sgate"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["s_sgate"][w] += mutation
+
             for w in range(self.mem_block_size ** 2):
                 # N Matrix
                 rnum = random.uniform(0, 1)
@@ -483,6 +516,13 @@ class GruCcea:
                     weight = self.population["pop{0}".format(starting_pol)]["k_block"][w]
                     mutation = (np.random.normal(0, self.mut_rate)) * weight
                     self.population["pop{0}".format(starting_pol)]["k_block"][w] += mutation
+
+                # S Matrix
+                rnum3 = random.uniform(0, 1)
+                if rnum3 <= self.mut_chance:
+                    weight = self.population["pop{0}".format(starting_pol)]["s_block"][w]
+                    mutation = (np.random.normal(0, self.mut_rate)) * weight
+                    self.population["pop{0}".format(starting_pol)]["s_block"][w] += mutation
 
             for w in range(self.mem_block_size ** 2):
                 # N Matrix

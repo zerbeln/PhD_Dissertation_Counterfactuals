@@ -130,13 +130,8 @@ class Rover:
         self.poi_sensor_scan(pois)
         self.rover_sensor_scan(rovers)
 
-        # for i in range(p["n_inputs"]):
-        #     self.suggestion_inputs[i] = sgst
-
-        i = 8
-        while i < p["n_inputs"]:
-            self.sensor_readings[i] = sgst
-            i += 1
+        for i in range(p["n_inputs"]):
+            self.suggestion_inputs[i] = sgst
 
     def poi_sensor_scan(self, pois):
         poi_state = np.zeros(int(360.0 / self.angle_res))
@@ -251,15 +246,15 @@ class Rover:
             self.get_nn_outputs()
         elif self.controller_type == "GRU":
             state_vec = self.sensor_readings.copy()
-            # suggest_vec = self.suggestion_inputs.copy()
+            suggest_vec = self.suggestion_inputs.copy()
             m_block = self.mem_block.copy()
-            self.run_input_gate(state_vec, m_block)
-            # self.run_suggestion_gate(suggest_vec, m_block)
-            self.run_read_gate(state_vec, m_block)
-            self.create_block_inputs(state_vec, m_block)
+            self.run_input_gate(state_vec, suggest_vec, m_block)
+            self.run_suggestion_gate(state_vec, suggest_vec, m_block)
+            self.run_read_gate(state_vec, suggest_vec, m_block)
+            self.create_block_inputs(state_vec, suggest_vec, m_block)
             self.memory_decoder(m_block)
             self.hidden_activation()
-            self.run_write_gate(state_vec, m_block)
+            self.run_write_gate(state_vec, suggest_vec, m_block)
             self.memory_encoder()
             self.update_memory()
             self.prev_out_layer = self.out_layer.copy()
@@ -338,7 +333,7 @@ class Rover:
         self.wgate_outputs = np.mat(np.zeros(self.mem_block_size))
         self.rgate_outputs = np.mat(np.zeros(self.mem_block_size))
         self.block_output = np.mat(np.zeros(self.mem_block_size))
-        # self.sgate_outputs = np.mat(np.zeros(self.mem_block_size))
+        self.sgate_outputs = np.mat(np.zeros(self.mem_block_size))
         self.out_layer = np.mat(np.zeros(self.n_outputs))
         self.prev_out_layer = np.mat(np.zeros(self.n_outputs))
 
@@ -355,6 +350,7 @@ class Rover:
         # Input gate weights
         n_mat = np.mat(weights["n_igate"])
         self.igate_weights["K"] = np.reshape(np.mat(weights["k_igate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.igate_weights["S"] = np.reshape(np.mat(weights["s_igate"]), [self.mem_block_size, self.n_inputs])
         self.igate_weights["R"] = np.reshape(np.mat(weights["r_igate"]), [self.mem_block_size, self.n_outputs])  # nx2
         self.igate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
         self.igate_weights["b"] = np.reshape(np.mat(weights["b_igate"]), [self.mem_block_size, 1])  # nx1
@@ -362,12 +358,14 @@ class Rover:
         # Block Input
         n_mat = np.mat(weights["n_block"])
         self.block_weights["K"] = np.reshape(np.mat(weights["k_block"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.block_weights["S"] = np.reshape(np.mat(weights["s_block"]), [self.mem_block_size, self.n_inputs])
         self.block_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
         self.block_weights["b"] = np.reshape(np.mat(weights["b_block"]), [self.mem_block_size, 1])  # nx1
 
         # Read gate weights
         n_mat = np.mat(weights["n_rgate"])
         self.rgate_weights["K"] = np.reshape(np.mat(weights["k_rgate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.rgate_weights["S"] = np.reshape(np.mat(weights["s_rgate"]), [self.mem_block_size, self.n_inputs])
         self.rgate_weights["R"] = np.reshape(np.mat(weights["r_rgate"]), [self.mem_block_size, self.n_outputs])  # nx2
         self.rgate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
         self.rgate_weights["b"] = np.reshape(np.mat(weights["b_rgate"]), [self.mem_block_size, 1])  # nx1
@@ -375,16 +373,18 @@ class Rover:
         # Write Gate Weights
         n_mat = np.mat(weights["n_wgate"])
         self.wgate_weights["K"] = np.reshape(np.mat(weights["k_wgate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.wgate_weights["S"] = np.reshape(np.mat(weights["s_wgate"]), [self.mem_block_size, self.n_inputs])
         self.wgate_weights["R"] = np.reshape(np.mat(weights["r_wgate"]), [self.mem_block_size, self.n_outputs])  # nx2
         self.wgate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
         self.wgate_weights["b"] = np.reshape(np.mat(weights["b_wgate"]), [self.mem_block_size, 1])  # nx1
 
         # Suggestion Gate Weights
-        # n_mat = np.mat(weights["n_sgate"])
-        # self.sgate_weights["K"] = np.reshape(np.mat(weights["k_sgate"]), [self.mem_block_size, self.n_inputs])  # nx8
-        # self.sgate_weights["R"] = np.reshape(np.mat(weights["r_sgate"]), [self.mem_block_size, self.n_outputs])  # nx2
-        # self.sgate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
-        # self.sgate_weights["b"] = np.reshape(np.mat(weights["b_sgate"]), [self.mem_block_size, 1])  # nx1
+        n_mat = np.mat(weights["n_sgate"])
+        self.sgate_weights["K"] = np.reshape(np.mat(weights["k_sgate"]), [self.mem_block_size, self.n_inputs])  # nx8
+        self.sgate_weights["S"] = np.reshape(np.mat(weights["s_sgate"]), [self.mem_block_size, self.n_inputs])
+        self.sgate_weights["R"] = np.reshape(np.mat(weights["r_sgate"]), [self.mem_block_size, self.n_outputs])  # nx2
+        self.sgate_weights["N"] = np.reshape(n_mat, [self.mem_block_size, self.mem_block_size])  # nxn
+        self.sgate_weights["b"] = np.reshape(np.mat(weights["b_sgate"]), [self.mem_block_size, 1])  # nx1
 
         # Memory Weights
         n_mat_dec = np.mat(weights["n_dec"])
@@ -394,7 +394,7 @@ class Rover:
         self.encoder_weights["Z"] = np.reshape(n_mat_enc, [self.mem_block_size, self.mem_block_size])  # nxn
         self.encoder_weights["b"] = np.reshape(np.mat(weights["b_enc"]), [self.mem_block_size, 1])  # nx1
 
-    def run_input_gate(self, state_vec, mem_block):
+    def run_input_gate(self, state_vec, suggest_vec, mem_block):
         """
         Process sensor inputs through input gate
         :param mem_block:
@@ -404,18 +404,20 @@ class Rover:
 
         x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
         y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        z = np.reshape(np.mat(suggest_vec), [self.n_inputs, 1])  # 8x1
         m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
         b = self.igate_weights["b"]  # nx1
 
         Ki_x = np.dot(self.igate_weights["K"], x)  # nx8 * 8x1 = nx1
         Ri_y = np.dot(self.igate_weights["R"], y)  # nx2 * 2x1 = nx1
         Ni_m = np.dot(self.igate_weights["N"], m)  # nxn * nx1 = nx1
+        Si_z = np.dot(self.igate_weights["S"], z)
 
-        self.igate_outputs = Ki_x + Ri_y + Ni_m + b  # nx1
+        self.igate_outputs = Ki_x + Ri_y + Ni_m + + Si_z + b  # nx1
         for i in range(self.mem_block_size):
             self.igate_outputs[i, 0] = self.sigmoid(self.igate_outputs[i, 0])
 
-    def run_read_gate(self, state_vec, mem_block):
+    def run_read_gate(self, state_vec, suggest_vec, mem_block):
         """
         Process read gate information
         :param mem_block:
@@ -425,38 +427,44 @@ class Rover:
 
         x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
         y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        z = np.reshape(np.mat(suggest_vec), [self.n_inputs, 1])  # 8x1
         m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
         b = self.rgate_weights["b"]  # nx1
 
         Kr_x = np.dot(self.rgate_weights["K"], x)  # nx8 * 8x1
         Rr_y = np.dot(self.rgate_weights["R"], y)  # nx2 * 2x1
         Nr_m = np.dot(self.rgate_weights["N"], m)  # nxn * 1x1
+        Si_z = np.dot(self.rgate_weights["S"], z)
 
-        self.rgate_outputs = Kr_x + Rr_y + Nr_m + b  # nx1
+        self.rgate_outputs = Kr_x + Rr_y + Nr_m + Si_z + b  # nx1
         for i in range(self.mem_block_size):
             self.rgate_outputs[i, 0] = self.sigmoid(self.rgate_outputs[i, 0])
 
-    def run_suggestion_gate(self, suggest_vec, mem_block):
+    def run_suggestion_gate(self, state_vec, suggest_vec, mem_block):
         """
         Process suggestion gate information
         :param mem_block:
         :param suggest_vec:
         :return:
         """
-        x = np.reshape(np.mat(suggest_vec), [self.n_inputs, 1])  # 8x1
+        x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
         y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        z = np.reshape(np.mat(suggest_vec), [self.n_inputs, 1])  # 8x1
         m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
         b = self.sgate_weights["b"]  # nx1
 
         Kr_x = np.dot(self.sgate_weights["K"], x)  # nx8 * 8x1
         Rr_y = np.dot(self.sgate_weights["R"], y)  # nx2 * 2x1
         Nr_m = np.dot(self.sgate_weights["N"], m)  # nxn * 1x1
+        Si_z = np.dot(self.sgate_weights["S"], z)
 
-        self.sgate_outputs = Kr_x + Rr_y + Nr_m + b  # nx1
+
+
+        self.sgate_outputs = Kr_x + Rr_y + Nr_m + Si_z + b  # nx1
         for i in range(self.mem_block_size):
             self.sgate_outputs[i, 0] = self.sigmoid(self.sgate_outputs[i, 0])
 
-    def run_write_gate(self, state_vec, mem_block):
+    def run_write_gate(self, state_vec, suggest_vec, mem_block):
         """
         Process write gate
         :param mem_block:
@@ -466,18 +474,20 @@ class Rover:
 
         x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
         y = np.reshape(np.mat(self.prev_out_layer), [self.n_outputs, 1])  # 2x1
+        z = np.reshape(np.mat(suggest_vec), [self.n_inputs, 1])  # 8x1
         m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
         b = self.wgate_weights["b"]  # nx1
 
         Kw_x = np.dot(self.wgate_weights["K"], x)  # nx8 * 8x1
         Rw_x = np.dot(self.wgate_weights["R"], y)  # nx2 * 2x1
         Nw_x = np.dot(self.wgate_weights["N"], m)  # nxn * nx1
+        Si_z = np.dot(self.wgate_weights["S"], z)
 
-        self.wgate_outputs = Kw_x + Rw_x + Nw_x + b  # nx1
+        self.wgate_outputs = Kw_x + Rw_x + Nw_x + Si_z + b  # nx1
         for i in range(self.mem_block_size):
             self.wgate_outputs[i, 0] = self.sigmoid(self.wgate_outputs[i, 0])
 
-    def create_block_inputs(self, state_vec, mem_block):
+    def create_block_inputs(self, state_vec, suggest_vec, mem_block):
         """
         Create the input layer for the block (feedforward network)
         :param mem_block:
@@ -486,13 +496,15 @@ class Rover:
         """
 
         x = np.reshape(np.mat(state_vec), [self.n_inputs, 1])  # 8x1
+        z = np.reshape(np.mat(suggest_vec), [self.n_inputs, 1])  # 8x1
         m = np.reshape(np.mat(mem_block), [self.mem_block_size, 1])  # nx1
         b = self.block_weights["b"]  # nx1
 
         Kp_x = np.dot(self.block_weights["K"], x)  # nx8 * 8x1
         Np_m = np.dot(self.block_weights["N"], m)  # nxn * nx1
+        Si_z = np.dot(self.block_weights["S"], z)
 
-        self.block_input = Kp_x + Np_m + b  # nx1
+        self.block_input = Kp_x + Np_m + Si_z + b  # nx1
         for i in range(self.mem_block_size):
             self.block_input[i, 0] = self.sigmoid(self.block_input[i, 0])
 
@@ -531,9 +543,9 @@ class Rover:
 
         r_d = np.multiply(self.rgate_outputs, self.decoded_memory)  # nx1
         p_i = np.multiply(self.block_input, self.igate_outputs)  # nx1
-        # s_i = np.multiply(self.block_input, self.sgate_outputs) # nx1
+        s_i = np.multiply(self.block_input, self.sgate_outputs)  # nx1
 
-        self.block_output = r_d + p_i  # + s_i  # nx1
+        self.block_output = r_d + p_i + s_i  # nx1
 
         self.out_layer = np.dot(self.out_layer_weights, self.block_output) + self.out_bias_weights  # 1x1
 

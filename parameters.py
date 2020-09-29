@@ -25,10 +25,10 @@ parameters["ctrl_type"] = "GRU"  # NN or GRU
 parameters["angle_res"] = 90  # Resolution of sensors (determines number of sectors)
 
 # Neural network parameters
-parameters["n_inputs"] = 12
-parameters["n_hnodes"] = 14
+parameters["n_inputs"] = 8
+parameters["n_hnodes"] = 12
 parameters["n_outputs"] = 2
-parameters["mem_block_size"] = 14
+parameters["mem_block_size"] = 12
 
 # CCEA parameters
 parameters["pop_size"] = 60

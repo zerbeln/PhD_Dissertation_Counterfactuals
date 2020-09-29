@@ -144,7 +144,7 @@ def memory_suggestions_dpp(suggestion_type):
 
                     # Update fitness of policies using reward information
                     global_reward = calc_global(rd.rover_path, rd.pois)
-                    sdpp_reward = calc_sdpp(rd.rover_path, rd.pois, global_reward, suggestion)
+                    sdpp_reward = sdpp_and_sd(rd.rover_path, rd.pois, global_reward, suggestion)
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
                         rovers["EA{0}".format(rover_id)].fitness[policy_id] += sdpp_reward[rover_id]
@@ -154,28 +154,29 @@ def memory_suggestions_dpp(suggestion_type):
                     rovers["EA{0}".format(rover_id)].fitness[policy_id] /= p["n_suggestions"]
 
             # Testing Phase (test best policies found so far)
-            if suggestion_type == "low_val":
-                sgst = 4
-            else:
-                sgst = 10
-            for rover_id in range(p["n_rovers"]):
-                rovers["Rover{0}".format(rover_id)].reset_rover()
-                policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
-                weights = rovers["EA{0}".format(rover_id)].population["pop{0}".format(policy_id)]
-                if gen == p["generations"]-1:
-                    save_best_policies(weights, "RoverWeights{0}".format(rover_id))
-                rovers["Rover{0}".format(rover_id)].get_weights(weights)
-            rd.update_final_rover_path(srun, rovers, -1)
-            for steps in range(p["n_steps"]):
-                for rover_id in range(p["n_rovers"]):  # Rover scans environment
-                    rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, sgst)
-                for rover_id in range(p["n_rovers"]):  # Rover processes information froms can and acts
-                    rovers["Rover{0}".format(rover_id)].run_neuro_controller()
-                    rovers["Rover{0}".format(rover_id)].step()
-                rd.update_final_rover_path(srun, rovers, steps)
+            if gen % 5 == 0 or gen == p["generations"] - 1:
+                if suggestion_type == "low_val":
+                    sgst = 4
+                else:
+                    sgst = 10
+                for rover_id in range(p["n_rovers"]):
+                    rovers["Rover{0}".format(rover_id)].reset_rover()
+                    policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
+                    weights = rovers["EA{0}".format(rover_id)].population["pop{0}".format(policy_id)]
+                    if gen == p["generations"]-1:
+                        save_best_policies(weights, "RoverWeights{0}".format(rover_id))
+                    rovers["Rover{0}".format(rover_id)].get_weights(weights)
+                rd.update_final_rover_path(srun, rovers, -1)
+                for steps in range(p["n_steps"]):
+                    for rover_id in range(p["n_rovers"]):  # Rover scans environment
+                        rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, sgst)
+                    for rover_id in range(p["n_rovers"]):  # Rover processes information froms can and acts
+                        rovers["Rover{0}".format(rover_id)].run_neuro_controller()
+                        rovers["Rover{0}".format(rover_id)].step()
+                    rd.update_final_rover_path(srun, rovers, steps)
 
-            global_reward = calc_global(rd.rover_path, rd.pois)
-            reward_history.append(global_reward)
+                global_reward = calc_global(rd.rover_path, rd.pois)
+                reward_history.append(global_reward)
 
             for rover_id in range(p["n_rovers"]):
                 rovers["EA{0}".format(rover_id)].down_select()  # Choose new parents and create new offspring population
@@ -189,8 +190,12 @@ def memory_suggestions_dpp(suggestion_type):
 def run_rover_domain(train_new_policies=0, suggestion_type="high_val"):
     if train_new_policies == 1:
         memory_suggestions_dpp(suggestion_type)
-    else:
+    elif train_new_policies == 0:
         use_saved_policies(suggestion_type)
+    else:
+        for i in range(10):
+            if i % 5 == 0:
+                print(i)
 
 
 run_rover_domain(train_new_policies=1, suggestion_type="low_val")
