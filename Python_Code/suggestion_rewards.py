@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from Python_Code.supervisor import get_counterfactual_partners, get_counterfactual_action
-from Python_Code.reward_functions import calc_difference
+from Python_Code.reward_functions import calc_difference_tight
 from parameters import parameters as p
 
 
@@ -92,7 +92,7 @@ def calc_sdpp(rover_paths, poi, global_reward, sgst):
     total_steps = int(p["n_steps"] + 1)  # The +1 is to account for the initial position (step 0)
     inf = 1000.00
     dpp_rewards = np.zeros(p["n_rovers"])
-    difference_rewards = calc_difference(rover_paths, poi, global_reward)
+    difference_rewards = calc_difference_tight(rover_paths, poi, global_reward)
 
     # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
     n_counters = p["coupling"] - 1

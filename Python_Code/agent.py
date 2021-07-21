@@ -8,12 +8,13 @@ from parameters import parameters as p
 class Rover:
     def __init__(self, rov_id, n_inp=8, n_out=2, n_hid=9):
         # Rover Parameters
-        self.sensor_range = p["observation_radius"]
-        self.sensor_readings = np.zeros(n_inp)
+        self.sensor_type = 'density'  # Type of sesnors rover is equipped with
+        self.sensor_range = p["observation_radius"]  # Distances which sensors can observe POI
+        self.sensor_res = p["angle_res"]  # Angular resolution of the sensors
+        self.sensor_readings = np.zeros(n_inp)  # Number of sensor inputs for Neural Network
+        self.poi_distances = np.ones(p["n_poi"]) * 1000.00  # Records distances measured from sensors
         self.self_id = rov_id
-        self.sensor_res = p["angle_res"]
-        self.sensor_type = 'density'
-        self.rover_actions = np.zeros(n_out)
+        self.rover_actions = np.zeros(n_out)  # Motor actions from neural network outputs
         self.initial_pos = np.zeros(3)
         self.pos = np.zeros(3)
 
@@ -55,6 +56,7 @@ class Rover:
         self.pos = self.initial_pos.copy()
         self.sensor_readings = np.zeros(self.n_inputs)
         self.policy_belief = np.ones(self.n_suggestions) * 0.5
+        self.poi_distances = np.ones(p["n_poi"]) * 1000.00
 
     def update_policy_belief(self, selection_output):
         """
@@ -127,6 +129,7 @@ class Rover:
             if dist < 1.0:
                 dist = 1.0
 
+            self.poi_distances[poi_id] = dist  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
             temp_poi_dist_list[bracket].append(poi_value / dist)
 

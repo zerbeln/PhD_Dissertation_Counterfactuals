@@ -6,7 +6,6 @@ import copy
 class EvoAlg:
     def __init__(self, pop_size, n_inp=8, n_out=2, n_hid=9, n_elites=5):
         self.population = {}
-        self.fitness = pop_size
         self.pop_size = pop_size
         self.mut_rate = 0.1
         self.mut_chance = 0.1

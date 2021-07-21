@@ -6,7 +6,6 @@ import copy
 class Ccea:
     def __init__(self, pop_size, n_inp=8, n_out=2, n_hid=9, n_elites=5):
         self.population = {}
-        self.fitness = pop_size
         self.pop_size = pop_size
         self.mut_rate = 0.1
         self.mut_chance = 0.1
@@ -35,14 +34,14 @@ class Ccea:
         self.fitness = np.zeros(self.pop_size)
         self.team_selection = np.ones(self.pop_size) * (-1)
 
-        for pop_id in range(self.pop_size):
+        for pol_id in range(self.pop_size):
             policy = {}
             policy["L1"] = np.random.normal(0, 0.5, self.n_inputs * self.n_hidden)
             policy["L2"] = np.random.normal(0, 0.5, self.n_hidden * self.n_outputs)
             policy["b1"] = np.random.normal(0, 0.5, self.n_hidden)
             policy["b2"] = np.random.normal(0, 0.5, self.n_outputs)
 
-            self.population["pop{0}".format(pop_id)] = policy.copy()
+            self.population["pol{0}".format(pol_id)] = policy.copy()
 
     def select_policy_teams(self):  # Create policy teams for testing
         """
@@ -57,46 +56,46 @@ class Ccea:
         Mutate offspring populations (each weight has a probability of mutation)
         :return:
         """
-        pop_id = int(self.n_elites)
-        while pop_id < self.pop_size:
+        pol_id = int(self.n_elites)
+        while pol_id < self.pop_size:
             mut_counter = 0
             # First Weight Layer
             for w in range(self.n_inputs*self.n_hidden):
                 rnum1 = random.uniform(0, 1)
                 if rnum1 <= self.mut_chance:
                     mut_counter += 1
-                    weight = self.population["pop{0}".format(pop_id)]["L1"][w]
+                    weight = self.population["pol{0}".format(pol_id)]["L1"][w]
                     mutation = np.random.normal(0, self.mut_rate) * weight
-                    self.population["pop{0}".format(pop_id)]["L1"][w] += mutation
+                    self.population["pol{0}".format(pol_id)]["L1"][w] += mutation
 
             # Second Weight Layer
             for w in range(self.n_hidden*self.n_outputs):
                 rnum2 = random.uniform(0, 1)
                 if rnum2 <= self.mut_chance:
                     mut_counter += 1
-                    weight = self.population["pop{0}".format(pop_id)]["L2"][w]
+                    weight = self.population["pol{0}".format(pol_id)]["L2"][w]
                     mutation = np.random.normal(0, self.mut_rate) * weight
-                    self.population["pop{0}".format(pop_id)]["L2"][w] += mutation
+                    self.population["pol{0}".format(pol_id)]["L2"][w] += mutation
 
             # Output bias weights
             for w in range(self.n_hidden):
                 rnum3 = random.uniform(0, 1)
                 if rnum3 <= self.mut_chance:
                     mut_counter += 1
-                    weight = self.population["pop{0}".format(pop_id)]["b1"][w]
+                    weight = self.population["pol{0}".format(pol_id)]["b1"][w]
                     mutation = np.random.normal(0, self.mut_rate) * weight
-                    self.population["pop{0}".format(pop_id)]["b1"][w] += mutation
+                    self.population["pol{0}".format(pol_id)]["b1"][w] += mutation
 
             # Output layer weights
             for w in range(self.n_outputs):
                 rnum4 = random.uniform(0, 1)
                 if rnum4 <= self.mut_chance:
                     mut_counter += 1
-                    weight = self.population["pop{0}".format(pop_id)]["b2"][w]
+                    weight = self.population["pol{0}".format(pol_id)]["b2"][w]
                     mutation = (np.random.normal(0, self.mut_rate)) * weight
-                    self.population["pop{0}".format(pop_id)]["b2"][w] += mutation
+                    self.population["pol{0}".format(pol_id)]["b2"][w] += mutation
 
-            pop_id += 1
+            pol_id += 1
 
     def binary_tournament_selection(self):
         """
@@ -104,9 +103,9 @@ class Ccea:
         :return:
         """
         new_population = {}
-        for pop_id in range(self.pop_size):
-            if pop_id < self.n_elites:
-                new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(pop_id)])
+        for pol_id in range(self.pop_size):
+            if pol_id < self.n_elites:
+                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(pol_id)])
             else:
                 p1 = random.randint(0, self.pop_size-1)
                 p2 = random.randint(0, self.pop_size-1)
@@ -114,15 +113,15 @@ class Ccea:
                     p2 = random.randint(0, self.pop_size - 1)
 
                 if self.fitness[p1] > self.fitness[p2]:
-                    new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(p1)])
+                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p1)])
                 elif self.fitness[p1] < self.fitness[p2]:
-                    new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(p2)])
+                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p2)])
                 else:
                     rnum = random.uniform(0, 1)
                     if rnum > 0.5:
-                        new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(p1)])
+                        new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p1)])
                     else:
-                        new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(p2)])
+                        new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p2)])
 
         self.population = {}
         self.population = copy.deepcopy(new_population)
@@ -133,17 +132,17 @@ class Ccea:
         :return: None
         """
         new_population = {}
-        for pop_id in range(self.pop_size):
-            if pop_id < self.n_elites:
-                new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(pop_id)])
+        for pol_id in range(self.pop_size):
+            if pol_id < self.n_elites:
+                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(pol_id)])
             else:
                 rnum = random.uniform(0, 1)
                 if rnum < self.eps:
                     max_index = np.argmax(self.fitness)
-                    new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(max_index)])
+                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(max_index)])
                 else:
                     parent = random.randint(1, (self.pop_size - 1))
-                    new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(parent)])
+                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(parent)])
 
         self.population = {}
         self.population = copy.deepcopy(new_population)
@@ -154,12 +153,12 @@ class Ccea:
         :return:
         """
         new_population = {}
-        for pop_id in range(self.pop_size):
-            if pop_id < self.n_elites:
-                new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(pop_id)])
+        for pol_id in range(self.pop_size):
+            if pol_id < self.n_elites:
+                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(pol_id)])
             else:
                 parent = random.randint(0, self.pop_size-1)
-                new_population["pop{0}".format(pop_id)] = copy.deepcopy(self.population["pop{0}".format(parent)])
+                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(parent)])
 
         self.population = {}
         self.population = copy.deepcopy(new_population)
@@ -170,15 +169,15 @@ class Ccea:
         :return:
         """
         ranked_population = copy.deepcopy(self.population)
-        for pop_id_a in range(self.pop_size):
-            pop_id_b = pop_id_a + 1
-            ranked_population["pop{0}".format(pop_id_a)] = copy.deepcopy(self.population["pop{0}".format(pop_id_a)])
-            while pop_id_b < (self.pop_size):
-                if pop_id_a != pop_id_b:
-                    if self.fitness[pop_id_a] < self.fitness[pop_id_b]:
-                        self.fitness[pop_id_a], self.fitness[pop_id_b] = self.fitness[pop_id_b], self.fitness[pop_id_a]
-                        ranked_population["pop{0}".format(pop_id_a)] = copy.deepcopy(self.population["pop{0}".format(pop_id_b)])
-                pop_id_b += 1
+        for pol_id_a in range(self.pop_size):
+            pol_id_b = pol_id_a + 1
+            ranked_population["pol{0}".format(pol_id_a)] = copy.deepcopy(self.population["pol{0}".format(pol_id_a)])
+            while pol_id_b < (self.pop_size):
+                if pol_id_a != pol_id_b:
+                    if self.fitness[pol_id_a] < self.fitness[pol_id_b]:
+                        self.fitness[pol_id_a], self.fitness[pol_id_b] = self.fitness[pol_id_b], self.fitness[pol_id_a]
+                        ranked_population["pol{0}".format(pol_id_a)] = copy.deepcopy(self.population["pol{0}".format(pol_id_b)])
+                pol_id_b += 1
 
         self.population = {}
         self.population = copy.deepcopy(ranked_population)

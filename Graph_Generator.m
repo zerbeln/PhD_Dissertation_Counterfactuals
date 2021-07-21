@@ -4,12 +4,12 @@ clear all; close all; clc
 
 %% Test Parameters
 nrovers = 6;
-npoi = 5;
+npoi = 4;
 stat_runs = 30;
 generations = 2000;
 coupling = 6;
 
-%% Input from Text Files
+%% Input from files
 
 g_reward_data = importdata('Global/Output_Data/Global_Reward.csv');
 d_reward_data = importdata('Difference/Output_Data/Difference_Reward.csv');
@@ -22,6 +22,8 @@ sdppl_reward_data = importdata('Low/Output_Data/SDPP_Reward.csv');
 % dpp_PoiChoice = importdata('D++/Output_Data/POI_Choice.csv');
 % hv_PoiChoice = importdata('High/Output_Data/POI_Choice.csv');
 % lv_PoiChoice = importdata('Low/Output_Data/POI_Choice.csv');
+
+
 
 %% Data Analysis
 
