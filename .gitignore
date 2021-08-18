@@ -32,6 +32,10 @@
 *.app
 
 # Other
+*.jpg
+/Output_Data
+/Policy_Bank
+/Screenshots
 *.txt
 *.csv
 *.pdf
