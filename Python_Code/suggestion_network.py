@@ -39,11 +39,11 @@ class SuggestionNetwork:
         outputs = np.zeros(self.n_outputs)
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
         for i in range(self.n_hnodes):
-            self.hidden_layer[i, 0] = self.tanh(self.hidden_layer[i, 0])
+            self.hidden_layer[i, 0] = self.sigmoid(self.hidden_layer[i, 0])
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
         for i in range(self.n_outputs):
-            self.output_layer[i, 0] = self.tanh(self.output_layer[i, 0])
+            self.output_layer[i, 0] = self.sigmoid(self.output_layer[i, 0])
             outputs[i] = self.output_layer[i, 0]
 
         return outputs
@@ -65,6 +65,9 @@ class SuggestionNetwork:
         :param inp: Node value before activation
         :return: Node value after activation
         """
-        sig = 1 / (1 + np.exp(-inp))
-
-        return sig
+        if inp >= 0:
+            sig = 1 / (1 + np.exp(-inp))
+            return sig
+        else:
+            sig = 1 / (1 + np.exp(inp))
+            return sig

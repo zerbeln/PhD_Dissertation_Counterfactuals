@@ -6,17 +6,19 @@ from parameters import parameters as p
 
 
 class Rover:
-    def __init__(self, rov_id, n_inp=8, n_out=2, n_hid=9):
+    def __init__(self, rov_id, n_inp=8, n_out=2, n_hid=10):
         # Rover Parameters
-        self.sensor_type = 'density'  # Type of sesnors rover is equipped with
+        self.sensor_type = p["sensor_model"]  # Type of sesnors rover is equipped with
         self.sensor_range = p["observation_radius"]  # Distances which sensors can observe POI
         self.sensor_res = p["angle_res"]  # Angular resolution of the sensors
+        self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
         self.sensor_readings = np.zeros(n_inp)  # Number of sensor inputs for Neural Network
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00  # Records distances measured from sensors
         self.self_id = rov_id
         self.rover_actions = np.zeros(n_out)  # Motor actions from neural network outputs
         self.initial_pos = np.zeros(3)
         self.pos = np.zeros(3)
+        self.dmax = p["dmax"]  # Maximum distance a rover can move each time step
 
         # Suggestion Interpretation Parameters ---------------------------------------------------------------
         self.n_suggestions = p["n_suggestions"]
@@ -55,16 +57,7 @@ class Rover:
         """
         self.pos = self.initial_pos.copy()
         self.sensor_readings = np.zeros(self.n_inputs)
-        self.policy_belief = np.ones(self.n_suggestions) * 0.5
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00
-
-    def update_policy_belief(self, selection_output):
-        """
-        Update agent's belief about which policy is best based on output from suggestion network
-        """
-
-        for s_id in range(self.n_suggestions):
-            self.policy_belief[s_id] = self.policy_belief[s_id] + self.alpha*(selection_output[s_id])
 
     def step(self, x_lim, y_lim):
         """
@@ -74,26 +67,58 @@ class Rover:
         :return:
         """
         # Get outputs from neuro-controller
-        self.run_neuro_controller()
-        rover_action = self.output_layer.copy()
-        rover_action = np.clip(rover_action, -1.0, 1.0)
+        self.get_nn_outputs()
 
         # Update rover positions based on outputs and assign to dummy variables
-        x = rover_action[0, 0] + self.pos[0]
-        y = rover_action[1, 0] + self.pos[1]
-        theta = math.atan(y / x) * (180.0 / math.pi)
+        dx = 2 * self.dmax * (self.rover_actions[0] - 0.5)
+        dy = 2 * self.dmax * (self.rover_actions[1] - 0.5)
 
-        # Keep theta between 0 and 360 degrees
-        while theta < 0.0:
-            theta += 360.0
-        while theta > 360.0:
-            theta -= 360.0
-        if math.isnan(theta):
-            theta = 0.0
+        # Update X Position
+        x = dx + self.pos[0]
+        if x < 0:
+            x = 0
+        elif x > x_lim-1:
+            x = x_lim-1
+
+        # Update Y Position
+        y = dy + self.pos[1]
+        if y < 0:
+            y = 0
+        elif y > y_lim-1:
+            y = y_lim-1
 
         self.pos[0] = x
         self.pos[1] = y
-        self.pos[2] = theta
+
+    def suggestion_step(self, x_lim, y_lim):
+        """
+        Rover executes current actions provided by neuro-controller
+        :param x_lim: Outter x-limit of the environment
+        :param y_lim:  Outter y-limit of the environment
+        :return:
+
+        """
+
+        # Update rover positions based on outputs and assign to dummy variables
+        dx = 2 * self.dmax * (self.rover_actions[0] - 0.5)
+        dy = 2 * self.dmax * (self.rover_actions[1] - 0.5)
+
+        # Update X Position
+        x = dx + self.pos[0]
+        if x < 0:
+            x = 0
+        elif x > x_lim - 1:
+            x = x_lim - 1
+
+        # Update Y Position
+        y = dy + self.pos[1]
+        if y < 0:
+            y = 0
+        elif y > y_lim - 1:
+            y = y_lim - 1
+
+        self.pos[0] = x
+        self.pos[1] = y
 
     def scan_environment(self, rovers, pois, n_rovers):
         """
@@ -104,13 +129,14 @@ class Rover:
 
         for i in range(4):
             self.sensor_readings[i] = poi_state[i]
+            self.input_layer[i, 0] = poi_state[i]
             self.sensor_readings[4 + i] = rover_state[i]
+            self.input_layer[4 + i, 0] = rover_state[i]
 
     def poi_scan(self, poi_info):
         """
         Rover queries scanner that detects POIs
         :param poi_info: multi-dimensional numpy array containing coordinates and values of POIs
-        :param n_poi: parameter designating the number of POI in the simulation
         :return: Portion of state-vector constructed from POI scanner
         """
         poi_state = np.zeros(int(360.0 / self.sensor_res))
@@ -119,19 +145,11 @@ class Rover:
         # Log POI distances into brackets
         n_poi = len(poi_info)
         for poi_id in range(n_poi):
-            poi_x = poi_info[poi_id, 0]
-            poi_y = poi_info[poi_id, 1]
-            poi_value = poi_info[poi_id, 2]
+            angle, dist = self.get_angle_dist(self.pos[0], self.pos[1], poi_info[poi_id, 0], poi_info[poi_id, 1])
 
-            angle, dist = self.get_angle_dist(self.pos[0], self.pos[1], poi_x, poi_y)
-
-            # Clip distance to not overwhelm activation function in NN
-            if dist < 1.0:
-                dist = 1.0
-
-            self.poi_distances[poi_id] = dist  # Record distance for sensor information
+            self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
-            temp_poi_dist_list[bracket].append(poi_value / dist)
+            temp_poi_dist_list[bracket].append(poi_info[poi_id, 2] / dist)
 
         # Encode POI information into the state vector
         for bracket in range(int(360 / self.sensor_res)):
@@ -141,8 +159,6 @@ class Rover:
                     poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_bracket  # Density Sensor
                 elif self.sensor_type == 'summed':
                     poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
-                elif self.sensor_type == 'closest':
-                    poi_state[bracket] = max(temp_poi_dist_list[bracket])  # Closest Sensor
                 else:
                     sys.exit('Incorrect sensor model')
             else:
@@ -168,42 +184,39 @@ class Rover:
 
                 angle, dist = self.get_angle_dist(self.pos[0], self.pos[1], rov_x, rov_y)
 
-                # Clip distance to not overwhelm activation function in NN
-                if dist < 1.0:
-                    dist = 1.0
-
                 bracket = int(angle / self.sensor_res)
                 temp_rover_dist_list[bracket].append(1 / dist)
 
-                # Encode Rover information into the state vector
-                num_rovers_bracket = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
-                if num_rovers_bracket > 0:
-                    if self.sensor_type == 'density':
-                        rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_rovers_bracket  # Density Sensor
-                    elif self.sensor_type == 'summed':
-                        rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
-                    elif self.sensor_type == 'closest':
-                        rover_state[bracket] = max(temp_rover_dist_list[bracket])  # Closest Sensor
-                    else:
-                        sys.exit('Incorrect sensor model')
+        # Encode Rover information into the state vector
+        for bracket in range(int(360 / self.sensor_res)):
+            num_rovers_bracket = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
+            if num_rovers_bracket > 0:
+                if self.sensor_type == 'density':
+                    rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_rovers_bracket  # Density Sensor
+                elif self.sensor_type == 'summed':
+                    rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
                 else:
-                    rover_state[bracket] = -1.0
+                    sys.exit('Incorrect sensor model')
+            else:
+                rover_state[bracket] = -1.0
 
         return rover_state
 
-    def get_angle_dist(self, rovx, rovy, x, y):
+    def get_angle_dist(self, x, y, tx, ty):
         """
         Computes angles and distance between two predators relative to (1,0) vector (x-axis)
-        :param rovx: X-Position of rover
-        :param rovy: Y-Position of rover
-        :param x: X-Position of POI or other rover
-        :param y: Y-Position of POI or other rover
+        :param tx: X-Position of sensor target
+        :param ty: Y-Position of sensor target
+        :param x: X-Position of scanning rover
+        :param y: Y-Position of scanning rover
         :return: angle, dist
         """
 
-        vx = x - rovx
-        vy = y - rovy
-        assert(vx != 0)
+        vx = x - tx
+        if vx == 0:
+            vx = 0.01
+        vy = y - ty
+
         angle = math.atan(vy/vx)*(180.0/math.pi)
 
         while angle < 0.0:
@@ -213,34 +226,16 @@ class Rover:
         if math.isnan(angle):
             angle = 0.0
 
-        dist = math.sqrt((vx**2) + (vy**2))
+        dist = (vx**2) + (vy**2)
+
+        # Clip distance to not overwhelm activation function in NN
+        if dist < self.delta_min:
+            dist = self.delta_min
 
         return angle, dist
 
     # Motor Control NN ------------------------------------------------------------------------------------------------
-    def run_neuro_controller(self):
-        """
-        Run the neuro-controller from a single function call
-        """
-        self.get_inputs()
-        self.get_nn_outputs()
-
-    def get_weights(self, weights):
-        """
-        Apply weights to the neuro-controller
-        """
-        self.get_nn_weights(weights)
-
-    def get_inputs(self):  # Get inputs from state-vector
-        """
-        Transfer state information to the neuro-controller
-        :return:
-        """
-
-        for i in range(self.n_inputs):
-            self.input_layer[i, 0] = self.sensor_readings[i]
-
-    def get_nn_weights(self, nn_weights):
+    def get_weights(self, nn_weights):
         """
         Apply chosen network weights to the agent's neuro-controller
         :param nn_weights: Dictionary of network weights received from the CCEA
@@ -258,11 +253,11 @@ class Rover:
         """
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
         for i in range(self.n_hnodes):
-            self.hidden_layer[i, 0] = self.tanh(self.hidden_layer[i, 0])
+            self.hidden_layer[i, 0] = self.sigmoid(self.hidden_layer[i, 0])
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
         for i in range(self.n_outputs):
-            self.output_layer[i, 0] = self.tanh(self.output_layer[i, 0])
+            self.output_layer[i, 0] = self.sigmoid(self.output_layer[i, 0])
             self.rover_actions[i] = self.output_layer[i, 0]
 
     # Activation Functions -------------------------------------------------------------------------------------------
@@ -272,6 +267,7 @@ class Rover:
         :param inp: Node value before activation
         :return: Node value after activation
         """
+
         tanh = (2 / (1 + np.exp(-2 * inp))) - 1
 
         return tanh
@@ -282,6 +278,10 @@ class Rover:
         :param inp: Node value before activation
         :return: Node value after activation
         """
-        sig = 1 / (1 + np.exp(-inp))
 
-        return sig
+        if inp >= 0:
+            sig = 1 / (1 + np.exp(-inp))
+            return sig
+        else:
+            sig = 1 / (1 + np.exp(inp))
+            return sig

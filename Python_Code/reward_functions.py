@@ -18,38 +18,27 @@ def calc_difference_tight(observer_distances, poi, global_reward):
 
     difference_rewards = np.zeros(n_rovers)
     for agent_id in range(n_rovers):  # For each rover
-        poi_observer_distances = np.zeros(n_poi)  # Tracks summed observer distances
-        poi_observed = np.zeros(n_poi)
-
-        for poi_id in range(n_poi):  # For each POI
-            observer_count = 0
-            rover_distances = np.zeros(n_rovers)  # Track distances between rovers and POI
-
-            # Count how many agents observe poi, update closest distances
-            for other_agent_id in range(n_rovers):
-                if agent_id != other_agent_id:  # Remove current rover's trajectory
-                    dist = observer_distances[poi_id, other_agent_id]
-                    rover_distances[other_agent_id] = dist
-
-                    if dist < obs_rad:
-                        observer_count += 1
-                else:
-                    rover_distances[agent_id] = 1000.00  # Ignore self
-
-            # Determine if coupling is satisfied
-            if observer_count >= cpl:
-                summed_observer_distances = 0.0
-                poi_observed[poi_id] = 1
-
-                rover_distances = np.sort(rover_distances)  # Sort from least to greatest
-                for i in range(cpl):  # Sum distances of closest observers
-                    summed_observer_distances += rover_distances[i]
-                poi_observer_distances[poi_id] = summed_observer_distances
 
         counterfactual_global_reward = 0.0
-        for poi_id in range(n_poi):
-            if poi_observed[poi_id] == 1:
-                counterfactual_global_reward += poi[poi_id, 2] / (poi_observer_distances[poi_id]/cpl)
+        for poi_id in range(n_poi):  # For each POI
+            observer_count = 0
+            rover_distances = observer_distances[poi_id].copy()
+            rover_distances[agent_id] = 1000.00
+            rover_distances = np.sort(rover_distances)
+
+            for i in range(cpl):
+                dist = rover_distances[i]
+                if dist < obs_rad:
+                    observer_count += 1
+
+            # Compute reward if coupling is satisfied
+            if observer_count >= cpl:
+                summed_observer_distances = 0.0
+                for i in range(cpl):  # Sum distances of closest observers
+                    summed_observer_distances += rover_distances[i]
+
+                counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances/cpl)
+
         difference_rewards[agent_id] = global_reward - counterfactual_global_reward
 
     return difference_rewards
@@ -69,26 +58,18 @@ def calc_difference_loose(observer_distances, poi, global_reward):
     n_rovers = p["n_rovers"]
 
     difference_rewards = np.zeros(n_rovers)
-    for agent_id in range(n_rovers):  # For each rover
-        poi_observed = np.zeros(n_poi)
+    for agent_id in range(n_rovers):
 
+        counterfactual_global_reward = 0.0
         for poi_id in range(n_poi):  # For each POI
             rover_distances = observer_distances[poi_id].copy()
-            rover_distances[agent_id] = 1000.00  # Ignore self
-            # Check for observers other than the current agent
-            for other_agent_id in range(n_rovers):
-                if agent_id != other_agent_id:  # Remove current rover's trajectory
-                    dist = observer_distances[poi_id, other_agent_id]
+            rover_distances[agent_id] = 1000.00  # Create counterfactual action for agent i
 
-                    # Determine if coupling is satisfied
-                    if dist < obs_rad:
-                        poi_observed[poi_id] = 1
-                        break
-
-            counterfactual_global_reward = 0.0
-            if poi_observed[poi_id] == 1:
+            best_dist = min(rover_distances)
+            if best_dist < obs_rad:
                 counterfactual_global_reward += poi[poi_id, 2] / min(rover_distances)
-            difference_rewards[agent_id] = global_reward - counterfactual_global_reward
+
+        difference_rewards[agent_id] = global_reward - counterfactual_global_reward
 
     return difference_rewards
 
@@ -113,81 +94,55 @@ def calc_dpp(observer_distances, poi, global_reward):
     # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
     n_counters = cpl - 1
     for agent_id in range(n_rovers):
-        poi_observer_distances = np.zeros(n_poi)
-        poi_observed = np.zeros(n_poi)
-
+        counterfactual_global_reward = 0.0
         for poi_id in range(n_poi):
             observer_count = 0
-            rover_distances = np.zeros(n_rovers + n_counters)
+            rover_distances = observer_distances[poi_id].copy()
+            counterfactual_rovers = np.ones(n_counters) * observer_distances[agent_id]
+            rover_distances = np.append(rover_distances, counterfactual_rovers)
+            rover_distances = np.sort(rover_distances)
 
-            # Calculate linear distances between POI and agents, count observers
-            for other_agent_id in range(n_rovers):
-                dist = observer_distances[poi_id, other_agent_id]
-                rover_distances[other_agent_id] = dist
-                if dist < obs_rad:
-                    observer_count += 1
-
-            # Create n counterfactual partners
-            for partner_id in range(n_counters):
-                rover_distances[n_rovers + partner_id] = rover_distances[agent_id]
-
-                if rover_distances[agent_id] < obs_rad:
+            for i in range(n_counters):
+                if rover_distances[i] < obs_rad:
                     observer_count += 1
 
             # Update POI observers
             if observer_count >= cpl:
                 summed_observer_distances = 0.0
-                poi_observed[poi_id] = 1
                 rover_distances = np.sort(rover_distances)
                 for i in range(cpl):  # Sum distances of closest observers
                     summed_observer_distances += rover_distances[i]
-                poi_observer_distances[poi_id] = summed_observer_distances
+                counterfactual_global_reward += poi[poi_id, 2]/(summed_observer_distances/cpl)
 
-        counterfactual_global_reward = 0.0
-        for poi_id in range(n_poi):
-            if poi_observed[poi_id] == 1:
-                counterfactual_global_reward += poi[poi_id, 2]/(poi_observer_distances[poi_id]/cpl)
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
     for agent_id in range(n_rovers):
         if dpp_rewards[agent_id] > d_rewards[agent_id]:
             dpp_rewards[agent_id] = 0.0
-            poi_observer_distances = np.zeros(n_poi)
-            poi_observed = np.zeros(n_poi)
 
             for c in range(cpl-1):
-                n_counters = c+1
+                n_counters = c + 1
+                counterfactual_global_reward = 0.0
                 for poi_id in range(n_poi):
                     observer_count = 0
-                    rover_distances = np.zeros(n_rovers + n_counters)
-                    # Calculate linear distances between POI and agents, count observers
-                    for other_agent_id in range(n_rovers):
-                        dist = observer_distances[poi_id, other_agent_id]
-                        rover_distances[other_agent_id] = dist
-                        if dist < obs_rad:
-                            observer_count += 1
+                    rover_distances = observer_distances[poi_id].copy()
+                    counterfactual_rovers = np.ones(n_counters) * observer_distances[agent_id]
+                    rover_distances = np.append(rover_distances, counterfactual_rovers)
+                    rover_distances = np.sort(rover_distances)
 
-                    # Create n counterfactual partners
-                    for partner_id in range(n_counters):
-                        rover_distances[n_rovers + partner_id] = rover_distances[agent_id]
-
-                        if rover_distances[agent_id] < obs_rad:
+                    for i in range(n_counters):
+                        if rover_distances[i] < obs_rad:
                             observer_count += 1
 
                     # Update POI observers
                     if observer_count >= cpl:
                         summed_observer_distances = 0.0
-                        poi_observed[poi_id] = 1
                         rover_distances = np.sort(rover_distances)
                         for i in range(cpl):  # Sum distances of closest observers
                             summed_observer_distances += rover_distances[i]
-                        poi_observer_distances[poi_id] = summed_observer_distances
+                        counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances / cpl)
 
                 # Calculate D++ reward with n counterfactuals added
-                counterfactual_global_reward = 0.0
-                for poi_id in range(n_poi):
-                    if poi_observed[poi_id] == 1:
-                        counterfactual_global_reward += poi[poi_id, 2]/(poi_observer_distances[poi_id]/cpl)
                 temp_dpp = (counterfactual_global_reward - global_reward)/n_counters
                 if temp_dpp > d_rewards[agent_id] and temp_dpp > dpp_rewards[agent_id]:
                     dpp_rewards[agent_id] = temp_dpp
@@ -221,23 +176,18 @@ def target_poi(target, observer_distances, pois, rover_id):
     return reward, observed
 
 
-def travel_in_direction(direction, rover_positions, rover_id):
+def greedy_reward_loose(rover_id, observer_distances, poi):
+    """
+    Greedy local reward for rovers
+    """
+    n_poi = p["n_poi"]
+    obs_rad = p["observation_radius"]
     reward = 0
-    n_rovers = p["n_rovers"]
-    world_x = p["x_dim"]
-    world_y = p["y_dim"]
 
-    for rover_id in range(n_rovers):
-        rover_x = rover_positions[rover_id, 0]
-        rover_y = rover_positions[rover_id, 1]
+    for poi_id in range(n_poi):
+        dist = observer_distances[poi_id, rover_id]
 
-        if direction == 1:  # West
-            reward += world_x - rover_x
-        elif direction == 2:  # East
-            reward += rover_x
-        elif direction == 3:  # North
-            reward += world_y - rover_y
-        elif direction == 4:  # South
-            reward += rover_y
+        if dist < obs_rad:
+            reward += poi[poi_id, 2] / dist
 
     return reward

@@ -7,16 +7,15 @@ from parameters import parameters as p
 
 
 class RoverDomain:
-    def __init__(self, new_world=True):
+    def __init__(self):
         # World attributes
         self.world_x = p["x_dim"]
         self.world_y = p["y_dim"]
         self.num_pois = p["n_poi"]
         self.n_rovers = p["n_rovers"]
 
-        self.min_dist = p["min_distance"]  # Cutoff distance for calculations (usually 1)
-        self.obs_radius = p["observation_radius"]  # Maximum distance rovers can make obervations of POI at
-        self.create_new_world_config = new_world
+        self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
+        self.obs_radius = p["observation_radius"]  # Maximum distance rovers can make observations of POI at
         self.stat_runs = p["stat_runs"]
 
         # Rover Information
@@ -24,32 +23,38 @@ class RoverDomain:
 
         # POI Information
         self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
-        self.poi_visits = np.zeros((self.num_pois, self.n_rovers))
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
         self.c_req = p["coupling"]  # Number of rovers required to observer a POI
 
-    def inital_world_setup(self, srun):
+    def create_world_setup(self, srun):
         """
-        Set POI positions and POI values
+        Create a new rover configuration file
+        """
+
+        self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+        self.initial_rover_positions = np.zeros((self.n_rovers, 3))  # [X, Y, Theta]
+        self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
+
+        # Initialize POI positions and values
+        self.init_poi_pos_random()
+        # self.init_poi_vals_identical(10.0)
+        self.init_poi_vals_random()
+        self.save_poi_configuration(srun)
+
+        # Initialize Rover Positions
+        self.init_rover_pos_random()
+        self.save_rover_configuration(srun)
+
+    def load_world(self, srun):
+        """
+        Load a rover domain from a saved configuration file
         :return: none
         """
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
-        if self.create_new_world_config:
-            self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
-            self.initial_rover_positions = np.zeros((self.n_rovers, 3))  # [X, Y, Theta]
 
-            # Initialize POI positions and values
-            self.init_poi_pos_random()
-            self.init_poi_vals_identical(10.0)
-            self.save_poi_configuration(srun)
-
-            # Initialize Rover Positions
-            self.init_rover_pos_random()
-            self.save_rover_configuration(srun)
-        else:
-            # Initialize POI positions and values
-            self.pois = np.zeros((self.num_pois, 3))
-            self.use_saved_poi_configuration(srun)
+        # Initialize POI positions and values
+        self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+        self.use_saved_poi_configuration(srun)
 
     def calc_global_loose(self):
         """
@@ -71,7 +76,6 @@ class RoverDomain:
         Calculate the global reward when there is tight coupling
         """
         global_reward = 0.0
-        poi_observed = np.zeros(self.num_pois)
 
         for poi_id in range(self.num_pois):
             observer_count = 0
@@ -79,13 +83,11 @@ class RoverDomain:
 
             for c in range(self.c_req):
                 dist = rover_distances[c]
-
                 if dist < self.obs_radius:
                     observer_count += 1
 
             # Update global reward if POI is observed
             if observer_count >= self.c_req:
-                poi_observed[poi_id] = 1
                 summed_observer_distances = 0.0
                 for i in range(self.c_req):  # Sum distances of closest observers
                     summed_observer_distances += rover_distances[i]
@@ -93,34 +95,12 @@ class RoverDomain:
 
         return global_reward
 
-    def clear_poi_visit_list(self):
-        """
-        Clears the POI visit markers by setting them to 0
-        """
-        self.poi_visits = np.zeros((self.num_pois, self.n_rovers))
-
     def update_observer_distances(self, rover_id, rover_distances):
         """
         Update the array which tracks each rover's positon at each time step
         """
         for poi_id in range(self.num_pois):
             self.observer_distances[poi_id, rover_id] = rover_distances[poi_id]
-
-    def determine_poi_visits(self, rovers):
-        """
-        Check to see which POI are observed successfully
-        """
-
-        for poi_id in range(self.num_pois):
-            poi_x = self.pois[poi_id, 0]
-            poi_y = self.pois[poi_id, 1]
-            for rover_id in range(self.n_rovers):
-                rov_x = rovers["Rover{0}".format(rover_id)].rover_x
-                rov_y = rovers["Rover{0}".format(rover_id)].rover_y
-                dist = math.sqrt((rov_x - poi_x)**2 + (rov_y - poi_y)**2)
-
-                if dist < self.obs_radius:
-                    self.poi_visits[poi_id, rover_id] = 1
 
     def save_poi_configuration(self, srun):
         """
@@ -319,7 +299,6 @@ class RoverDomain:
                 self.pois[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
                 outter_theta += interval
 
-
     def init_poi_pos_two_poi(self):
         """
         Sets two POI on the map, one on the left, one on the right at Y-Dimension/2
@@ -329,7 +308,6 @@ class RoverDomain:
 
         self.pois[0, 0] = 1.0; self.pois[0, 1] = self.world_y/2.0
         self.pois[1, 0] = (self.world_x-2.0); self.pois[1, 1] = self.world_y/2.0
-
 
     def init_poi_pos_four_corners(self):  # Statically set 4 POI (one in each corner)
         """
@@ -351,7 +329,7 @@ class RoverDomain:
         """
 
         for poi_id in range(self.num_pois):
-            self.pois[poi_id, 2] = float(random.randint(1, 12))
+            self.pois[poi_id, 2] = float(random.randint(2, 12))
 
     def init_poi_vals_identical(self, poi_val):
         """
