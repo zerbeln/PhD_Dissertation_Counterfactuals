@@ -22,7 +22,7 @@ class RoverDomain:
         self.initial_rover_positions = np.zeros((self.n_rovers, 3))
 
         # POI Information
-        self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+        self.pois = np.zeros((self.num_pois, 4))  # [X, Y, Val, Quadrant]
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
         self.c_req = p["coupling"]  # Number of rovers required to observer a POI
 
@@ -31,7 +31,7 @@ class RoverDomain:
         Create a new rover configuration file
         """
 
-        self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+        self.pois = np.zeros((self.num_pois, 4))  # [X, Y, Val, Quadrant]
         self.initial_rover_positions = np.zeros((self.n_rovers, 3))  # [X, Y, Theta]
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
 
@@ -53,7 +53,7 @@ class RoverDomain:
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
 
         # Initialize POI positions and values
-        self.pois = np.zeros((self.num_pois, 3))  # [X, Y, Val]
+        self.pois = np.zeros((self.num_pois, 4))  # [X, Y, Val, Quadrant]
         self.use_saved_poi_configuration(srun)
 
     def calc_global_loose(self):
@@ -136,6 +136,7 @@ class RoverDomain:
             self.pois[poi_id, 0] = float(config_input[poi_id][0])
             self.pois[poi_id, 1] = float(config_input[poi_id][1])
             self.pois[poi_id, 2] = float(config_input[poi_id][2])
+            self.pois[poi_id, 3] = float(config_input[poi_id][3])
 
     def save_rover_configuration(self, srun):
         """
@@ -194,6 +195,7 @@ class RoverDomain:
             self.initial_rover_positions[rov_id, 1] = rover_y
             self.initial_rover_positions[rov_id, 2] = rover_theta
 
+
     def init_rover_pos_random_concentrated(self):
         """
         Rovers given random starting positions within a radius of the center. Starting orientations are random
@@ -231,6 +233,9 @@ class RoverDomain:
         POI positions set randomly across the map (but not in range of any rover)
         :return: self.pois: np array of size (npoi, 2)
         """
+
+        origin_x = self.world_x / 2
+        origin_y = self.world_y / 2
         for poi_id in range(self.num_pois):
             x = random.uniform(0, self.world_x-1.0)
             y = random.uniform(0, self.world_y-1.0)
@@ -257,10 +262,15 @@ class RoverDomain:
             self.pois[poi_id, 0] = x
             self.pois[poi_id, 1] = y
 
+            angle = self.get_angle(origin_x, origin_y, self.pois[poi_id, 0], self.pois[poi_id, 1])
+            q = int(angle/p["angle_res"])
+            self.pois[poi_id, 3] = q
+
+
     def init_poi_pos_circle(self):
         """
-            POI positions are set in a circle around the center of the map at a specified radius.
-            :return: self.pois: np array of size (npoi, 2)
+        POI positions are set in a circle around the center of the map at a specified radius.
+        :return: self.pois: np array of size (npoi, 2)
         """
         radius = 15.0
         interval = float(360/self.num_pois)
@@ -269,9 +279,14 @@ class RoverDomain:
         y = self.world_y/2.0
         theta = 0.0
 
+        origin_x = self.world_x / 2
+        origin_y = self.world_y / 2
         for poi_id in range(self.num_pois):
             self.pois[poi_id, 0] = x + radius*math.cos(theta*math.pi/180)
             self.pois[poi_id, 1] = y + radius*math.sin(theta*math.pi/180)
+            angle = self.get_angle(origin_x, origin_y, self.pois[poi_id, 0], self.pois[poi_id, 1])
+            q = int(angle / p["angle_res"])
+            self.pois[poi_id, 3] = q
             theta += interval
 
     def init_poi_pos_concentric_circles(self):
@@ -283,6 +298,8 @@ class RoverDomain:
         inner_radius = 6.5
         outter_radius = 15.0
         interval = float(360 /(self.num_pois/2))
+        origin_x = self.world_x / 2
+        origin_y = self.world_y / 2
 
         x = self.world_x/2.0
         y = self.world_y/2.0
@@ -293,10 +310,16 @@ class RoverDomain:
             if poi_id < 6:
                 self.pois[poi_id, 0] = x + inner_radius * math.cos(inner_theta * math.pi / 180)
                 self.pois[poi_id, 1] = y + inner_radius * math.sin(inner_theta * math.pi / 180)
+                angle = self.get_angle(origin_x, origin_y, self.pois[poi_id, 0], self.pois[poi_id, 1])
+                q = int(angle / p["angle_res"])
+                self.pois[poi_id, 3] = q
                 inner_theta += interval
             else:
                 self.pois[poi_id, 0] = x + outter_radius * math.cos(outter_theta * math.pi / 180)
                 self.pois[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
+                angle = self.get_angle(origin_x, origin_y, self.pois[poi_id, 0], self.pois[poi_id, 1])
+                q = int(angle / p["angle_res"])
+                self.pois[poi_id, 3] = q
                 outter_theta += interval
 
     def init_poi_pos_two_poi(self):
@@ -339,4 +362,30 @@ class RoverDomain:
 
         for poi_id in range(self.num_pois):
             self.pois[poi_id, 2] = poi_val
+
+    def get_angle(self, origin_x, origin_y, px, py):
+        """
+        Computes angles and distance between two predators relative to (1,0) vector (x-axis)
+        :param origin_x: X-Position of center of the world
+        :param origin_y: Y-Position of center of the world
+        :param px: X-Position of POI
+        :param py: Y-Position of POI
+        :return: angle, dist
+        """
+
+        x = px - origin_x
+        if x == 0:
+            x = 0.01
+        y = py - origin_y
+
+        angle = math.atan(y/x)*(180.0/math.pi)
+
+        while angle < 0.0:
+            angle += 360.0
+        while angle > 360.0:
+            angle -= 360.0
+        if math.isnan(angle):
+            angle = 0.0
+
+        return angle
 

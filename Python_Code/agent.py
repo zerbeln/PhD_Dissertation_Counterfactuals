@@ -21,9 +21,9 @@ class Rover:
         self.dmax = p["dmax"]  # Maximum distance a rover can move each time step
 
         # Suggestion Interpretation Parameters ---------------------------------------------------------------
-        self.n_suggestions = p["n_suggestions"]
+        self.n_policies = p["n_policies"]
         self.alpha = 0.3
-        self.policy_belief = np.ones(self.n_suggestions) * 0.5
+        self.policy_belief = np.ones(self.n_policies) * 0.5
 
         # Rover Motor Controller -----------------------------------------------------------------------------
         self.n_inputs = n_inp
@@ -58,6 +58,16 @@ class Rover:
         self.pos = self.initial_pos.copy()
         self.sensor_readings = np.zeros(self.n_inputs)
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00
+        self.policy_belief = np.ones(self.n_policies) * 0.5
+
+    def update_policy_belief(self, nn_outputs):
+        """
+        Rover updates its belief on which policy is the best for it to use at the given time
+        """
+
+        for pol_id in range(self.n_policies):
+            val = self.policy_belief[pol_id]
+            self.policy_belief[pol_id] = val + 0.1*(nn_outputs[pol_id] - val)
 
     def step(self, x_lim, y_lim):
         """

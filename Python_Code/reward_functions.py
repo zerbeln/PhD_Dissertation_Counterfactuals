@@ -98,7 +98,7 @@ def calc_dpp(observer_distances, poi, global_reward):
         for poi_id in range(n_poi):
             observer_count = 0
             rover_distances = observer_distances[poi_id].copy()
-            counterfactual_rovers = np.ones(n_counters) * observer_distances[agent_id]
+            counterfactual_rovers = np.ones(n_counters) * observer_distances[poi_id, agent_id]
             rover_distances = np.append(rover_distances, counterfactual_rovers)
             rover_distances = np.sort(rover_distances)
 
@@ -126,7 +126,7 @@ def calc_dpp(observer_distances, poi, global_reward):
                 for poi_id in range(n_poi):
                     observer_count = 0
                     rover_distances = observer_distances[poi_id].copy()
-                    counterfactual_rovers = np.ones(n_counters) * observer_distances[agent_id]
+                    counterfactual_rovers = np.ones(n_counters) * observer_distances[poi_id, agent_id]
                     rover_distances = np.append(rover_distances, counterfactual_rovers)
                     rover_distances = np.sort(rover_distances)
 
@@ -152,42 +152,3 @@ def calc_dpp(observer_distances, poi, global_reward):
 
     return dpp_rewards
 
-
-def target_poi(target, observer_distances, pois, rover_id):
-    """
-    Provides agents with rewards for observing a specific, target POI
-    """
-
-    # Parameters
-    obs_rad = p["observation_radius"]
-
-    # Variables
-    reward = 0.0
-    observed = 0
-
-    # Calculate distance between agent and POI
-    dist = observer_distances[target, rover_id]
-
-    # Check if agent observes poi and update observer count if true
-    if dist < obs_rad:
-        observed = 1
-        reward = pois[target, 2]/dist
-
-    return reward, observed
-
-
-def greedy_reward_loose(rover_id, observer_distances, poi):
-    """
-    Greedy local reward for rovers
-    """
-    n_poi = p["n_poi"]
-    obs_rad = p["observation_radius"]
-    reward = 0
-
-    for poi_id in range(n_poi):
-        dist = observer_distances[poi_id, rover_id]
-
-        if dist < obs_rad:
-            reward += poi[poi_id, 2] / dist
-
-    return reward

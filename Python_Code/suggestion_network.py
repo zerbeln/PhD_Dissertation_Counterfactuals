@@ -48,6 +48,15 @@ class SuggestionNetwork:
 
         return outputs
 
+    def run_network(self, s_input):
+        """
+        Run the entire network from one function call
+        """
+        self.get_inputs(s_input)
+        nn_outputs = self.get_outputs()
+
+        return nn_outputs
+
     # Activation Functions -------------------------------------------------------------------------------------------
     def tanh(self, inp):  # Tanh function as activation function
         """

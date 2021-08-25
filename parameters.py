@@ -1,9 +1,8 @@
 parameters = {}
 
 # Run Parameters
-parameters["stat_runs"] = 1
-parameters["generations"] = 500  # Number of generations for CCEA in each stat run
-parameters["test_type"] = "Train_Pol_Select"  # Create_Bank, Create_World, Train_Pol_Select, Test, Full_Train, Standard
+parameters["stat_runs"] = 5
+parameters["generations"] = 2000  # Number of generations for CCEA in each stat run
 parameters["reward_type"] = "Global"  # Global, Difference, DPP, SDPP
 parameters["g_type"] = "Loose"  # Loose or Tight
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
@@ -20,11 +19,11 @@ parameters["n_poi"] = 10  # Number of POIs on map
 parameters["steps"] = 20  # Number of time steps rovers take each episode
 
 # Suggestion Parameters
-parameters["n_suggestions"] = 4  # Number of suggestions a rover should learn
-parameters["suggestion"] = 1
+parameters["n_suggestions"] = 5  # Number of suggestions a rover should learn
+parameters["n_policies"] = 4  # Number of pre-trained policies in the policy bank
 parameters["s_inputs"] = 16
 parameters["s_hidden"] = 12
-parameters["s_outputs"] = 2
+parameters["s_outputs"] = parameters["n_policies"]
 
 # Rover Parameters
 parameters["sensor_model"] = "summed"  # Should either be "density" or "summed"
