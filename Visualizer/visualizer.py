@@ -74,7 +74,7 @@ def run_visualizer(v_running=False):
     cpl = p["coupling"]
     obs_rad = p["observation_radius"]
 
-    scale_factor = 20  # Scaling factor for images
+    scale_factor = 10  # Scaling factor for images
     width = -15  # robot icon widths
     x_map = int(p["x_dim"] + 10)  # Slightly larger so POI are not cut off
     y_map = int(p["y_dim"] + 10)

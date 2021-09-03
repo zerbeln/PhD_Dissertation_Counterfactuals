@@ -3,19 +3,21 @@ import math
 import sys
 import csv
 from parameters import parameters as p
+import warnings
+warnings.filterwarnings('ignore')
 
 
 class Rover:
     def __init__(self, rov_id, n_inp=8, n_out=2, n_hid=10):
-        # Rover Parameters
+        # Rover Parameters -----------------------------------------------------------------------------------
         self.sensor_type = p["sensor_model"]  # Type of sesnors rover is equipped with
         self.sensor_range = p["observation_radius"]  # Distances which sensors can observe POI
         self.sensor_res = p["angle_res"]  # Angular resolution of the sensors
         self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
-        self.sensor_readings = np.zeros(n_inp)  # Number of sensor inputs for Neural Network
+        self.sensor_readings = np.zeros(n_inp, dtype=np.float128)  # Number of sensor inputs for Neural Network
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00  # Records distances measured from sensors
         self.self_id = rov_id
-        self.rover_actions = np.zeros(n_out)  # Motor actions from neural network outputs
+        self.rover_actions = np.zeros(n_out, dtype=np.float128)  # Motor actions from neural network outputs
         self.initial_pos = np.zeros(3)
         self.pos = np.zeros(3)
         self.dmax = p["dmax"]  # Maximum distance a rover can move each time step
@@ -23,16 +25,16 @@ class Rover:
         # Suggestion Interpretation Parameters ---------------------------------------------------------------
         self.n_policies = p["n_policies"]
         self.alpha = 0.3
-        self.policy_belief = np.ones(self.n_policies) * 0.5
+        self.policy_belief = np.ones(self.n_policies, dtype=np.float128) * 0.5
 
         # Rover Motor Controller -----------------------------------------------------------------------------
         self.n_inputs = n_inp
         self.n_outputs = n_out
         self.n_hnodes = n_hid  # Number of nodes in hidden layer
         self.weights = {}
-        self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs)), [self.n_inputs, 1])
-        self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes)), [self.n_hnodes, 1])
-        self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs)), [self.n_outputs, 1])
+        self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.float128)), [self.n_inputs, 1])
+        self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
+        self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.float128)), [self.n_outputs, 1])
 
     def initialize_rover(self, srun):
         """
@@ -56,9 +58,9 @@ class Rover:
         Resets the rover to its initial position in the world
         """
         self.pos = self.initial_pos.copy()
-        self.sensor_readings = np.zeros(self.n_inputs)
+        self.sensor_readings = np.zeros(self.n_inputs, dtype=np.float128)
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00
-        self.policy_belief = np.ones(self.n_policies) * 0.5
+        self.policy_belief = np.ones(self.n_policies, dtype=np.float128) * 0.5
 
     def update_policy_belief(self, nn_outputs):
         """
@@ -106,7 +108,6 @@ class Rover:
         :param x_lim: Outter x-limit of the environment
         :param y_lim:  Outter y-limit of the environment
         :return:
-
         """
 
         # Update rover positions based on outputs and assign to dummy variables
@@ -223,11 +224,9 @@ class Rover:
         """
 
         vx = x - tx
-        if vx == 0:
-            vx = 0.01
         vy = y - ty
 
-        angle = math.atan(vy/vx)*(180.0/math.pi)
+        angle = math.atan2(vy, vx)*(180.0/math.pi)
 
         while angle < 0.0:
             angle += 360.0
@@ -262,12 +261,13 @@ class Rover:
         :return:
         """
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
-        for i in range(self.n_hnodes):
-            self.hidden_layer[i, 0] = self.sigmoid(self.hidden_layer[i, 0])
+        self.hidden_layer = self.sigmoid(self.hidden_layer)
+
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
+        self.output_layer = self.sigmoid(self.output_layer)
+
         for i in range(self.n_outputs):
-            self.output_layer[i, 0] = self.sigmoid(self.output_layer[i, 0])
             self.rover_actions[i] = self.output_layer[i, 0]
 
     # Activation Functions -------------------------------------------------------------------------------------------
@@ -289,9 +289,6 @@ class Rover:
         :return: Node value after activation
         """
 
-        if inp >= 0:
-            sig = 1 / (1 + np.exp(-inp))
-            return sig
-        else:
-            sig = 1 / (1 + np.exp(inp))
-            return sig
+        sig = 1 / (1 + np.exp(-inp))
+
+        return sig

@@ -25,6 +25,7 @@ class RoverDomain:
         self.pois = np.zeros((self.num_pois, 4))  # [X, Y, Val, Quadrant]
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
         self.c_req = p["coupling"]  # Number of rovers required to observer a POI
+        self.poi_quadrant_count = np.zeros(4)  # Tracks the number of POI in each quadrant
 
     def create_world_setup(self, srun):
         """
@@ -38,7 +39,7 @@ class RoverDomain:
         # Initialize POI positions and values
         self.init_poi_pos_random()
         # self.init_poi_vals_identical(10.0)
-        self.init_poi_vals_random()
+        self.init_poi_vals_random(2, 12)
         self.save_poi_configuration(srun)
 
         # Initialize Rover Positions
@@ -55,6 +56,17 @@ class RoverDomain:
         # Initialize POI positions and values
         self.pois = np.zeros((self.num_pois, 4))  # [X, Y, Val, Quadrant]
         self.use_saved_poi_configuration(srun)
+
+        self.poi_quadrant_count = np.zeros(4)  # Tracks the number of POI in each quadrant
+        for poi_id in range(self.num_pois):
+            if self.pois[poi_id, 3] == 0:
+                self.poi_quadrant_count[0] += 1
+            elif self.pois[poi_id, 3] == 1:
+                self.poi_quadrant_count[1] += 1
+            elif self.pois[poi_id, 3] == 2:
+                self.poi_quadrant_count[2] += 1
+            elif self.pois[poi_id, 3] == 3:
+                self.poi_quadrant_count[3] += 1
 
     def calc_global_loose(self):
         """
@@ -201,7 +213,7 @@ class RoverDomain:
         Rovers given random starting positions within a radius of the center. Starting orientations are random
         :return: rover_positions: np array of size (self.n_rovers, 3)
         """
-        radius = 4.0
+        radius = 3.0
         center_x = self.world_x/2.0
         center_y = self.world_y/2.0
 
@@ -236,6 +248,7 @@ class RoverDomain:
 
         origin_x = self.world_x / 2
         origin_y = self.world_y / 2
+
         for poi_id in range(self.num_pois):
             x = random.uniform(0, self.world_x-1.0)
             y = random.uniform(0, self.world_y-1.0)
@@ -345,14 +358,14 @@ class RoverDomain:
         self.pois[3, 0] = (self.world_x - 2.0); self.pois[3, 1] = (self.world_y - 2.0)  # Top right
 
     # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
-    def init_poi_vals_random(self):
+    def init_poi_vals_random(self, v_low, v_high):
         """
         POI values randomly assigned 1-10
         :return: poi_vals: array of size(npoi)
         """
 
         for poi_id in range(self.num_pois):
-            self.pois[poi_id, 2] = float(random.randint(2, 12))
+            self.pois[poi_id, 2] = float(random.randint(v_low, v_high))
 
     def init_poi_vals_identical(self, poi_val):
         """
@@ -374,18 +387,14 @@ class RoverDomain:
         """
 
         x = px - origin_x
-        if x == 0:
-            x = 0.01
         y = py - origin_y
 
-        angle = math.atan(y/x)*(180.0/math.pi)
+        angle = math.atan2(y, x)*(180.0/math.pi)
 
         while angle < 0.0:
             angle += 360.0
         while angle > 360.0:
             angle -= 360.0
-        if math.isnan(angle):
-            angle = 0.0
 
         return angle
 

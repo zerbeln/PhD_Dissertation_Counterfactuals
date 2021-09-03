@@ -37,10 +37,15 @@ class Ccea:
 
         for pol_id in range(self.pop_size):
             policy = {}
-            policy["L1"] = np.random.normal(0, 0.5, self.n_inputs * self.n_hidden)
-            policy["L2"] = np.random.normal(0, 0.5, self.n_hidden * self.n_outputs)
-            policy["b1"] = np.random.normal(0, 0.5, self.n_hidden)
-            policy["b2"] = np.random.normal(0, 0.5, self.n_outputs)
+            # policy["L1"] = np.random.normal(0, 1.0, self.n_inputs * self.n_hidden)
+            # policy["L2"] = np.random.normal(0, 1.0, self.n_hidden * self.n_outputs)
+            # policy["b1"] = np.random.normal(0, 1.0, self.n_hidden)
+            # policy["b2"] = np.random.normal(0, 1.0, self.n_outputs)
+
+            policy["L1"] = np.random.standard_cauchy(self.n_inputs * self.n_hidden)
+            policy["L2"] = np.random.standard_cauchy(self.n_hidden * self.n_outputs)
+            policy["b1"] = np.random.standard_cauchy(self.n_hidden)
+            policy["b2"] = np.random.standard_cauchy(self.n_outputs)
 
             self.population["pol{0}".format(pol_id)] = policy.copy()
 

@@ -3,6 +3,25 @@ from Python_Code.agent import Rover
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 from parameters import parameters as p
+import os
+import pickle
+
+
+def save_rover_path(rover_path, file_name):  # Save path rovers take using best policy found
+    """
+    Records the path each rover takes using best policy from CCEA (used by visualizer)
+    :param rover_path:  trajectory tracker
+    :return:
+    """
+    dir_name = 'Output_Data/'  # Intended directory for output files
+
+    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
+        os.makedirs(dir_name)
+
+    rpath_name = os.path.join(dir_name, file_name)
+    rover_file = open(rpath_name, 'wb')
+    pickle.dump(rover_path, rover_file)
+    rover_file.close()
 
 
 if __name__ == '__main__':
@@ -27,5 +46,5 @@ if __name__ == '__main__':
                 rover_path[srun, rover_id, step, 1] = rovers["Rover{0}".format(rover_id)].pos[1]
                 rover_path[srun, rover_id, step, 2] = rovers["Rover{0}".format(rover_id)].pos[2]
 
-    # save_rover_path(rover_path, "Rover_Paths")
-    # run_visualizer()
+    save_rover_path(rover_path, "Rover_Paths")
+    run_visualizer()
