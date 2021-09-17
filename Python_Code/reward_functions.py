@@ -1,6 +1,6 @@
 import numpy as np
-import math
 from parameters import parameters as p
+
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
 def calc_difference_tight(observer_distances, poi, global_reward):
@@ -109,7 +109,6 @@ def calc_dpp(observer_distances, poi, global_reward):
             # Update POI observers
             if observer_count >= cpl:
                 summed_observer_distances = 0.0
-                rover_distances = np.sort(rover_distances)
                 for i in range(cpl):  # Sum distances of closest observers
                     summed_observer_distances += rover_distances[i]
                 counterfactual_global_reward += poi[poi_id, 2]/(summed_observer_distances/cpl)
@@ -137,7 +136,6 @@ def calc_dpp(observer_distances, poi, global_reward):
                     # Update POI observers
                     if observer_count >= cpl:
                         summed_observer_distances = 0.0
-                        rover_distances = np.sort(rover_distances)
                         for i in range(cpl):  # Sum distances of closest observers
                             summed_observer_distances += rover_distances[i]
                         counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances / cpl)

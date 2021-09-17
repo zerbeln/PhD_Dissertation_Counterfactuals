@@ -20,11 +20,14 @@ class Ccea:
         self.n_outputs = n_out
         self.n_hidden = n_hid
 
-    def clear_fitness(self):
+    def reset_fitness(self):
         """
-        Resets the fitness array to zero
+        Clear fitness vector of stored values
+        :return:
         """
+
         self.fitness = np.zeros(self.pop_size)
+        # self.fitness = np.ones(self.pop_size)
 
     def create_new_population(self):  # Re-initializes CCEA populations for new run
         """
@@ -37,11 +40,6 @@ class Ccea:
 
         for pol_id in range(self.pop_size):
             policy = {}
-            # policy["L1"] = np.random.normal(0, 1.0, self.n_inputs * self.n_hidden)
-            # policy["L2"] = np.random.normal(0, 1.0, self.n_hidden * self.n_outputs)
-            # policy["b1"] = np.random.normal(0, 1.0, self.n_hidden)
-            # policy["b2"] = np.random.normal(0, 1.0, self.n_outputs)
-
             policy["L1"] = np.random.standard_cauchy(self.n_inputs * self.n_hidden)
             policy["L2"] = np.random.standard_cauchy(self.n_hidden * self.n_outputs)
             policy["b1"] = np.random.standard_cauchy(self.n_hidden)
@@ -199,13 +197,3 @@ class Ccea:
         # self.random_selection()  # Select k successors using fit prop selection
         self.weight_mutate()  # Mutate successors
 
-    def reset_fitness(self):
-        """
-        Clear fitness of non-elite policies
-        :return:
-        """
-
-        pol_id = self.n_elites
-        while pol_id < self.pop_size:
-            self.fitness[pol_id] = 0.00
-            pol_id += 1

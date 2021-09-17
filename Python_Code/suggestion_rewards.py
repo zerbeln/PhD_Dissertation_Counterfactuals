@@ -1,5 +1,4 @@
 import numpy as np
-from Python_Code.supervisor import get_counterfactual_partners, get_counterfactual_action
 from Python_Code.reward_functions import calc_difference_tight
 from parameters import parameters as p
 
@@ -20,16 +19,15 @@ def calc_sd_reward(observer_distances, poi, global_reward, sgst):
 
     difference_rewards = np.zeros(n_rovers)
     for agent_id in range(n_rovers):  # For each rover
-
         counterfactual_global_reward = 0.0
         s_id = sgst[agent_id]
         for poi_id in range(n_poi):  # For each POI
             observer_count = 0
             rover_distances = observer_distances[poi_id].copy()
-            if s_id == 0:
+            if poi[poi_id, 3] == s_id:
                 rover_distances[agent_id] = 1000.00
-            elif poi[poi_id, 3] == s_id - 1:
-                rover_distances[agent_id] = 1000.00
+            else:
+                rover_distances[agent_id] = 1.0
             rover_distances = np.sort(rover_distances)
 
             for i in range(cpl):
@@ -75,10 +73,8 @@ def calc_sdpp(observer_distances, poi, global_reward, sgst):
         for poi_id in range(n_poi):
             observer_count = 0
             rover_distances = observer_distances[poi_id].copy()
-            counterfactual_rovers = np.zeros(n_counters)
-            if s_id == 0:
-                counterfactual_rovers *= observer_distances[poi_id, agent_id]
-            elif poi[poi_id, 3] == s_id - 1:
+            counterfactual_rovers = np.ones(n_counters)
+            if poi[poi_id, 3] == s_id:
                 counterfactual_rovers *= observer_distances[poi_id, agent_id]
             else:
                 counterfactual_rovers *= 1000.00
@@ -92,7 +88,6 @@ def calc_sdpp(observer_distances, poi, global_reward, sgst):
             # Update POI observers
             if observer_count >= cpl:
                 summed_observer_distances = 0.0
-                rover_distances = np.sort(rover_distances)
                 for i in range(cpl):  # Sum distances of closest observers
                     summed_observer_distances += rover_distances[i]
                 counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances / cpl)
@@ -109,10 +104,8 @@ def calc_sdpp(observer_distances, poi, global_reward, sgst):
                 for poi_id in range(n_poi):
                     observer_count = 0
                     rover_distances = observer_distances[poi_id].copy()
-                    counterfactual_rovers = np.zeros(c)
-                    if s_id == 0:
-                        counterfactual_rovers *= observer_distances[poi_id, agent_id]
-                    elif poi[poi_id, 3] == s_id - 1:
+                    counterfactual_rovers = np.ones(n_counters)
+                    if poi[poi_id, 3] == s_id:
                         counterfactual_rovers *= observer_distances[poi_id, agent_id]
                     else:
                         counterfactual_rovers *= 1000.00
@@ -126,7 +119,6 @@ def calc_sdpp(observer_distances, poi, global_reward, sgst):
                     # Update POI observers
                     if observer_count >= cpl:
                         summed_observer_distances = 0.0
-                        rover_distances = np.sort(rover_distances)
                         for i in range(cpl):  # Sum distances of closest observers
                             summed_observer_distances += rover_distances[i]
                         counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances / cpl)

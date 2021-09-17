@@ -19,7 +19,12 @@ def generate_color_array(num_colors):  # Generates num random colors
     color_arr = []
     
     for i in range(num_colors):
-        color_arr.append(list(np.random.choice(range(250), size=3)))
+        color_arr.append(list(np.array([255, 0, 0])))  # Red
+        color_arr.append(list(np.array([0, 255, 0])))  # Green
+        color_arr.append(list(np.array([0, 0, 255])))  # Blue
+        color_arr.append(list(np.array([255, 0, 255])))  # Magenta
+        color_arr.append(list(np.array([0, 255, 255])))  # Cyan
+        color_arr.append(list(np.array([255, 255, 0])))  # Yellow
     
     return color_arr
 
@@ -83,7 +88,7 @@ def run_visualizer(v_running=False):
     pygame.display.set_caption('Rover Domain')
     robot_image = pygame.image.load('./Visualizer/robot.png')
     background = pygame.image.load('./Visualizer/background.png')
-    color_array = generate_color_array(1)
+    color_array = generate_color_array(3)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
 
@@ -132,7 +137,7 @@ def run_visualizer(v_running=False):
 
                 if tstep != 0:  # start drawing trails from timestep 1.
                     for timestep in range(1, tstep):  # draw the trajectory lines
-                        line_color = tuple(color_array[0])
+                        line_color = tuple(color_array[rover_id])
                         start_x = int(rover_path[srun, rover_id, (timestep-1), 0]*scale_factor) + image_adjust
                         start_y = int(rover_path[srun, rover_id, (timestep-1), 1]*scale_factor) + image_adjust
                         end_x = int(rover_path[srun, rover_id, timestep, 0]*scale_factor) + image_adjust

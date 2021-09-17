@@ -2,7 +2,6 @@ from Python_Code.ccea import Ccea
 from Python_Code.reward_functions import calc_difference_loose, calc_difference_tight, calc_dpp
 from Python_Code.rover_domain import RoverDomain
 from Python_Code.agent import Rover
-from Visualizer.visualizer import run_visualizer
 import pickle
 import csv
 import os
@@ -119,6 +118,7 @@ def rover_global_loose():
         for gen in range(generations):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
+                rovers["EA{0}".format(rover_id)].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rover_id in range(n_rovers):
                     rovers["Rover{0}".format(rover_id)].reset_rover()
@@ -228,6 +228,7 @@ def rover_global_tight():
         for gen in range(generations):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
+                rovers["EA{0}".format(rover_id)].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rover_id in range(n_rovers):
                     rovers["Rover{0}".format(rover_id)].reset_rover()
@@ -340,6 +341,7 @@ def rover_difference_loose():
         for gen in range(generations):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
+                rovers["EA{0}".format(rover_id)].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rover_id in range(n_rovers):
                     rovers["Rover{0}".format(rover_id)].reset_rover()
@@ -452,6 +454,7 @@ def rover_difference_tight():
         for gen in range(generations):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
+                rovers["EA{0}".format(rover_id)].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rover_id in range(n_rovers):
                     rovers["Rover{0}".format(rover_id)].reset_rover()
@@ -567,6 +570,7 @@ def rover_dpp():
         for gen in range(generations):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
+                rovers["EA{0}".format(rover_id)].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rover_id in range(n_rovers):
                     rovers["Rover{0}".format(rover_id)].reset_rover()

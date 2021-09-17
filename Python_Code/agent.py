@@ -160,6 +160,8 @@ class Rover:
 
             self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
+            if bracket > 3:
+                bracket -= 4
             temp_poi_dist_list[bracket].append(poi_info[poi_id, 2] / dist)
 
         # Encode POI information into the state vector
@@ -194,8 +196,9 @@ class Rover:
                 rov_y = rovers["Rover{0}".format(rover_id)].pos[1]
 
                 angle, dist = self.get_angle_dist(self.pos[0], self.pos[1], rov_x, rov_y)
-
                 bracket = int(angle / self.sensor_res)
+                if bracket > 3:
+                    bracket -= 4
                 temp_rover_dist_list[bracket].append(1 / dist)
 
         # Encode Rover information into the state vector
@@ -262,7 +265,6 @@ class Rover:
         """
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
         self.hidden_layer = self.sigmoid(self.hidden_layer)
-
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
         self.output_layer = self.sigmoid(self.output_layer)

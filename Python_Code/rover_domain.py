@@ -37,13 +37,13 @@ class RoverDomain:
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
 
         # Initialize POI positions and values
-        self.init_poi_pos_random()
-        # self.init_poi_vals_identical(10.0)
-        self.init_poi_vals_random(2, 12)
+        self.init_poi_pos_two_poi()
+        self.init_poi_vals_identical(10.0)
+        # self.init_poi_vals_random(2, 12)
         self.save_poi_configuration(srun)
 
         # Initialize Rover Positions
-        self.init_rover_pos_random()
+        self.init_rover_pos_random_concentrated()
         self.save_rover_configuration(srun)
 
     def load_world(self, srun):
@@ -207,7 +207,6 @@ class RoverDomain:
             self.initial_rover_positions[rov_id, 1] = rover_y
             self.initial_rover_positions[rov_id, 2] = rover_theta
 
-
     def init_rover_pos_random_concentrated(self):
         """
         Rovers given random starting positions within a radius of the center. Starting orientations are random
@@ -279,7 +278,6 @@ class RoverDomain:
             q = int(angle/p["angle_res"])
             self.pois[poi_id, 3] = q
 
-
     def init_poi_pos_circle(self):
         """
         POI positions are set in a circle around the center of the map at a specified radius.
@@ -342,8 +340,17 @@ class RoverDomain:
         """
         assert(self.num_pois == 2)
 
-        self.pois[0, 0] = 1.0; self.pois[0, 1] = self.world_y/2.0
-        self.pois[1, 0] = (self.world_x-2.0); self.pois[1, 1] = self.world_y/2.0
+        # Left POI
+        self.pois[0, 0] = 1.0
+        self.pois[0, 1] = self.world_y/2.0
+        self.pois[0, 3] = 0
+
+        # Right POI
+        self.pois[1, 0] = (self.world_x-2.0)
+        self.pois[1, 1] = self.world_y/2.0
+        self.pois[1, 3] = 1
+
+        print(self.pois)
 
     def init_poi_pos_four_corners(self):  # Statically set 4 POI (one in each corner)
         """
