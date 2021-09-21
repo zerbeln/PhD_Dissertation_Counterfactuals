@@ -1,6 +1,8 @@
 This repository contains code for the AADI Lab rover domain. Code is currently implemented in python.
-A primitive rover domain visualizer is implemented alongside the rover domain code, but it is currently a work in progress.
+A primitive rover domain visualizer is implemented alongside the rover domain code.
 
-Currently main.py is setup to run the rover domain code using a CCEA to train the Neural Networks.
-
-To run the code use: python3 main.py
+To run classic rover domain (tightly coupled or loosely coupled) use run_standard.py
+To train rover suggestions use main.py
+Test and visualize trained classic rover policies: run_visualizer.py
+Test and visualize suggestions with trained policies: test_suggestions.py
+Create and train playbook of rover policies for suggestions: run_policy_bank.py
