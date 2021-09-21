@@ -1,11 +1,11 @@
 parameters = {}
 
 # Run Parameters
-parameters["stat_runs"] = 15
+parameters["stat_runs"] = 1
 parameters["generations"] = 8000  # Number of generations for CCEA in each stat run
-parameters["reward_type"] = "Difference"  # Global, Difference, DPP, SDPP
-parameters["domain_type"] = "Loose"  # Loose or Tight
-parameters["coupling"] = 1  # Number of rovers required to view a POI for credit
+parameters["reward_type"] = "DPP"  # Global, Difference, DPP, SDPP
+parameters["domain_type"] = "Tight"  # Loose or Tight
+parameters["coupling"] = 3  # Number of rovers required to view a POI for credit
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Visualizer
@@ -16,10 +16,10 @@ parameters["x_dim"] = 50.0  # X-Dimension of the rover map
 parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
 parameters["n_rovers"] = 3  # Number of rovers on map
 parameters["n_poi"] = 2  # Number of POIs on map
-parameters["steps"] = 20  # Number of time steps rovers take each episode
+parameters["steps"] = 25  # Number of time steps rovers take each episode
 
 # Suggestion Parameters
-parameters["policy_bank_type"] = "None"  # Four_Quadrant, Two_POI, or None
+parameters["policy_bank_type"] = "Two_POI"  # Four_Quadrant, Two_POI, or None
 parameters["n_policies"] = 2  # Number of pre-trained policies in the policy bank
 parameters["n_suggestions"] = 2  # Number of suggestions a rover should learn
 parameters["s_inputs"] = 16

@@ -273,7 +273,6 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     """
     # Parameters
     stat_runs = p["stat_runs"]
-    population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
     domain_type = p["domain_type"]
@@ -284,7 +283,6 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     n_out = p["n_outputs"]
 
     # Suggestion Parameters
-    n_suggestions = p["n_suggestions"]
     s_inp = p["s_inputs"]
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
@@ -295,9 +293,10 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
-        rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=s_inp, n_out=s_out, n_hid=s_hid)
         rovers["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
 
+    average_reward = 0
+    reward_history = []  # Keep track of team performance throughout training
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     for srun in range(stat_runs):  # Perform statistical runs
 
@@ -317,17 +316,14 @@ def test_suggestions_policy_bank(pbank_type, sgst):
         # Load Pre-Trained Policies
         policy_bank = create_policy_playbook(pbank_type, srun, n_inp, n_out, n_hid)
 
-        reward_history = []  # Keep track of team performance throughout training
-
         for rover_id in range(n_rovers):  # Initial rover scan of environment
-            suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, sgst)
+            suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, sgst[rover_id])
             rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
             sensor_data = rovers["Rover{0}".format(rover_id)].sensor_readings
             sug_input = np.concatenate((suggestion, sensor_data), axis=0)
             rovers["SN{0}".format(rover_id)].get_inputs(sug_input)
             sug_outputs = rovers["SN{0}".format(rover_id)].get_outputs()
             pol_id = np.argmax(sug_outputs)
-            # pol_id = sgst
             rv_actions = policy_bank["Rover{0}Policy{1}".format(rover_id, pol_id)].run_network(sensor_data)
             rovers["Rover{0}".format(rover_id)].rover_actions = rv_actions
 
@@ -342,16 +338,14 @@ def test_suggestions_policy_bank(pbank_type, sgst):
 
             # Rover scans environment and processes suggestions
             for rover_id in range(n_rovers):
-                suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, sgst)
+                suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, sgst[rover_id])
                 rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
                 rd.update_observer_distances(rover_id, rovers["Rover{0}".format(rover_id)].poi_distances)
                 sensor_data = rovers["Rover{0}".format(rover_id)].sensor_readings
                 rd.update_observer_distances(rover_id, rovers["Rover{0}".format(rover_id)].poi_distances)
                 rovers["SN{0}".format(rover_id)].get_inputs(np.concatenate((suggestion, sensor_data), axis=0))
                 sug_outputs = rovers["SN{0}".format(rover_id)].get_outputs()
-                rovers["Rover{0}".format(rover_id)].update_policy_belief(sug_outputs)
                 pol_id = np.argmax(sug_outputs)
-                # pol_id = sgst
                 rv_actions = policy_bank["Rover{0}Policy{1}".format(rover_id, pol_id)].run_network(sensor_data)
                 rovers["Rover{0}".format(rover_id)].rover_actions = rv_actions
 
@@ -362,9 +356,13 @@ def test_suggestions_policy_bank(pbank_type, sgst):
                 g_rewards[step_id] = rd.calc_global_tight()
 
         reward_history.append(sum(g_rewards))
+        average_reward += sum(g_rewards)
 
         save_rover_path(final_rover_path, "Rover_Paths")
-        print(reward_history)
+        # print(reward_history)
+    average_reward /= stat_runs
+    print(average_reward)
+    save_reward_history(reward_history, "Final_GlobalRewards.csv")
     run_visualizer()
 
 
@@ -374,7 +372,6 @@ def test_suggestions_direct(sgst):
     """
     # Parameters
     stat_runs = p["stat_runs"]
-    population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
     domain_type = p["domain_type"]
@@ -385,7 +382,6 @@ def test_suggestions_direct(sgst):
     n_out = p["n_outputs"]
 
     # Suggestion Parameters
-    n_suggestions = p["n_suggestions"]
     s_inp = p["s_inputs"]
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
@@ -396,9 +392,10 @@ def test_suggestions_direct(sgst):
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
-        rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=s_inp, n_out=s_out, n_hid=s_hid)
         rovers["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
 
+    average_reward = 0
+    reward_history = []
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     for srun in range(stat_runs):  # Perform statistical runs
 
@@ -453,16 +450,20 @@ def test_suggestions_direct(sgst):
                 g_rewards[step_id] = rd.calc_global_tight()
 
         reward_history.append(sum(g_rewards))
+        average_reward += sum(g_rewards)
 
         save_rover_path(final_rover_path, "Rover_Paths")
-        print(reward_history)
+    save_reward_history(reward_history, "Final_GlobalRewards.csv")
+    average_reward /= stat_runs
+    print(average_reward)
     run_visualizer()
 
 
 if __name__ == '__main__':
 
+    rover_suggestions = [0, 0, 0]
     if p["policy_bank_type"] != "None":
-        test_suggestions_policy_bank(p["policy_bank_type"], 0)
+        test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
     else:
         test_suggestions_direct(0)
 

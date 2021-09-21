@@ -9,7 +9,6 @@ import numpy as np
 from parameters import parameters as p
 
 
-
 def save_reward_history(reward_history, file_name):
     """
     Save the reward history for the agents throughout the learning process (reward from best policy team each gen)
@@ -79,7 +78,7 @@ def load_saved_policies(file_name, rover_id, srun):
 
 def rover_global_loose():
     """
-    Run rover domain using counterfactual suggestions for D++
+    Train rovers in the classic rover domain using the global reward
     """
 
     # Parameters
@@ -189,7 +188,7 @@ def rover_global_loose():
 
 def rover_global_tight():
     """
-    Run rover domain using counterfactual suggestions for D++
+    Train rovers in tightly coupled rover domain using the global reward
     """
 
     # Parameters
@@ -302,7 +301,7 @@ def rover_global_tight():
 
 def rover_difference_loose():
     """
-    Run rover domain using counterfactual suggestions for D++
+    Train rovers in classic rover domain using difference rewards
     """
 
     # Parameters
@@ -415,8 +414,8 @@ def rover_difference_loose():
 
 def rover_difference_tight():
     """
-        Run rover domain using counterfactual suggestions for D++
-        """
+    Train rovers in tightly coupled rover domain using difference rewards only
+    """
 
     # Parameters
     stat_runs = p["stat_runs"]
@@ -531,7 +530,7 @@ def rover_difference_tight():
 
 def rover_dpp():
     """
-    Run rover domain using counterfactual suggestions for D++
+    Train rovers in tightly coupled rover domain using D++
     """
 
     # Parameters

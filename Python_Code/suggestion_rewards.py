@@ -81,7 +81,7 @@ def calc_sdpp(observer_distances, poi, global_reward, sgst):
             rover_distances = np.append(rover_distances, counterfactual_rovers)
             rover_distances = np.sort(rover_distances)
 
-            for i in range(n_counters):
+            for i in range(cpl):
                 if rover_distances[i] < obs_rad:
                     observer_count += 1
 
@@ -112,7 +112,7 @@ def calc_sdpp(observer_distances, poi, global_reward, sgst):
                     rover_distances = np.append(rover_distances, counterfactual_rovers)
                     rover_distances = np.sort(rover_distances)
 
-                    for i in range(n_counters):
+                    for i in range(cpl):
                         if rover_distances[i] < obs_rad:
                             observer_count += 1
 
@@ -161,7 +161,7 @@ def sdpp_and_sd(observer_distances, poi, global_reward, sgst, d_sgst):
             rover_distances = np.append(rover_distances, counterfactual_rovers)
             rover_distances = np.sort(rover_distances)
 
-            for i in range(n_counters):
+            for i in range(cpl):
                 if rover_distances[i] < obs_rad:
                     observer_count += 1
 
@@ -189,7 +189,7 @@ def sdpp_and_sd(observer_distances, poi, global_reward, sgst, d_sgst):
                     rover_distances = np.append(rover_distances, counterfactual_rovers)
                     rover_distances = np.sort(rover_distances)
 
-                    for i in range(n_counters):
+                    for i in range(cpl):
                         if rover_distances[i] < obs_rad:
                             observer_count += 1
 

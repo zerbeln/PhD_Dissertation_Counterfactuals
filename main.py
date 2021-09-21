@@ -31,7 +31,6 @@ def save_reward_history(reward_history, file_name):
 def save_rover_path(rover_path, file_name):  # Save path rovers take using best policy found
     """
     Records the path each rover takes using best policy from CCEA (used by visualizer)
-    :param rover_path:  trajectory tracker
     :return:
     """
     dir_name = 'Output_Data/'  # Intended directory for output files
@@ -115,10 +114,10 @@ def create_policy_playbook(playbook_type, srun, n_inp, n_out, n_hid):
 def get_angle_dist(x, y, tx, ty):
     """
     Computes angles and distance between two predators relative to (1,0) vector (x-axis)
-    :param tx: X-Position of sensor target
-    :param ty: Y-Position of sensor target
     :param x: X-Position of scanning rover
     :param y: Y-Position of scanning rover
+    :param tx: X-Position of sensor target
+    :param ty: Y-Position of sensor target
     :return: angle, dist
     """
 
@@ -238,7 +237,7 @@ def create_counterfactual_rover_state(rover_info, rover_pos, self_id, poi_quadra
 
 def train_suggestions_loose_direct():
     """
-    Train suggestions in the loosely coupled rover domain
+    Train suggestions in the loosely coupled rover domain using direct action output (no playbook)
     """
 
     # Parameters
@@ -358,137 +357,9 @@ def train_suggestions_loose_direct():
             save_best_policies(weights, srun, "SelectionWeights{0}".format(rover_id), rover_id)
 
 
-def train_suggestions_loose_playbook():
-    """
-    Train suggestions in the loosely coupled rover domain
-    """
-
-    # Parameters
-    stat_runs = p["stat_runs"]
-    generations = p["generations"]
-    population_size = p["pop_size"]
-    n_rovers = p["n_rovers"]
-    rover_steps = p["steps"]
-    assert (p["coupling"] == 1)
-    pbank_type = p["policy_bank_type"]
-
-    # Rover Motor Control
-    n_inp = p["n_inputs"]
-    n_hid = p["n_hidden"]
-    n_out = p["n_outputs"]
-
-    # Suggestion Parameters
-    n_suggestions = p["n_suggestions"]
-    s_inp = p["s_inputs"]
-    s_hid = p["s_hidden"]
-    s_out = p["s_outputs"]
-
-    rd = RoverDomain()  # Create instance of the rover domain
-
-    # Create dictionary for each instance of rover and corresponding NN and EA population
-    rovers = {}
-    for rover_id in range(n_rovers):
-        rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
-        rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=s_inp, n_out=s_out, n_hid=s_hid)
-        rovers["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
-
-    for srun in range(stat_runs):  # Perform statistical runs
-        print("Run: %i" % srun)
-
-        # Load World Configuration
-        rd.load_world(srun)
-        for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
-            rovers["EA{0}".format(rover_id)].create_new_population()  # Create new CCEA population
-
-        # Create list of suggestions for rovers to use during training
-        rover_suggestions = []
-        for rover_id in range(n_rovers):
-            if rover_id % 2 == 0:
-                s_type = [1, 0]
-            else:
-                s_type = [0, 1]
-            rover_suggestions.append(s_type)
-
-        # Load Pre-Trained Policies
-        policy_bank = create_policy_playbook(pbank_type, srun, n_inp, n_out, n_hid)
-        s_id = np.zeros(n_rovers, int)  # Identifies what suggestion each rover is using
-        for gen in range(generations):
-            for rover_id in range(n_rovers):
-                rovers["EA{0}".format(rover_id)].select_policy_teams()
-                rovers["EA{0}".format(rover_id)].reset_fitness()
-
-            for team_number in range(population_size):  # Each policy in CCEA is tested in teams
-                # Get weights for suggestion interpreter
-                for rover_id in range(n_rovers):
-                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
-                    weights = rovers["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-                    rovers["SN{0}".format(rover_id)].get_weights(weights)
-
-                for sgst in range(n_suggestions):
-                    for rover_id in range(n_rovers):
-                        rovers["Rover{0}".format(rover_id)].reset_rover()
-                        s_id[rover_id] = int(rover_suggestions[rover_id][sgst])
-
-                    rover_rewards = np.zeros((n_rovers, rover_steps + 1))  # Keep track of rover rewards at each t
-                    for rover_id in range(n_rovers):  # Initial rover scan of environment
-                        rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
-                        suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, s_id[rover_id])
-                        sensor_data = rovers["Rover{0}".format(rover_id)].sensor_readings
-                        sug_input = np.concatenate((suggestion, sensor_data), axis=0)
-                        rovers["SN{0}".format(rover_id)].get_inputs(sug_input)
-
-                        # Determine action based on sensor inputs and suggestion
-                        sug_outputs = rovers["SN{0}".format(rover_id)].get_outputs()
-                        pol_id = np.argmax(sug_outputs)
-                        if pol_id == s_id[rover_id]:
-                            rover_rewards[rover_id, 0] += 1
-                        rv_actions = policy_bank["Rover{0}Policy{1}".format(rover_id, pol_id)].run_network(sensor_data)
-                        rovers["Rover{0}".format(rover_id)].rover_actions = rv_actions
-
-                    for step_id in range(rover_steps):
-                        # Rover takes an action in the world
-                        for rover_id in range(n_rovers):
-                            rovers["Rover{0}".format(rover_id)].suggestion_step(rd.world_x, rd.world_y)
-
-                        # Rover scans environment and processes suggestions
-                        for rover_id in range(n_rovers):
-                            rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
-                            rd.update_observer_distances(rover_id, rovers["Rover{0}".format(rover_id)].poi_distances)
-                            suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, s_id[rover_id])
-                            sensor_data = rovers["Rover{0}".format(rover_id)].sensor_readings
-                            sug_input = np.concatenate((suggestion, sensor_data), axis=0)
-                            rovers["SN{0}".format(rover_id)].get_inputs(sug_input)
-
-                            # Choose policy based on sensors and suggestion
-                            sug_outputs = rovers["SN{0}".format(rover_id)].get_outputs()
-                            pol_id = np.argmax(sug_outputs)
-                            if pol_id == s_id[rover_id]:
-                                rover_rewards[rover_id, step_id+1] += 1
-                            rv_actions = policy_bank["Rover{0}Policy{1}".format(rover_id, pol_id)].run_network(sensor_data)
-                            rovers["Rover{0}".format(rover_id)].rover_actions = rv_actions
-
-                    for rover_id in range(n_rovers):
-                        policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
-                        rovers["EA{0}".format(rover_id)].fitness[policy_id] += sum(rover_rewards[rover_id])
-
-                for rover_id in range(n_rovers):
-                    policy_id = int(rovers["EA{0}".format(rover_id)].team_selection[team_number])
-                    rovers["EA{0}".format(rover_id)].fitness[policy_id] /= n_suggestions
-
-            # Choose new parents and create new offspring population
-            for rover_id in range(n_rovers):
-                rovers["EA{0}".format(rover_id)].down_select()
-
-        for rover_id in range(n_rovers):
-            policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
-            weights = rovers["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-            save_best_policies(weights, srun, "SelectionWeights{0}".format(rover_id), rover_id)
-
-
 def train_suggestions_tight_direct():
     """
-    Train suggestions in the tightly coupled rover domain
+    Train suggestions in the tightly coupled rover domain using direct action output (no playbook)
     """
 
     # Parameters
@@ -605,9 +476,9 @@ def train_suggestions_tight_direct():
             save_best_policies(weights, srun, "SelectionWeights{0}".format(rover_id), rover_id)
 
 
-def train_suggestions_tight_playbook():
+def train_suggestions_playbook():
     """
-    Train suggestions in the tightly coupled rover domain using policy playbooks
+    Train suggestions using a pre-trained playbook of rover policies
     """
 
     # Parameters
@@ -616,7 +487,10 @@ def train_suggestions_tight_playbook():
     population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
-    assert (p["coupling"] > 1)
+    if p["domain_type"] == "Loose":
+        assert(p["coupling"] == 1)
+    else:
+        assert(p["coupling"] > 1)
     pbank_type = p["policy_bank_type"]
 
     # Rover Motor Control
@@ -651,7 +525,10 @@ def train_suggestions_tight_playbook():
         # Create list of suggestions for rovers to use during training
         rover_suggestions = []
         for rover_id in range(n_rovers):
-            s_type = [0, 1]
+            if rover_id % 2 == 0:
+                s_type = [1, 0]
+            else:
+                s_type = [0, 1]
             rover_suggestions.append(s_type)
 
         # Load Pre-Trained Policies
@@ -741,11 +618,9 @@ if __name__ == '__main__':
     print("Training Suggestion Interpreter")
     if domain_type == "Loose" and pbank_type == "None":
         train_suggestions_loose_direct()
-    elif domain_type == "Loose" and pbank_type != "None":
-        train_suggestions_loose_playbook()
     elif domain_type == "Tight" and pbank_type == "None":
         train_suggestions_tight_direct()
-    elif domain_type == "Tight" and pbank_type != "None":
-        train_suggestions_tight_playbook()
+    elif pbank_type != "None":
+        train_suggestions_playbook()
     else:
         print("DOMAIN TYPE ERROR")

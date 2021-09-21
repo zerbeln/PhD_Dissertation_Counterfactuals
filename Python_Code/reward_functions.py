@@ -102,7 +102,7 @@ def calc_dpp(observer_distances, poi, global_reward):
             rover_distances = np.append(rover_distances, counterfactual_rovers)
             rover_distances = np.sort(rover_distances)
 
-            for i in range(n_counters):
+            for i in range(cpl):
                 if rover_distances[i] < obs_rad:
                     observer_count += 1
 
@@ -129,7 +129,7 @@ def calc_dpp(observer_distances, poi, global_reward):
                     rover_distances = np.append(rover_distances, counterfactual_rovers)
                     rover_distances = np.sort(rover_distances)
 
-                    for i in range(n_counters):
+                    for i in range(cpl):
                         if rover_distances[i] < obs_rad:
                             observer_count += 1
 
@@ -142,7 +142,7 @@ def calc_dpp(observer_distances, poi, global_reward):
 
                 # Calculate D++ reward with n counterfactuals added
                 temp_dpp = (counterfactual_global_reward - global_reward)/n_counters
-                if temp_dpp > d_rewards[agent_id] and temp_dpp > dpp_rewards[agent_id]:
+                if temp_dpp > dpp_rewards[agent_id]:
                     dpp_rewards[agent_id] = temp_dpp
                     c = cpl + 1  # Stop iterrating
         else:

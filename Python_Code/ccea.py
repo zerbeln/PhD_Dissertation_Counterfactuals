@@ -27,7 +27,6 @@ class Ccea:
         """
 
         self.fitness = np.zeros(self.pop_size)
-        # self.fitness = np.ones(self.pop_size)
 
     def create_new_population(self):  # Re-initializes CCEA populations for new run
         """
@@ -47,9 +46,9 @@ class Ccea:
 
             self.population["pol{0}".format(pol_id)] = policy.copy()
 
-    def select_policy_teams(self):  # Create policy teams for testing
+    def select_policy_teams(self):
         """
-        Choose teams of individuals from among populations to be tested
+        Determines which individuals from each population get paired together
         :return: None
         """
 

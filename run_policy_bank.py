@@ -2,7 +2,6 @@ from Python_Code.ccea import Ccea
 from Python_Code.local_rewards import towards_teammates_reward, towards_poi_reward, away_teammates_reward, away_poi_reward, two_poi_reward
 from Python_Code.rover_domain import RoverDomain
 from Python_Code.agent import Rover
-from Visualizer.visualizer import run_visualizer
 import pickle
 import os
 import numpy as np
@@ -49,7 +48,7 @@ def save_best_policies(network_weights, srun, file_name, rover_id):
 
 def train_towards_teammates():
     """
-    Run the rover domain using global reward for learning signal
+    Train rover policy for travelling towards teammates
     """
 
     # Parameters
@@ -120,7 +119,7 @@ def train_towards_teammates():
 
 def train_away_teammates():
     """
-    Run the rover domain using global reward for learning signal
+    Train rover policy for travelling away from teammates
     """
 
     # Parameters
@@ -191,7 +190,7 @@ def train_away_teammates():
 
 def train_towards_poi():
     """
-    Run the rover domain using global reward for learning signal
+    Train rover policy for travelling towards POI
     """
 
     # Parameters
@@ -263,7 +262,7 @@ def train_towards_poi():
 
 def train_away_poi():
     """
-    Run the rover domain using global reward for learning signal
+    Train rover policy for travelling away from POI
     """
 
     # Parameters
@@ -335,7 +334,7 @@ def train_away_poi():
 
 def train_two_poi(target_poi):
     """
-    Run the rover domain using global reward for learning signal
+    Train rover policies for world with Two POI (left and right side of map)
     """
 
     # Parameters

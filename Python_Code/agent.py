@@ -16,16 +16,11 @@ class Rover:
         self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
         self.sensor_readings = np.zeros(n_inp, dtype=np.float128)  # Number of sensor inputs for Neural Network
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00  # Records distances measured from sensors
-        self.self_id = rov_id
+        self.self_id = rov_id  # Rover's unique identifier
         self.rover_actions = np.zeros(n_out, dtype=np.float128)  # Motor actions from neural network outputs
-        self.initial_pos = np.zeros(3)
-        self.pos = np.zeros(3)
+        self.initial_pos = np.zeros(3)  # Starting position of the rover
+        self.pos = np.zeros(3)  # Current position of the rover
         self.dmax = p["dmax"]  # Maximum distance a rover can move each time step
-
-        # Suggestion Interpretation Parameters ---------------------------------------------------------------
-        self.n_policies = p["n_policies"]
-        self.alpha = 0.3
-        self.policy_belief = np.ones(self.n_policies, dtype=np.float128) * 0.5
 
         # Rover Motor Controller -----------------------------------------------------------------------------
         self.n_inputs = n_inp
@@ -60,22 +55,12 @@ class Rover:
         self.pos = self.initial_pos.copy()
         self.sensor_readings = np.zeros(self.n_inputs, dtype=np.float128)
         self.poi_distances = np.ones(p["n_poi"]) * 1000.00
-        self.policy_belief = np.ones(self.n_policies, dtype=np.float128) * 0.5
-
-    def update_policy_belief(self, nn_outputs):
-        """
-        Rover updates its belief on which policy is the best for it to use at the given time
-        """
-
-        for pol_id in range(self.n_policies):
-            val = self.policy_belief[pol_id]
-            self.policy_belief[pol_id] = val + 0.1*(nn_outputs[pol_id] - val)
 
     def step(self, x_lim, y_lim):
         """
         Rover executes current actions provided by neuro-controller
-        :param x_lim: Outter x-limit of the environment
-        :param y_lim:  Outter y-limit of the environment
+        :param x_lim: size of the world in the x-dimension
+        :param y_lim: size of the world in the y-dimension
         :return:
         """
         # Get outputs from neuro-controller
@@ -104,9 +89,9 @@ class Rover:
 
     def suggestion_step(self, x_lim, y_lim):
         """
-        Rover executes current actions provided by neuro-controller
-        :param x_lim: Outter x-limit of the environment
-        :param y_lim:  Outter y-limit of the environment
+        Rover executes current actions provided by neuro-controller (for suggestions training only)
+        :param x_lim: size of the world in the x-dimension
+        :param y_lim: size of the world in the y-dimension
         :return:
         """
 
@@ -147,7 +132,6 @@ class Rover:
     def poi_scan(self, poi_info):
         """
         Rover queries scanner that detects POIs
-        :param poi_info: multi-dimensional numpy array containing coordinates and values of POIs
         :return: Portion of state-vector constructed from POI scanner
         """
         poi_state = np.zeros(int(360.0 / self.sensor_res))
