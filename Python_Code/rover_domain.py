@@ -37,13 +37,12 @@ class RoverDomain:
         self.observer_distances = np.zeros((self.num_pois, self.n_rovers))
 
         # Initialize POI positions and values
-        self.init_poi_pos_two_poi()
-        self.init_poi_vals_identical(10.0)
-        # self.init_poi_vals_random(2, 12)
+        self.poi_pos_three_quadrants()
+        self.poi_vals_three_quadrant()
         self.save_poi_configuration(srun)
 
         # Initialize Rover Positions
-        self.init_rover_pos_random_concentrated()
+        self.rover_pos_quadrant_three()
         self.save_rover_configuration(srun)
 
     def load_world(self, srun):
@@ -100,9 +99,7 @@ class RoverDomain:
 
             # Update global reward if POI is observed
             if observer_count >= self.c_req:
-                summed_observer_distances = 0.0
-                for i in range(self.c_req):  # Sum distances of closest observers
-                    summed_observer_distances += rover_distances[i]
+                summed_observer_distances = sum(rover_distances[0:self.c_req])
                 global_reward += self.pois[poi_id, 2] / (summed_observer_distances / self.c_req)
 
         return global_reward
@@ -117,7 +114,6 @@ class RoverDomain:
     def save_poi_configuration(self, srun):
         """
         Saves world configuration to a csv file in a folder called Output_Data
-        :Output: One CSV file containing POI postions and POI values
         """
         dir_name = 'Output_Data/SRUN{0}'.format(srun)  # Intended directory for output files
 
@@ -153,7 +149,6 @@ class RoverDomain:
     def save_rover_configuration(self, srun):
         """
         Saves rover positions to a csv file in a folder called Output_Data
-        :Output: CSV file containing rover starting positions
         """
         dir_name = 'Output_Data/SRUN{0}'.format(srun)  # Intended directory for output files
 
@@ -174,10 +169,9 @@ class RoverDomain:
         csvfile.close()
 
     # ROVER POSITION FUNCTIONS ---------------------------------------------------------------------------------------
-    def init_rover_pos_random(self):  # Randomly set rovers on map
+    def rover_pos_random(self):  # Randomly set rovers on map
         """
         Rovers given random starting positions and orientations
-        :return: rover_positions: np array of size (self.n_rovers, 3)
         """
 
         for rov_id in range(self.n_rovers):
@@ -207,10 +201,9 @@ class RoverDomain:
             self.initial_rover_positions[rov_id, 1] = rover_y
             self.initial_rover_positions[rov_id, 2] = rover_theta
 
-    def init_rover_pos_random_concentrated(self):
+    def rover_pos_center_concentrated(self):
         """
         Rovers given random starting positions within a radius of the center. Starting orientations are random
-        :return: rover_positions: np array of size (self.n_rovers, 3)
         """
         radius = 3.0
         center_x = self.world_x/2.0
@@ -229,7 +222,7 @@ class RoverDomain:
             self.initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
             self.initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
 
-    def init_rover_pos_fixed_middle(self):  # Set rovers to fixed starting position
+    def rover_pos_fixed_middle(self):  # Set rovers to fixed starting position
         """
         Create a starting position for the rover near the center of the world
         """
@@ -238,11 +231,94 @@ class RoverDomain:
             self.initial_rover_positions[rov_id, 1] = 0.5*self.world_y
             self.initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)
 
+    def rover_pos_quadrant_zero(self):
+        """
+        Initialize rover team in the center of Quadrant 0
+        """
+        radius = 3.0
+        center_x = 3 * self.world_x / 4.0
+        center_y = 3 * self.world_y / 4.0
+
+        for rov_id in range(self.n_rovers):
+            x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            while x > (center_x + radius) or x < (center_x - radius):
+                x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            while y > (center_y + radius) or y < (center_y - radius):
+                y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            self.initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
+            self.initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
+            self.initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
+
+    def rover_pos_quadrant_one(self):
+        """
+        Initialize rover team in the center of Quadrant 1
+        """
+        radius = 3.0
+        center_x = self.world_x / 4.0
+        center_y = 3 * self.world_y / 4.0
+
+        for rov_id in range(self.n_rovers):
+            x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            while x > (center_x + radius) or x < (center_x - radius):
+                x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            while y > (center_y + radius) or y < (center_y - radius):
+                y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            self.initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
+            self.initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
+            self.initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
+
+    def rover_pos_quadrant_two(self):
+        """
+        Initialize rover team in the center of Quadrant 2
+        """
+        radius = 3.0
+        center_x = self.world_x / 4.0
+        center_y = self.world_y / 4.0
+
+        for rov_id in range(self.n_rovers):
+            x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            while x > (center_x + radius) or x < (center_x - radius):
+                x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            while y > (center_y + radius) or y < (center_y - radius):
+                y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            self.initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
+            self.initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
+            self.initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
+
+    def rover_pos_quadrant_three(self):
+        """
+        Initialize rover team in the center of Quadrant 3
+        """
+        radius = 3.0
+        center_x = 3 * self.world_x / 4.0
+        center_y = self.world_y / 4.0
+
+        for rov_id in range(self.n_rovers):
+            x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            while x > (center_x + radius) or x < (center_x - radius):
+                x = random.uniform(0.0, self.world_x - 1.0)  # Rover X-Coordinate
+            while y > (center_y + radius) or y < (center_y - radius):
+                y = random.uniform(0.0, self.world_y - 1.0)  # Rover Y-Coordinate
+
+            self.initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
+            self.initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
+            self.initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
+
     # POI POSITION FUNCTIONS ------------------------------------------------------------------------------------------
-    def init_poi_pos_random(self):  # Randomly set POI on the map
+    def poi_pos_random(self):  # Randomly set POI on the map
         """
         POI positions set randomly across the map (but not in range of any rover)
-        :return: self.pois: np array of size (npoi, 2)
         """
 
         origin_x = self.world_x / 2
@@ -278,10 +354,9 @@ class RoverDomain:
             q = int(angle/p["angle_res"])
             self.pois[poi_id, 3] = q
 
-    def init_poi_pos_circle(self):
+    def poi_pos_circle(self):
         """
         POI positions are set in a circle around the center of the map at a specified radius.
-        :return: self.pois: np array of size (npoi, 2)
         """
         radius = 15.0
         interval = float(360/self.num_pois)
@@ -300,10 +375,9 @@ class RoverDomain:
             self.pois[poi_id, 3] = q
             theta += interval
 
-    def init_poi_pos_concentric_circles(self):
+    def poi_pos_concentric_circles(self):
         """
         POI positions are set in a circle around the center of the map at a specified radius.
-        :return: self.pois: np array of size (npoi, 2)
         """
         assert(self.num_pois == 12)
         inner_radius = 6.5
@@ -333,22 +407,53 @@ class RoverDomain:
                 self.pois[poi_id, 3] = q
                 outter_theta += interval
 
-    def init_poi_pos_two_poi(self):
+    def poi_pos_three_quadrants(self):
+        """
+        For world with 5 POI, three in Quadrant 1, 1 in Quadrant 2, 1 in Quadrant 3
+        """
+        assert(self.num_pois == 5)
+        origin_x = self.world_x / 2
+        origin_y = self.world_y / 2
+
+        self.pois[0, 0] = 10
+        self.pois[0, 1] = 10
+
+        self.pois[1, 0] = 12
+        self.pois[1, 1] = 12
+
+        self.pois[2, 0] = 8
+        self.pois[2, 1] = 11
+
+        self.pois[3, 0] = self.world_x - 5
+        self.pois[3, 1] = self.world_y - 5
+
+        self.pois[4, 0] = (self.world_x/2) - 8
+        self.pois[4, 1] = (self.world_y/2) + 10
+
+        for poi_id in range(self.num_pois):
+            angle = self.get_angle(origin_x, origin_y, self.pois[poi_id, 0], self.pois[poi_id, 1])
+            q = int(angle / p["angle_res"])
+            self.pois[poi_id, 3] = q
+
+    def poi_pos_two_poi(self):
         """
         Sets two POI on the map, one on the left, one on the right at Y-Dimension/2
-        :return: self.pois: np array of size (npoi, 2)
         """
         assert(self.num_pois == 2)
+        origin_x = self.world_x / 2
+        origin_y = self.world_y / 2
 
         # Left POI
         self.pois[0, 0] = 1.0
-        self.pois[0, 1] = self.world_y/2.0
-        self.pois[0, 3] = 0
+        self.pois[0, 1] = (self.world_y/2.0) - 1
+        angle = self.get_angle(origin_x, origin_y, self.pois[0, 0], self.pois[0, 1])
+        self.pois[0, 3] = int(angle / p["angle_res"])
 
         # Right POI
-        self.pois[1, 0] = (self.world_x-2.0)
-        self.pois[1, 1] = self.world_y/2.0
-        self.pois[1, 3] = 1
+        self.pois[1, 0] = self.world_x - 2.0
+        self.pois[1, 1] = (self.world_y/2.0) + 1
+        angle = self.get_angle(origin_x, origin_y, self.pois[1, 0], self.pois[1, 1])
+        self.pois[1, 3] = int(angle / p["angle_res"])
 
         print(self.pois)
 
@@ -365,7 +470,7 @@ class RoverDomain:
         self.pois[3, 0] = (self.world_x - 2.0); self.pois[3, 1] = (self.world_y - 2.0)  # Top right
 
     # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
-    def init_poi_vals_random(self, v_low, v_high):
+    def poi_vals_random(self, v_low, v_high):
         """
         POI values randomly assigned 1-10
         :return: poi_vals: array of size(npoi)
@@ -374,7 +479,7 @@ class RoverDomain:
         for poi_id in range(self.num_pois):
             self.pois[poi_id, 2] = float(random.randint(v_low, v_high))
 
-    def init_poi_vals_identical(self, poi_val):
+    def poi_vals_identical(self, poi_val):
         """
         POI values set to fixed, identical value
         :return: poi_vals: array of size(npoi)
@@ -382,6 +487,19 @@ class RoverDomain:
 
         for poi_id in range(self.num_pois):
             self.pois[poi_id, 2] = poi_val
+
+    def poi_vals_three_quadrant(self):
+
+        # Quadrant 2 (Three Low Value)
+        self.pois[0, 2] = 10.0
+        self.pois[1, 2] = 10.0
+        self.pois[2, 2] = 10.0
+
+        # Quadrant 1 (Single High Value)
+        self.pois[3, 2] = 100.0
+
+        # Quadrant 2 (Single Low Value)
+        self.pois[4, 2] = 5.0
 
     def get_angle(self, origin_x, origin_y, px, py):
         """

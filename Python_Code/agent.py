@@ -58,10 +58,9 @@ class Rover:
 
     def step(self, x_lim, y_lim):
         """
-        Rover executes current actions provided by neuro-controller
+        Rover executes current actions provided by neuro-controller (not using policy playbook)
         :param x_lim: size of the world in the x-dimension
         :param y_lim: size of the world in the y-dimension
-        :return:
         """
         # Get outputs from neuro-controller
         self.get_nn_outputs()
@@ -92,7 +91,6 @@ class Rover:
         Rover executes current actions provided by neuro-controller (for suggestions training only)
         :param x_lim: size of the world in the x-dimension
         :param y_lim: size of the world in the y-dimension
-        :return:
         """
 
         # Update rover positions based on outputs and assign to dummy variables
@@ -132,7 +130,6 @@ class Rover:
     def poi_scan(self, poi_info):
         """
         Rover queries scanner that detects POIs
-        :return: Portion of state-vector constructed from POI scanner
         """
         poi_state = np.zeros(int(360.0 / self.sensor_res))
         temp_poi_dist_list = [[] for _ in range(int(360.0 / self.sensor_res))]
@@ -168,7 +165,6 @@ class Rover:
         Rover activates scanner to detect other rovers within the environment
         :param rovers: Dictionary containing rover positions
         :param n_rovers: Parameter designating the number of rovers in the simulation
-        :return: Portion of the state vector created from rover scanner
         """
         rover_state = np.zeros(int(360.0 / self.sensor_res))
         temp_rover_dist_list = [[] for _ in range(int(360.0 / self.sensor_res))]
@@ -235,7 +231,6 @@ class Rover:
         """
         Apply chosen network weights to the agent's neuro-controller
         :param nn_weights: Dictionary of network weights received from the CCEA
-        :return:
         """
         self.weights["Layer1"] = np.reshape(np.mat(nn_weights["L1"]), [self.n_hnodes, self.n_inputs])
         self.weights["Layer2"] = np.reshape(np.mat(nn_weights["L2"]), [self.n_outputs, self.n_hnodes])
@@ -245,7 +240,6 @@ class Rover:
     def get_nn_outputs(self):
         """
         Run NN to generate outputs
-        :return:
         """
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
         self.hidden_layer = self.sigmoid(self.hidden_layer)

@@ -104,3 +104,19 @@ def two_poi_reward(rover_id, observer_distances, poi, target_poi):
                 reward += poi[poi_id, 2] / dist
 
     return reward
+
+
+def four_quadrant_rewards(rover_id, observer_distances, poi, target_quadrant):
+    """
+    Local reward for training rovers to travel towards POI within a specific quadrant
+    """
+    reward = 0
+    for poi_id in range(p["n_poi"]):
+        if target_quadrant == poi[poi_id, 3]:
+            dist = observer_distances[poi_id, rover_id]
+
+            if dist < p["observation_radius"]:
+                reward += poi[poi_id, 2] / dist
+
+    return reward
+
