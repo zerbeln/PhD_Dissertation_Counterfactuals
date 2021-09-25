@@ -1,27 +1,27 @@
 parameters = {}
 
 # Run Parameters
-parameters["stat_runs"] = 5
+parameters["stat_runs"] = 1
 parameters["generations"] = 5000  # Number of generations for CCEA in each stat run
-parameters["reward_type"] = "Global"  # Global, Difference, DPP, SDPP
-parameters["domain_type"] = "Loose"  # Loose or Tight
-parameters["coupling"] = 1  # Number of rovers required to view a POI for credit
+parameters["reward_type"] = "DPP"  # Global, Difference, DPP, SDPP
+parameters["domain_type"] = "Tight"  # Loose or Tight
+parameters["coupling"] = 3  # Number of rovers required to view a POI for credit
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Visualizer
-parameters["vis_running"] = False  # True keeps visualizer from closing until you 'X' out of window
+parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
 
 # Domain parameters
 parameters["x_dim"] = 50.0  # X-Dimension of the rover map
 parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
-parameters["n_rovers"] = 6  # Number of rovers on map
-parameters["n_poi"] = 5  # Number of POIs on map
-parameters["steps"] = 25  # Number of time steps rovers take each episode
+parameters["n_rovers"] = 3  # Number of rovers on map
+parameters["n_poi"] = 2  # Number of POIs on map
+parameters["steps"] = 60  # Number of time steps rovers take each episode
 
 # Suggestion Parameters
-parameters["policy_bank_type"] = "Four_Quadrants"  # Four_Quadrants or Two_POI (more options pending)
-parameters["n_policies"] = 4  # Number of pre-trained policies in the policy bank
-parameters["n_suggestions"] = 4  # Number of suggestions a rover should learn
+parameters["policy_bank_type"] = "Two_POI"  # Four_Quadrants or Two_POI (more options pending)
+parameters["n_policies"] = 2  # Number of pre-trained policies in the policy bank
+parameters["n_suggestions"] = 2  # Number of suggestions a rover should learn
 parameters["s_inputs"] = 16
 parameters["s_hidden"] = 12
 parameters["s_outputs"] = parameters["n_policies"]

@@ -12,6 +12,55 @@ import numpy as np
 from parameters import parameters as p
 
 
+# Holds one suggestion along with the time it should start
+class Suggestion:
+    def __init__(self, value, timestamp=0):
+        '''
+        :param value: what policy to suggest
+        :param timestamp: after what step to pick this policy
+        :return:
+        '''
+
+        # These should not be modified after init, hence the getters
+        self._value = value
+        self._timestamp = timestamp
+
+    def get_value(self):
+        return self._value
+
+    def get_timestamp(self):
+        return self._timestamp
+
+
+# Wraps a list of suggestions to improve readability
+# Warning: does not enforce sorted timestamps-- add suggestions in order
+class Suggestion_Queue:
+    def __init__(self, prebuilt=None):
+        if prebuilt is None:
+            self.queue = [Suggestion(0)]
+        else:
+            assert isinstance(prebuilt, list)
+            assert all(isinstance(x, Suggestion) for x in prebuilt)
+            self.queue = prebuilt
+
+    def add_suggestion(self, sgst):
+        assert isinstance(sgst, (list, Suggestion))
+        if isinstance(sgst, list):
+            assert all(isinstance(x, Suggestion) for x in sgst)
+            self.queue += sgst
+        else:
+            self.queue.append(sgst)
+
+    # Get top suggestion, remove it if the next one should start
+    def get_suggestion(self, timestamp):
+        if len(self.queue) == 1:
+            return self.queue[0].get_value()
+
+        if self.queue[1].get_timestamp() <= timestamp:
+            self.queue.pop(0)
+        return self.queue[0].get_value()
+
+
 def save_reward_history(reward_history, file_name):
     """
     Save the reward history for the agents throughout the learning process (reward from best policy team each gen)
@@ -269,7 +318,10 @@ def test_suggestions_policy_bank(pbank_type, sgst):
         policy_bank = create_policy_playbook(pbank_type, srun, n_inp, n_out, n_hid)
 
         for rover_id in range(n_rovers):  # Initial rover scan of environment
-            suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, sgst[rover_id])
+#            this_rover_sgst = sgst[rover_id][0].get_value()
+            this_rover_sgst = sgst[rover_id].get_suggestion(0)
+
+            suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, this_rover_sgst)
             rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
             sensor_data = rovers["Rover{0}".format(rover_id)].sensor_readings
             sug_input = np.concatenate((suggestion, sensor_data), axis=0)
@@ -290,7 +342,16 @@ def test_suggestions_policy_bank(pbank_type, sgst):
 
             # Rover scans environment and processes suggestions
             for rover_id in range(n_rovers):
-                suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, sgst[rover_id])
+                # Get current suggestion, remove from list if expired
+#                this_rover_sgst = sgst[rover_id][0].get_value()
+#                if len(sgst[rover_id]) > 1 and sgst[rover_id][1].get_timestamp() <= step_id:
+#                    sgst[rover_id].pop(0)
+                this_rover_sgst = sgst[rover_id].get_suggestion(step_id)
+
+                if rover_id == 0:
+                    print(step_id, this_rover_sgst)
+
+                suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, this_rover_sgst)
                 rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
                 rd.update_observer_distances(rover_id, rovers["Rover{0}".format(rover_id)].poi_distances)
                 sensor_data = rovers["Rover{0}".format(rover_id)].sensor_readings
@@ -321,11 +382,10 @@ def test_suggestions_policy_bank(pbank_type, sgst):
 if __name__ == '__main__':
 
     # Create list of suggestions for rovers to use during training
-    rover_suggestions = []
+    rover_suggestions = {}
     if p["policy_bank_type"] == "Two_POI":
         for rover_id in range(p["n_rovers"]):
-            sugg = 0
-            rover_suggestions.append(sugg)
+            rover_suggestions[rover_id] = Suggestion_Queue([Suggestion(0), Suggestion(1,30)])
     elif p["policy_bank_type"] == "Four_Quadrants":
         for rover_id in range(p["n_rovers"]):
             sugg = 0
