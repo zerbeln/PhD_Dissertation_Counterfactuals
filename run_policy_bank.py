@@ -8,6 +8,9 @@ import numpy as np
 import csv
 from parameters import parameters as p
 
+from multiprocessing import Pool
+from tqdm import tqdm
+
 
 def save_reward_history(rover_id, reward_history, file_name):
     """
@@ -383,7 +386,7 @@ def train_two_poi(target_poi):
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         policy_rewards = [[] for i in range(n_rovers)]
-        for gen in range(generations):
+        for gen in tqdm(range(generations), position=target_poi):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
             for team_id in range(population_size):  # Each policy in CCEA is tested in teams
@@ -460,7 +463,7 @@ def train_four_quadrants(target_q):
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         policy_rewards = [[] for i in range(n_rovers)]
-        for gen in range(generations):
+        for gen in tqdm(range(generations), position=target_q):
             for rover_id in range(n_rovers):
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
             for team_id in range(population_size):  # Each policy in CCEA is tested in teams
@@ -508,15 +511,19 @@ if __name__ == '__main__':
     """
 
     if p["policy_bank_type"] == "Two_POI":
-        for poi_id in range(2):
-            print("Training Go Towards POI: ", poi_id)
-            train_two_poi(poi_id)
+        with Pool() as p:
+            p.map(train_two_poi, [0,1])
+#        for poi_id in range(2):
+#            print("Training Go Towards POI: ", poi_id)
+#            train_two_poi(poi_id)
     elif p["policy_bank_type"] == "Four_Quadrants":
-        print("Training Go To Quadrant 0")
-        train_four_quadrants(0)
-        print("Training Go To Quadrant 1")
-        train_four_quadrants(1)
-        print("Training Go To Quadrant 2")
-        train_four_quadrants(2)
-        print("Training Go To Quadrant 3")
-        train_four_quadrants(3)
+        with Pool() as p:
+            p.map(train_four_quadrants, [0,1,2,3])
+#        print("Training Go To Quadrant 0")
+#        train_four_quadrants(0)
+#        print("Training Go To Quadrant 1")
+#        train_four_quadrants(1)
+#        print("Training Go To Quadrant 2")
+#        train_four_quadrants(2)
+#        print("Training Go To Quadrant 3")
+#        train_four_quadrants(3)
