@@ -31,12 +31,12 @@ class Rover:
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
         self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.float128)), [self.n_outputs, 1])
 
-    def initialize_rover(self, srun):
+    def initialize_rover(self):
         """
         Load initial rover position from saved csvfile
         """
         config_input = []
-        with open('Output_Data/SRUN{0}/Rover_Config.csv'.format(srun)) as csvfile:
+        with open('World_Config/Rover_Config.csv') as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
 
             for row in csv_reader:

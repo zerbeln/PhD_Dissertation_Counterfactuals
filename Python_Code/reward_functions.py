@@ -3,15 +3,14 @@ from parameters import parameters as p
 
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
-def calc_difference_tight(observer_distances, poi, global_reward):
+def calc_difference(observer_distances, pois, global_reward):
     """
     Calculate each rover's difference reward at the current time step
     :param observer_distances: Each rover's distance to each POI
-    :param poi: np array with X-Y coordinates and value for each POI
+    :param pois: np array with X-Y coordinates and value for each POI
     :param global_reward: Reward given to the team from the world
     """
     obs_rad = p["observation_radius"]
-    cpl = p["coupling"]
     n_poi = p["n_poi"]
     n_rovers = p["n_rovers"]
 
@@ -20,49 +19,21 @@ def calc_difference_tight(observer_distances, poi, global_reward):
 
         counterfactual_global_reward = 0.0
         for poi_id in range(n_poi):  # For each POI
+            poi_coupling = int(pois[poi_id, 3])
             observer_count = 0
             rover_distances = observer_distances[poi_id].copy()
             rover_distances[agent_id] = 1000.00
             rover_distances = np.sort(rover_distances)
 
-            for i in range(cpl):
+            for i in range(poi_coupling):
                 dist = rover_distances[i]
                 if dist < obs_rad:
                     observer_count += 1
 
             # Compute reward if coupling is satisfied
-            if observer_count >= cpl:
-                summed_observer_distances = sum(rover_distances[0:cpl])
-                counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances/cpl)
-
-        difference_rewards[agent_id] = global_reward - counterfactual_global_reward
-
-    return difference_rewards
-
-
-def calc_difference_loose(observer_distances, poi, global_reward):
-    """
-    Calcualte each rover's difference reward at the current time step
-    :param observer_distances: Each rover's distance to each POI
-    :param poi: np array with X-Y coordinates and value for each POI
-    :param global_reward: Reward given to the team from the world
-    """
-
-    obs_rad = p["observation_radius"]
-    n_poi = p["n_poi"]
-    n_rovers = p["n_rovers"]
-
-    difference_rewards = np.zeros(n_rovers)
-    for agent_id in range(n_rovers):
-
-        counterfactual_global_reward = 0.0
-        for poi_id in range(n_poi):  # For each POI
-            rover_distances = observer_distances[poi_id].copy()
-            rover_distances[agent_id] = 1000.00  # Create counterfactual action for agent i
-
-            best_dist = min(rover_distances)
-            if best_dist < obs_rad:
-                counterfactual_global_reward += poi[poi_id, 2] / min(rover_distances)
+            if observer_count >= pois[poi_id, 3]:
+                summed_observer_distances = sum(rover_distances[0:poi_coupling])
+                counterfactual_global_reward += pois[poi_id, 2]/(summed_observer_distances/pois[poi_id, 3])
 
         difference_rewards[agent_id] = global_reward - counterfactual_global_reward
 
@@ -70,11 +41,11 @@ def calc_difference_loose(observer_distances, poi, global_reward):
 
 
 # D++ REWARD ----------------------------------------------------------------------------------------------------------
-def calc_dpp(observer_distances, poi, global_reward):
+def calc_dpp(observer_distances, pois, global_reward):
     """
     Calculate D++ rewards for each rover at the current time step
     :param observer_distances: Each rover's distance to each POI
-    :param poi: np array with X-Y coordinates and value for each POI
+    :param pois: np array with X-Y coordinates and value for each POI
     :param global_reward: Reward given to the team from the world
     """
 
@@ -82,7 +53,7 @@ def calc_dpp(observer_distances, poi, global_reward):
     n_rovers = p["n_rovers"]
     cpl = p["coupling"]
     obs_rad = p["observation_radius"]
-    d_rewards = calc_difference_tight(observer_distances, poi, global_reward)
+    d_rewards = calc_difference(observer_distances, pois, global_reward)
     dpp_rewards = np.zeros(n_rovers)
 
     # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
@@ -103,7 +74,7 @@ def calc_dpp(observer_distances, poi, global_reward):
             # Update POI observers
             if observer_count >= cpl:
                 summed_observer_distances = sum(rover_distances[0:cpl])
-                counterfactual_global_reward += poi[poi_id, 2]/(summed_observer_distances/cpl)
+                counterfactual_global_reward += pois[poi_id, 2]/(summed_observer_distances/cpl)
 
         dpp_rewards[agent_id] = (counterfactual_global_reward - global_reward) / n_counters
 
@@ -128,7 +99,7 @@ def calc_dpp(observer_distances, poi, global_reward):
                     # Update POI observers
                     if observer_count >= cpl:
                         summed_observer_distances = sum(rover_distances[0:cpl])
-                        counterfactual_global_reward += poi[poi_id, 2] / (summed_observer_distances / cpl)
+                        counterfactual_global_reward += pois[poi_id, 2] / (summed_observer_distances / cpl)
 
                 # Calculate D++ reward with n counterfactuals added
                 temp_dpp = (counterfactual_global_reward - global_reward)/n_counters

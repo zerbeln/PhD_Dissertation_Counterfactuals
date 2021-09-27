@@ -1,10 +1,9 @@
 parameters = {}
 
 # Run Parameters
-parameters["stat_runs"] = 5
-parameters["generations"] = 5000  # Number of generations for CCEA in each stat run
+parameters["stat_runs"] = 30
+parameters["generations"] = 8000  # Number of generations for CCEA in each stat run
 parameters["reward_type"] = "Global"  # Global, Difference, DPP, SDPP
-parameters["domain_type"] = "Loose"  # Loose or Tight
 parameters["coupling"] = 1  # Number of rovers required to view a POI for credit
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
