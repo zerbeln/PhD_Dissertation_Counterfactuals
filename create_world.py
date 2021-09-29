@@ -33,23 +33,18 @@ if __name__ == '__main__':
     rover_path = np.zeros((stat_runs, p["n_rovers"], p["steps"], 3))
 
     rd = RoverDomain()  # Number of POI, Number of Rovers
-    rd.create_world_setup(0)
+    rd.create_world_setup()
+
     rovers = {}
     for rover_id in range(p["n_rovers"]):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id)
-        rovers["Rover{0}".format(rover_id)].initialize_rover(0)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
 
     for rover_id in range(p["n_rovers"]):
         for step in range(p["steps"]):
             rover_path[0:stat_runs, rover_id, step, 0] = rovers["Rover{0}".format(rover_id)].pos[0]
             rover_path[0:stat_runs, rover_id, step, 1] = rovers["Rover{0}".format(rover_id)].pos[1]
             rover_path[0:stat_runs, rover_id, step, 2] = rovers["Rover{0}".format(rover_id)].pos[2]
-
-    srun = 1
-    while srun < stat_runs:
-        rd.save_poi_configuration(srun)
-        rd.save_rover_configuration(srun)
-        srun += 1
 
     save_rover_path(rover_path, "Rover_Paths")
     run_visualizer()

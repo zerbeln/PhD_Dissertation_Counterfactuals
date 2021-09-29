@@ -44,7 +44,7 @@ def import_rover_paths():
     return rover_paths
 
 
-def import_poi_information(n_poi, srun):
+def import_poi_information(n_poi):
     """
     Import POI information from saved configuration files
     :return:
@@ -52,7 +52,7 @@ def import_poi_information(n_poi, srun):
     pois = np.zeros((n_poi, 3))
 
     config_input = []
-    with open('./Output_Data/SRUN{0}/POI_Config.csv'.format(srun)) as csvfile:
+    with open('./World_Config/POI_Config.csv') as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
 
         for row in csv_reader:
@@ -93,10 +93,10 @@ def run_visualizer(v_running=False):
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
 
     rover_path = import_rover_paths()
+    pois = import_poi_information(n_poi)
 
     poi_convergence = [0 for i in range(n_poi + 1)]
     for srun in range(stat_runs):
-        pois = import_poi_information(n_poi, srun)
         game_display = pygame.display.set_mode((x_map * scale_factor, y_map * scale_factor))
         poi_status = [False for _ in range(n_poi)]
         for tstep in range(rover_steps):

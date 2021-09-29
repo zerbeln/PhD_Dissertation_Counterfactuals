@@ -2,6 +2,7 @@ from Python_Code.ccea import Ccea
 from Python_Code.suggestion_network import SuggestionNetwork
 from Python_Code.rover_domain import RoverDomain
 from Python_Code.agent import Rover
+from Python_Code.suggestion_rewards import *
 import math
 import sys
 import pickle
@@ -250,10 +251,6 @@ def train_suggestions_playbook(rover_suggestions):
     population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
-    if p["domain_type"] == "Loose":
-        assert(p["coupling"] == 1)
-    else:
-        assert(p["coupling"] > 1)
     pbank_type = p["policy_bank_type"]
     sample_rate = p["sample_rate"]
 
@@ -268,22 +265,24 @@ def train_suggestions_playbook(rover_suggestions):
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
 
-    rd = RoverDomain()  # Create instance of the rover domain
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=s_inp, n_out=s_out, n_hid=s_hid)
         rovers["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()  # Create new CCEA population
 
         # Load Pre-Trained Policies
@@ -307,7 +306,7 @@ def train_suggestions_playbook(rover_suggestions):
                         rovers["Rover{0}".format(rover_id)].reset_rover()
                         s_id[rover_id] = int(rover_suggestions[rover_id][sgst])
 
-                    rover_rewards = np.zeros((n_rovers, rover_steps + 1))  # Keep track of rover rewards at each t
+                    rover_rewards = np.zeros((n_rovers, rover_steps+1))  # Keep track of rover rewards at each t
                     for rover_id in range(n_rovers):  # Initial rover scan of environment
                         rovers["Rover{0}".format(rover_id)].scan_environment(rovers, rd.pois, n_rovers)
                         suggestion = construct_counterfactual_state(rd.pois, rovers, rover_id, s_id[rover_id])

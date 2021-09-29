@@ -69,12 +69,15 @@ def test_trained_policy():
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
+    # World Setup
     rd = RoverDomain()  # Create instance of the rover domain
+    rd.load_world()
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
 
     reward_history = []  # Keep track of team performance throughout training
     average_reward = 0
@@ -86,10 +89,9 @@ def test_trained_policy():
             rov_weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
             rovers["Rover{0}".format(rover_id)].get_weights(rov_weights)
 
-        # Load World Configuration
-        rd.load_world(srun)
+        # Reset Rover
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             final_rover_path[srun, rover_id, 0, 0] = rovers["Rover{0}".format(rover_id)].pos[0]
             final_rover_path[srun, rover_id, 0, 1] = rovers["Rover{0}".format(rover_id)].pos[1]
             final_rover_path[srun, rover_id, 0, 2] = rovers["Rover{0}".format(rover_id)].pos[2]

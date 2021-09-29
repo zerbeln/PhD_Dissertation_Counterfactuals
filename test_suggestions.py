@@ -288,13 +288,16 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
 
-    rd = RoverDomain()  # Create instance of the rover domain
+    # Load World Configuration
+    rd = RoverDomain()
+    rd.load_world()
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
         rovers["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -306,10 +309,8 @@ def test_suggestions_policy_bank(pbank_type, sgst):
             s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
             rovers["SN{0}".format(rover_id)].get_weights(s_weights)
 
-        # Load World Configuration
-        rd.load_world(srun)
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             final_rover_path[srun, rover_id, 0, 0] = rovers["Rover{0}".format(rover_id)].pos[0]
             final_rover_path[srun, rover_id, 0, 1] = rovers["Rover{0}".format(rover_id)].pos[1]
             final_rover_path[srun, rover_id, 0, 2] = rovers["Rover{0}".format(rover_id)].pos[2]
@@ -387,8 +388,9 @@ if __name__ == '__main__':
         for rover_id in range(p["n_rovers"]):
             rover_suggestions[rover_id] = Suggestion_Queue([Suggestion(0), Suggestion(1,30)])
     elif p["policy_bank_type"] == "Four_Quadrants":
-        for rover_id in range(p["n_rovers"]):
-            sugg = 0
-            rover_suggestions.append(sugg)
+        # for rover_id in range(p["n_rovers"]):
+        #     sugg = 0
+        #     rover_suggestions.append(sugg)
+        rover_suggestions = [0, 0, 2, 0, 0, 0]
     test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
 

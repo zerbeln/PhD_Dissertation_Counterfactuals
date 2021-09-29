@@ -82,23 +82,23 @@ def train_towards_teammates():
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
-    rd = RoverDomain()  # Number of POI, Number of Rovers
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
+
     # Create dictionary of rover instances
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
-
-        # Create new EA pop
-        for rover_id in range(n_rovers):
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         for gen in range(generations):
@@ -153,23 +153,23 @@ def train_away_teammates():
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
-    rd = RoverDomain()  # Number of POI, Number of Rovers
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
+
     # Create dictionary of rover instances
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
-
-        # Create new EA pop
-        for rover_id in range(n_rovers):
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         for gen in range(generations):
@@ -224,23 +224,23 @@ def train_towards_poi():
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
-    rd = RoverDomain()  # Number of POI, Number of Rovers
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
+
     # Create dictionary of rover instances
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
-
-        # Create new EA pop
-        for rover_id in range(n_rovers):
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         for gen in range(generations):
@@ -296,23 +296,23 @@ def train_away_poi():
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
-    rd = RoverDomain()  # Number of POI, Number of Rovers
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
+
     # Create dictionary of rover instances
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
-
-        # Create new EA pop
-        for rover_id in range(n_rovers):
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         for gen in range(generations):
@@ -369,20 +369,23 @@ def train_two_poi(target_poi):
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
-    rd = RoverDomain()  # Number of POI, Number of Rovers
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
+
     # Create dictionary of rover instances
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration and create new EA pop
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         policy_rewards = [[] for i in range(n_rovers)]
@@ -446,20 +449,23 @@ def train_four_quadrants(target_q):
     n_hid = p["n_hidden"]
     n_out = p["n_outputs"]
 
-    rd = RoverDomain()  # Number of POI, Number of Rovers
+    # World Setup
+    rd = RoverDomain()
+    rd.load_world()
+
     # Create dictionary of rover instances
     rovers = {}
     for rover_id in range(n_rovers):
         rovers["Rover{0}".format(rover_id)] = Rover(rover_id, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        rovers["Rover{0}".format(rover_id)].initialize_rover()
         rovers["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Load World Configuration and create new EA pop
-        rd.load_world(srun)
+        # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].initialize_rover(srun)
+            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()
 
         policy_rewards = [[] for i in range(n_rovers)]
