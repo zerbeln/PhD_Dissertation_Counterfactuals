@@ -1,4 +1,3 @@
-from Python_Code.ccea import Ccea
 from Python_Code.suggestion_network import SuggestionNetwork
 from Python_Code.rover_domain import RoverDomain
 from Python_Code.agent import Rover
@@ -227,7 +226,6 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     stat_runs = p["stat_runs"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
-    domain_type = p["domain_type"]
 
     # Rover Motor Control
     n_inp = p["n_inputs"]
@@ -303,10 +301,7 @@ def test_suggestions_policy_bank(pbank_type, sgst):
                 rovers["Rover{0}".format(rover_id)].rover_actions = rv_actions
 
             # Calculate Global Reward
-            if domain_type == "Loose":
-                g_rewards[step_id] = rd.calc_global_loose()
-            else:
-                g_rewards[step_id] = rd.calc_global_tight()
+            g_rewards[step_id] = rd.calc_global()
 
         reward_history.append(sum(g_rewards))
         average_reward += sum(g_rewards)
@@ -324,13 +319,8 @@ if __name__ == '__main__':
     # Create list of suggestions for rovers to use during training
     rover_suggestions = []
     if p["policy_bank_type"] == "Two_POI":
-        for rover_id in range(p["n_rovers"]):
-            sugg = 0
-            rover_suggestions.append(sugg)
+        rover_suggestions = [2, 2, 2]
     elif p["policy_bank_type"] == "Four_Quadrants":
-        # for rover_id in range(p["n_rovers"]):
-        #     sugg = 0
-        #     rover_suggestions.append(sugg)
         rover_suggestions = [0, 0, 2, 0, 0, 0]
     test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
 

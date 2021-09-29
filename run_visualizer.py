@@ -62,7 +62,6 @@ def test_trained_policy():
     stat_runs = p["stat_runs"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
-    domain_type = p["domain_type"]
 
     # Rover Motor Control
     n_inp = p["n_inputs"]
@@ -115,10 +114,7 @@ def test_trained_policy():
                 rd.update_observer_distances(rover_id, rovers["Rover{0}".format(rover_id)].poi_distances)
 
             # Calculate Global Reward
-            if domain_type == "Loose":
-                g_rewards[step_id] = rd.calc_global_loose()
-            else:
-                g_rewards[step_id] = rd.calc_global_tight()
+            g_rewards[step_id] = rd.calc_global()
 
         reward_history.append(sum(g_rewards))
         average_reward += sum(g_rewards)

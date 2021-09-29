@@ -68,7 +68,7 @@ def import_poi_information(n_poi):
 
 def run_visualizer(v_running=False):
     """
-    Run the visualzier that plots each rover's trajectory in the domain
+    Run the visualizer that plots each rover's trajectory in the domain
     :return:
     """
     # Parameters
@@ -76,7 +76,6 @@ def run_visualizer(v_running=False):
     n_rovers = p["n_rovers"]
     n_poi = p["n_poi"]
     rover_steps = p["steps"]
-    cpl = p["coupling"]
     obs_rad = p["observation_radius"]
 
     scale_factor = 10  # Scaling factor for images
@@ -116,7 +115,7 @@ def run_visualizer(v_running=False):
                     if dist <= obs_rad:
                         obs_count += 1
 
-                if obs_count >= cpl:
+                if obs_count >= pois[poi_id, 3]:
                     poi_status[poi_id] = True
                 if poi_status[poi_id]:
                     pygame.draw.circle(game_display, (50, 205, 50), (poi_x, poi_y), 10)
