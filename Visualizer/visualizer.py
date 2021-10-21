@@ -84,10 +84,12 @@ def run_visualizer(v_running=False):
     width = -15  # robot icon widths
     x_map = int(p["x_dim"] + 10)  # Slightly larger so POI are not cut off
     y_map = int(p["y_dim"] + 10)
+    box_width = 595
+    rect = pygame.Rect((0, 0), (box_width, box_width))
     image_adjust = 100  # Adjusts the image so that everything is centered
     pygame.init()
     pygame.display.set_caption('Rover Domain')
-    robot_image = pygame.image.load('./Visualizer/robot.png')
+    robot_image = pygame.image.load('./Visualizer/rover.png')
     background = pygame.image.load('./Visualizer/background.png')
     color_array = generate_color_array(3)
     pygame.font.init() 
@@ -104,6 +106,7 @@ def run_visualizer(v_running=False):
 
             # Draw POI and calculate POI observations
             draw(game_display, background, 0, 0)
+            pygame.draw.rect(game_display, (0, 0, 0), rect, 5)
             for poi_id in range(n_poi):  # Draw POI and POI values
                 poi_x = int(pois[poi_id, 0] * scale_factor) + image_adjust
                 poi_y = int(pois[poi_id, 1] * scale_factor) + image_adjust
@@ -121,14 +124,16 @@ def run_visualizer(v_running=False):
                     poi_status[poi_id] = True
                 if poi_status[poi_id]:
                     pygame.draw.circle(game_display, (50, 205, 50), (poi_x, poi_y), 10)
-                    pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), int(obs_rad * scale_factor), 1)
+                    pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), int(obs_rad * scale_factor), 2)
                 else:
                     pygame.draw.circle(game_display, (220, 20, 60), (poi_x, poi_y), 10)
-                    pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), int(obs_rad * scale_factor), 1)
-                textsurface = myfont.render(str(pois[poi_id, 2]), False, (0, 0, 0))
-                target_x = int(pois[poi_id, 0]*scale_factor) + image_adjust
-                target_y = int(pois[poi_id, 1]*scale_factor) + image_adjust
-                draw(game_display, textsurface, target_x, target_y)
+                    pygame.draw.circle(game_display, (0, 0, 0), (poi_x, poi_y), int(obs_rad * scale_factor), 2)
+
+                # This code displays the value of each PoI
+                # textsurface = myfont.render(str(pois[poi_id, 2]), False, (0, 0, 0))
+                # target_x = int(pois[poi_id, 0]*scale_factor) + image_adjust
+                # target_y = int(pois[poi_id, 1]*scale_factor) + image_adjust
+                # draw(game_display, textsurface, target_x, target_y)
 
             # Draw Rovers
             for rover_id in range(n_rovers):

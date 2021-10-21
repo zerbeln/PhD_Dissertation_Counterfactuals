@@ -12,7 +12,7 @@ from parameters import parameters as p
 
 def save_reward_history(reward_history, file_name):
     """
-    Save the reward history for the agents throughout the learning process (reward from best policy team each gen)
+    Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
     """
 
     dir_name = 'Output_Data/'  # Intended directory for output files
@@ -25,26 +25,9 @@ def save_reward_history(reward_history, file_name):
         writer.writerow(['Performance'] + reward_history)
 
 
-def save_rover_path(rover_path, file_name):  # Save path rovers take using best policy found
-    """
-    Records the path each rover takes using best policy from CCEA (used by visualizer)
-    :param rover_path:  trajectory tracker
-    :return:
-    """
-    dir_name = 'Output_Data/'  # Intended directory for output files
-
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    rpath_name = os.path.join(dir_name, file_name)
-    rover_file = open(rpath_name, 'wb')
-    pickle.dump(rover_path, rover_file)
-    rover_file.close()
-
-
 def save_best_policies(network_weights, srun, file_name, rover_id):
     """
-    Save trained neural networks as a pickle file
+    Save trained neural networks for each rover as a pickle file
     """
     # Make sure Policy Bank Folder Exists
     if not os.path.exists('Policy_Bank'):  # If Data directory does not exist, create it
@@ -184,8 +167,6 @@ def rover_global():
             weights = rovers["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
-    save_rover_path(final_rover_path, "Rover_Paths")
-
 
 def rover_difference():
     """
@@ -296,8 +277,6 @@ def rover_difference():
             policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
             weights = rovers["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
-
-    save_rover_path(final_rover_path, "Rover_Paths")
 
 
 def rover_dpp():
@@ -412,8 +391,6 @@ def rover_dpp():
             weights = rovers["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
-    save_rover_path(final_rover_path, "Rover_Paths")
-
 
 def rover_sdpp(sgst):
     """
@@ -526,8 +503,6 @@ def rover_sdpp(sgst):
             policy_id = np.argmax(rovers["EA{0}".format(rover_id)].fitness)
             weights = rovers["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
-
-    save_rover_path(final_rover_path, "Rover_Paths")
 
 
 if __name__ == '__main__':

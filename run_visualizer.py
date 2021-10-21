@@ -10,7 +10,7 @@ from parameters import parameters as p
 
 def save_reward_history(reward_history, file_name):
     """
-    Save the reward history for the agents throughout the learning process (reward from best policy team each gen)
+    Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
     """
 
     dir_name = 'Output_Data/'  # Intended directory for output files
@@ -56,7 +56,7 @@ def load_saved_policies(file_name, rover_id, srun):
 
 def test_trained_policy():
     """
-    Test rover policy trained using Global, Difference, or D++ rewards
+    Test rover policy trained using Global, Difference, or D++ rewards.
     """
     # Parameters
     stat_runs = p["stat_runs"]
@@ -127,4 +127,5 @@ def test_trained_policy():
 
 
 if __name__ == '__main__':
-    test_trained_policy()
+    # test_trained_policy()
+    run_visualizer(v_running=True)

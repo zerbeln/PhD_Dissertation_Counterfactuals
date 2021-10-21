@@ -13,7 +13,7 @@ from parameters import parameters as p
 
 def save_reward_history(reward_history, file_name):
     """
-    Save the reward history for the agents throughout the learning process (reward from best policy team each gen)
+    Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
     """
 
     dir_name = 'Output_Data/'  # Intended directory for output files

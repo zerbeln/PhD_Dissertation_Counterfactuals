@@ -23,7 +23,6 @@ class Ccea:
     def reset_fitness(self):
         """
         Clear fitness vector of stored values
-        :return:
         """
 
         self.fitness = np.zeros(self.pop_size)
@@ -31,7 +30,6 @@ class Ccea:
     def create_new_population(self):  # Re-initializes CCEA populations for new run
         """
         Create new populations (for beginning of stat run)
-        :return: None
         """
         self.population = {}
         self.fitness = np.zeros(self.pop_size)
@@ -49,7 +47,6 @@ class Ccea:
     def select_policy_teams(self):
         """
         Determines which individuals from each population get paired together
-        :return: None
         """
 
         self.team_selection = random.sample(range(self.pop_size), self.pop_size)
@@ -57,8 +54,8 @@ class Ccea:
     def weight_mutate(self):
         """
         Mutate offspring populations (each weight has a probability of mutation)
-        :return:
         """
+
         pol_id = int(self.n_elites)
         while pol_id < self.pop_size:
             mut_counter = 0
@@ -103,7 +100,6 @@ class Ccea:
     def binary_tournament_selection(self):
         """
         Select parents using binary tournament selection
-        :return:
         """
         new_population = {}
         for pol_id in range(self.pop_size):
@@ -119,7 +115,7 @@ class Ccea:
                     new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p1)])
                 elif self.fitness[p1] < self.fitness[p2]:
                     new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p2)])
-                else:
+                else:  # If fitnesses are equal, use a random tie breaker
                     rnum = random.uniform(0, 1)
                     if rnum > 0.5:
                         new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p1)])
@@ -132,7 +128,6 @@ class Ccea:
     def epsilon_greedy_select(self):  # Choose K solutions
         """
         Select parents using e-greedy selection
-        :return: None
         """
         new_population = {}
         for pol_id in range(self.pop_size):
@@ -140,10 +135,10 @@ class Ccea:
                 new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(pol_id)])
             else:
                 rnum = random.uniform(0, 1)
-                if rnum < self.eps:
+                if rnum < self.eps:  # Greedy Selection
                     max_index = np.argmax(self.fitness)
                     new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(max_index)])
-                else:
+                else:  # Random Selection
                     parent = random.randint(1, (self.pop_size - 1))
                     new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(parent)])
 
@@ -153,7 +148,6 @@ class Ccea:
     def random_selection(self):
         """
         Choose next generation of policies using elite-random selection
-        :return:
         """
         new_population = {}
         for pol_id in range(self.pop_size):
@@ -169,7 +163,6 @@ class Ccea:
     def rank_population(self):
         """
         Reorders the population in terms of fitness (high to low)
-        :return:
         """
         ranked_population = copy.deepcopy(self.population)
         for pol_id_a in range(self.pop_size):
@@ -188,7 +181,6 @@ class Ccea:
     def down_select(self):  # Create a new offspring population using parents from top 50% of policies
         """
         Select parents create offspring population, and perform mutation operations
-        :return: None
         """
         self.rank_population()
         self.epsilon_greedy_select()  # Select K successors using epsilon greedy
