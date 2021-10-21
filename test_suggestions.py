@@ -307,7 +307,7 @@ def test_suggestions_policy_bank(pbank_type, sgst):
         average_reward += sum(g_rewards)
 
         save_rover_path(final_rover_path, "Rover_Paths")
-        # print(reward_history)
+
     average_reward /= stat_runs
     print(average_reward)
     save_reward_history(reward_history, "Final_GlobalRewards.csv")
@@ -321,6 +321,6 @@ if __name__ == '__main__':
     if p["policy_bank_type"] == "Two_POI":
         rover_suggestions = [2, 2, 2]
     elif p["policy_bank_type"] == "Four_Quadrants":
-        rover_suggestions = [0, 0, 2, 0, 0, 0]
+        rover_suggestions = [1, 2, 0, 0, 3, 0]
     test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
 

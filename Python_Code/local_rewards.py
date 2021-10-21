@@ -90,14 +90,14 @@ def greedy_reward_loose(rover_id, observer_distances, poi):
     return reward
 
 
-def two_poi_reward(rover_id, observer_distances, poi, target_poi):
+def two_poi_reward(rover_id, observer_distances, poi, target_quadrant):
     """
     Local rewards for going towards either the left or right POI
     """
 
     reward = 0
     for poi_id in range(p["n_poi"]):
-        if target_poi == poi_id:
+        if target_quadrant == poi[poi_id, 4]:
             dist = observer_distances[poi_id, rover_id]
 
             if dist < p["observation_radius"]:
@@ -112,7 +112,7 @@ def four_quadrant_rewards(rover_id, observer_distances, poi, target_quadrant):
     """
     reward = 0
     for poi_id in range(p["n_poi"]):
-        if target_quadrant == poi[poi_id, 3]:
+        if target_quadrant == poi[poi_id, 4]:
             dist = observer_distances[poi_id, rover_id]
 
             if dist < p["observation_radius"]:

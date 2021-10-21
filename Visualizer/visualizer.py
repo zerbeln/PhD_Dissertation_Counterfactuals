@@ -49,7 +49,7 @@ def import_poi_information(n_poi):
     Import POI information from saved configuration files
     :return:
     """
-    pois = np.zeros((n_poi, 3))
+    pois = np.zeros((n_poi, 5))
 
     config_input = []
     with open('./World_Config/POI_Config.csv') as csvfile:
@@ -62,6 +62,8 @@ def import_poi_information(n_poi):
         pois[poi_id, 0] = float(config_input[poi_id][0])
         pois[poi_id, 1] = float(config_input[poi_id][1])
         pois[poi_id, 2] = float(config_input[poi_id][2])
+        pois[poi_id, 3] = float(config_input[poi_id][3])
+        pois[poi_id, 4] = float(config_input[poi_id][4])
 
     return pois
 

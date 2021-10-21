@@ -79,7 +79,7 @@ def load_saved_policies(file_name, rover_id, srun):
     return weights
 
 
-def create_policy_playbook(playbook_type, srun, n_inp, n_out, n_hid):
+def create_policy_bank(playbook_type, srun, n_inp, n_out, n_hid):
     """
     Choose which playbook of policies to load for the rovers
     """
@@ -240,7 +240,7 @@ def create_counterfactual_rover_state(rover_info, rover_pos, self_id, poi_quadra
     return rover_state
 
 
-def train_suggestions_playbook(rover_suggestions):
+def train_suggestions_playbook():
     """
     Train suggestions using a pre-trained playbook of rover policies
     """
@@ -282,17 +282,21 @@ def train_suggestions_playbook(rover_suggestions):
 
         # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):
-            rovers["Rover{0}".format(rover_id)].reset_rover()
             rovers["EA{0}".format(rover_id)].create_new_population()  # Create new CCEA population
 
         # Load Pre-Trained Policies
-        policy_bank = create_policy_playbook(pbank_type, srun, n_inp, n_out, n_hid)
+        policy_bank = create_policy_bank(pbank_type, srun, n_inp, n_out, n_hid)
         s_id = np.zeros(n_rovers, int)  # Identifies what suggestion each rover is using
         policy_rewards = [[] for i in range(n_rovers)]
         for gen in range(generations):
+            # Create list of suggestions for rovers to use during training and reset rovers to initial positions
+            rover_suggestions = []
             for rover_id in range(n_rovers):
+                rovers["Rover{0}".format(rover_id)].reset_rover()
                 rovers["EA{0}".format(rover_id)].select_policy_teams()
                 rovers["EA{0}".format(rover_id)].reset_fitness()
+                sugg = random.sample(range(p["n_suggestions"]), p["n_suggestions"])
+                rover_suggestions.append(sugg)
 
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 # Get weights for suggestion interpreter
@@ -370,19 +374,5 @@ if __name__ == '__main__':
     Train suggestions interpreter (must have already pre-trained agent playbook)
     """
 
-    # Create list of suggestions for rovers to use during training
-    rover_suggestions = []
-    if p["policy_bank_type"] == "Two_POI":
-        for rover_id in range(p["n_rovers"]):
-            if rover_id % 2 == 0:
-                sugg = [2, 0]
-            else:
-                sugg = [0, 2]
-            rover_suggestions.append(sugg)
-    elif p["policy_bank_type"] == "Four_Quadrants":
-        for rover_id in range(p["n_rovers"]):
-            sugg = random.sample(range(p["n_suggestions"]), p["n_suggestions"])
-            rover_suggestions.append(sugg)
-
     print("Training Suggestion Interpreter")
-    train_suggestions_playbook(rover_suggestions)
+    train_suggestions_playbook()
