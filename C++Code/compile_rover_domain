@@ -1,0 +1,2 @@
+g++ -std=c++11 -o run_rd main.cpp agent.h ccea.h matrix_multiply.h parameters.h rewards.h rover_domain.h
+
