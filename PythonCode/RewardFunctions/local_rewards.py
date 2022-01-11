@@ -6,15 +6,14 @@ def towards_teammates_reward(rovers, rover_id):
     Rovers receive a reward for travelling towards other rovers
     """
 
-    n_rovers = p["n_rovers"]
-    rov_x = rovers["Rover{0}".format(rover_id)].pos[0]
-    rov_y = rovers["Rover{0}".format(rover_id)].pos[1]
+    rov_x = rovers["Rover{0}".format(rover_id)].x_pos
+    rov_y = rovers["Rover{0}".format(rover_id)].y_pos
 
     reward = 0
-    for agent_id in range(n_rovers):
-        if agent_id != rover_id:
-            x = rovers["Rover{0}".format(agent_id)].pos[0]
-            y = rovers["Rover{0}".format(agent_id)].pos[1]
+    for rov in rovers:
+        if rov.self_id != rover_id:
+            x = rov.x_pos
+            y = rov.y_pos
             dist = (rov_x - x)**2 + (rov_y - y)**2
 
             reward -= dist
@@ -26,16 +25,14 @@ def away_teammates_reward(rovers, rover_id):
     """
     Rovers receive a reward for travelling away from other rovers
     """
-
-    n_rovers = p["n_rovers"]
-    rov_x = rovers["Rover{0}".format(rover_id)].pos[0]
-    rov_y = rovers["Rover{0}".format(rover_id)].pos[1]
+    rov_x = rovers["Rover{0}".format(rover_id)].x_pos
+    rov_y = rovers["Rover{0}".format(rover_id)].y_pos
 
     reward = 0
-    for agent_id in range(n_rovers):
-        if agent_id != rover_id:
-            x = rovers["Rover{0}".format(agent_id)].pos[0]
-            y = rovers["Rover{0}".format(agent_id)].pos[1]
+    for rov in rovers:
+        if rov.self_id != rover_id:
+            x = rov.x_pos
+            y = rov.y_pos
             dist = (rov_x - x) ** 2 + (rov_y - y) ** 2
 
             reward += dist
@@ -43,80 +40,75 @@ def away_teammates_reward(rovers, rover_id):
     return reward
 
 
-def towards_poi_reward(rover_id, observer_distances):
+def towards_poi_reward(rover_id, pois):
     """
     Rovers receive a reward for travelling towards POI
     """
-
-    n_poi = p["n_poi"]
     reward = 0
-    for poi_id in range(n_poi):
-        dist = observer_distances[poi_id, rover_id]
+    for poi in pois:
+        dist = poi.observer_distances[rover_id]
 
         reward -= dist
 
     return reward
 
 
-def away_poi_reward(rover_id, observer_distances):
+def away_poi_reward(rover_id, pois):
     """
     Rovers receive a reward for travelling away from POI
     """
-
-    n_poi = p["n_poi"]
     reward = 0
-    for poi_id in range(n_poi):
-        dist = observer_distances[poi_id, rover_id]
+    for poi in pois:
+        dist = poi.observer_distances[rover_id]
 
         reward += dist
 
     return reward
 
 
-def greedy_reward_loose(rover_id, observer_distances, poi):
+def greedy_reward_loose(rover_id, pois):
     """
     Greedy local reward for rovers
     """
-    n_poi = p["n_poi"]
     obs_rad = p["observation_radius"]
     reward = 0
 
-    for poi_id in range(n_poi):
-        dist = observer_distances[poi_id, rover_id]
+    for poi in pois:
+        dist = poi.observer_distances[rover_id]
 
         if dist < obs_rad:
-            reward += poi[poi_id, 2] / dist
+            reward += poi.value / dist
 
     return reward
 
 
-def two_poi_reward(rover_id, observer_distances, poi, target_quadrant):
+def two_poi_reward(rover_id, pois, target_poi):
     """
     Local rewards for going towards either the left or right POI
     """
 
     reward = 0
-    for poi_id in range(p["n_poi"]):
-        if target_quadrant == poi[poi_id, 4]:
-            dist = observer_distances[poi_id, rover_id]
+    for poi in pois:
+        if target_poi == poi.poi_id:
+            dist = poi.observer_distances[rover_id]
 
             if dist < p["observation_radius"]:
-                reward += poi[poi_id, 2] / dist
+                reward += poi.value/ dist
 
     return reward
 
 
-def four_quadrant_rewards(rover_id, observer_distances, poi, target_quadrant):
+def four_quadrant_rewards(rover_id, pois, target_quadrant):
     """
     Local reward for training rovers to travel towards POI within a specific quadrant
     """
     reward = 0
-    for poi_id in range(p["n_poi"]):
-        if target_quadrant == poi[poi_id, 4]:
-            dist = observer_distances[poi_id, rover_id]
+    for poi in pois:
+        if target_quadrant == poi.quadrant:
+            dist = poi.observer_distances[rover_id]
 
             if dist < p["observation_radius"]:
-                reward += poi[poi_id, 2] / dist
+                reward += poi.value / dist
 
     return reward
 

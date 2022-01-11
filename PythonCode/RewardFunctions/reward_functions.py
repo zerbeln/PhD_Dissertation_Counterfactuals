@@ -6,16 +6,12 @@ from parameters import parameters as p
 def calc_difference(pois, global_reward):
     """
     Calculate each rover's difference reward at the current time step
-    :param observer_distances: Each rover's distance to each POI
-    :param pois: np array with X-Y coordinates and value for each POI
-    :param global_reward: Reward given to the team from the world
     """
     obs_rad = p["observation_radius"]
     n_rovers = p["n_rovers"]
 
     difference_rewards = np.zeros(n_rovers)
     for agent_id in range(n_rovers):  # For each rover
-
         counterfactual_global_reward = 0.0
         for pk in pois:  # For each POI
             observer_count = 0

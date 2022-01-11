@@ -1,11 +1,11 @@
 parameters = {}
 
 # Run Parameters
-parameters["stat_runs"] = 1
-parameters["generations"] = 100  # Number of generations for CCEA in each stat run
+parameters["stat_runs"] = 15
+parameters["generations"] = 5000  # Number of generations for CCEA in each stat run
 parameters["pbank_generations"] = 3000  # Number of generations used for training policy bank
-parameters["reward_type"] = "DPP"  # Global, Difference, DPP, SDPP (for non-suggestion training)
-parameters["coupling"] = 3  # Number of rovers required to view a POI for credit
+parameters["reward_type"] = "Difference"  # Global, Difference, DPP, SDPP (for non-suggestion training)
+parameters["coupling"] = 1  # Number of rovers required to view a POI for credit
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Visualizer
@@ -31,7 +31,7 @@ parameters["sensor_model"] = "summed"  # Should either be "density" or "summed"
 parameters["angle_res"] = 90  # Resolution of sensors (determines number of sectors)
 parameters["observation_radius"] = 4.0  # Maximum range at which rovers can observe a POI
 parameters["min_distance"] = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
-parameters["dmax"] = 2.0  # Maximum distance a rover can move in a single time step
+parameters["dmax"] = 3.0  # Maximum distance a rover can move in a single time step
 
 # Neural network parameters for rover motor control
 parameters["n_inputs"] = 8

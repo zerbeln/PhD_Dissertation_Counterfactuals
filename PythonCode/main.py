@@ -1,8 +1,8 @@
-from Python_Code.ccea import Ccea
-from Python_Code.suggestion_network import SuggestionNetwork
-from Python_Code.rover_domain import RoverDomain
-from Python_Code.agent import Rover
-from Python_Code.suggestion_rewards import *
+from ccea import Ccea
+from suggestion_network import SuggestionNetwork
+from RoverDomain_Core.rover_domain import RoverDomain
+from RoverDomain_Core.agent import Rover
+from RewardFunctions.suggestion_rewards import *
 import math
 import sys
 import pickle
@@ -317,7 +317,7 @@ def train_suggestions_playbook():
                         for rover_id in range(n_rovers):
                             rd.rovers["R{0}".format(rover_id)].scan_environment(rd.rovers, rd.pois, n_rovers)
                             sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
-                            rd.update_observer_distances(rover_id, rd.rovers["R{0}".format(rover_id)].poi_distances)
+                            rd.update_observer_distances()
                             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id[rover_id])
                             sug_input = np.concatenate((suggestion, sensor_data), axis=0)
                             pops["SN{0}".format(rover_id)].get_inputs(sug_input)

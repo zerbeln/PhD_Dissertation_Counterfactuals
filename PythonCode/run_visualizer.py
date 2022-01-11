@@ -1,4 +1,4 @@
-from Python_Code.rover_domain import RoverDomain
+from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import pickle
 import csv
@@ -25,8 +25,6 @@ def save_reward_history(reward_history, file_name):
 def save_rover_path(rover_path, file_name):  # Save path rovers take using best policy found
     """
     Records the path each rover takes using best policy from CCEA (used by visualizer)
-    :param rover_path:  trajectory tracker
-    :return:
     """
     dir_name = 'Output_Data/'  # Intended directory for output files
 
@@ -39,7 +37,7 @@ def save_rover_path(rover_path, file_name):  # Save path rovers take using best 
     rover_file.close()
 
 
-def load_saved_policies(file_name, rover_id, srun):
+def load_saved_policies_python(file_name, rover_id, srun):
     """
     Load saved Neural Network policies from pickle file
     """
@@ -51,6 +49,52 @@ def load_saved_policies(file_name, rover_id, srun):
     weight_file.close()
 
     return weights
+
+def load_saved_policies_cpp(file_name, rover_id, srun):
+    dir_name = 'CPP_Policy_Bank/'.format(rover_id)
+    fpath_name = os.path.join(dir_name, file_name)
+
+    # Read Weights from txt file generated from C++
+    weights = []
+    with open(fpath_name) as txtfile:
+        fileread = csv.reader(txtfile, delimiter=',')
+
+        for row in fileread:
+            weights.append(row)
+
+    # Convert string to float
+    nn_weights = []
+    for row in weights:
+        row.remove(row[len(row)-1])
+        for w in row:
+            nn_weights.append(float(w))
+
+    # Convert weights to dictionary form used in Python codebase
+    rover_policy = {}
+    w_count = 0
+    layer1 = np.zeros(p["n_inputs"] * p["n_hidden"])
+    layer2 = np.zeros(p["n_hidden"] * p["n_outputs"])
+    b1 = np.zeros(p["n_hidden"])
+    b2 = np.zeros(p["n_outputs"])
+    for w in range(p["n_inputs"] * p["n_hidden"]):
+        layer1[w] = nn_weights[w_count]
+        w_count += 1
+    for w in range(p["n_hidden"] * p["n_outputs"]):
+        layer2[w] = nn_weights[w_count]
+        w_count += 1
+    for w in range(p["n_hidden"]):
+        b1[w] = nn_weights[w_count]
+        w_count += 1
+    for w in range(p["n_outputs"]):
+        b2[w] = nn_weights[w_count]
+        w_count += 1
+
+    rover_policy["L1"] = layer1
+    rover_policy["L2"] = layer2
+    rover_policy["b1"] = b1
+    rover_policy["b2"] = b2
+
+    return rover_policy
 
 
 def test_trained_policy():
@@ -74,7 +118,8 @@ def test_trained_policy():
         # Load Trained Suggestion Interpreter Weights
         for rk in rd.rovers:
             rover_id = rd.rovers[rk].self_id
-            rov_weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
+            # rov_weights = load_saved_policies_python('RoverWeights{0}'.format(rover_id), rover_id, srun)
+            rov_weights = load_saved_policies_cpp('RoverPolicy{0}.txt'.format(rover_id), rover_id, srun)
             rd.rovers[rk].get_weights(rov_weights)
 
         # Reset Rover
@@ -118,5 +163,5 @@ def test_trained_policy():
 
 
 if __name__ == '__main__':
-    # test_trained_policy()
-    run_visualizer(v_running=True)
+    test_trained_policy()
+    # run_visualizer(v_running=True)

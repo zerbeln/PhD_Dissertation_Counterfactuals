@@ -28,7 +28,7 @@ public:
     void load_world(){
         string line;
 
-        ifstream csvfile("../World_Config/POI_Config.csv", ios::in);
+        ifstream csvfile("World_Config/POI_Config.csv", ios::in);
 
         if(!csvfile){
             cout << "ERROR: CSV FILE NOT OPEN" << endl;
@@ -58,7 +58,7 @@ public:
 
     void load_rover() {
         string line;
-        ifstream csvfile("../World_Config/Rover_Config.csv", ios::in);
+        ifstream csvfile("World_Config/Rover_Config.csv", ios::in);
 
         if (!csvfile) {
             cout << "ERROR: CSV FILE NOT OPEN" << endl;

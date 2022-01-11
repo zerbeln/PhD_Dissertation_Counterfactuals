@@ -10,25 +10,45 @@
 using namespace std;
 
 // Test Parameters
-int generations = 5000;
 int stat_runs = 15;
+int generations = 5000;
+int pbank_generations = 3000;
+string reward_type = "Difference";  // Global, Difference, or DPP
+int coupling = 1;
 int sample_rate = 20;
 
-// Domain Parameters
+//Domain Parameters
 double world_x = 100.0;
 double world_y = 100.0;
 int n_poi = 10;
 int n_rovers = 6;
+int rover_steps = 45;
+
+// Rover Parameters
+string sensor_model = "summed";
 double obs_radius = 4.0;
-int coupling = 1;
 double delta_min = 1.0;
-int pop_size = 30;
-int rover_steps = 25;
+double delta_max = 2.0;
+double angle_res = 90.0;
+
+// Suggestion Parameters
+string policy_bank_type = "Four_Quadrants";
+int n_policies = 4;
+int n_suggestions = 4;
+int s_inputs = 16;
+int s_hidden = 12;
+int s_outputs = n_policies;
 
 // Neural Network Parameters
 int n_inputs = 8;
 int n_hidden = 10;
 int n_outputs = 2;
 
+// CCEA Parameters
+int pop_size = 30;
+double mutation_chance = 0.1;
+double mutation_rate = 0.1;
+double eps = 0.1;
+int num_elites = 1;
 
 #endif //UNTITLED_PARAMETERS_H

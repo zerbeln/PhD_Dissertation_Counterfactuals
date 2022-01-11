@@ -29,10 +29,10 @@ public:
 
 class Rover {
     friend class Poi;
-    string sensor_type = "summed";
-    double sensor_range = 4.0;
-    double sensor_res = 90.0;
-    double dmax = 2.0;
+    string sensor_type = sensor_model;
+    double sensor_range = obs_radius;
+    double sensor_res = angle_res;
+    double dmax = delta_max;
     int n_weights = ((n_inputs+1) * n_hidden) + ((n_hidden+1) * n_outputs);
     int n_layer1 = ((n_inputs+1) * n_hidden);
 
@@ -124,7 +124,12 @@ public:
         for (bracket = 0; bracket < 4; bracket++) {
             num_poi_bracket = temp_poi_dist_list.at(bracket).size();
             if (num_poi_bracket > 0) {
-                poi_state.at(bracket) = double(accumulate(temp_poi_dist_list.at(bracket).begin(), temp_poi_dist_list.at(bracket).end(), 0.0) / num_poi_bracket);
+                if (sensor_type == "summed"){
+                    poi_state.at(bracket) = double(accumulate(temp_poi_dist_list.at(bracket).begin(), temp_poi_dist_list.at(bracket).end(), 0.0));
+                }
+                else if (sensor_type == "density"){
+                    poi_state.at(bracket) = double(accumulate(temp_poi_dist_list.at(bracket).begin(), temp_poi_dist_list.at(bracket).end(), 0.0) / num_poi_bracket);
+                }
             } else {
                 poi_state.at(bracket) = -1.0;
             }
@@ -157,7 +162,12 @@ public:
         for (bracket = 0; bracket < 4; bracket++) {
             num_rover_bracket = temp_rover_dist_list.at(bracket).size();
             if (num_rover_bracket > 0) {
-                rover_state.at(bracket) = double(accumulate(temp_rover_dist_list.at(bracket).begin(), temp_rover_dist_list.at(bracket).end(), 0.0) / num_rover_bracket);
+                if (sensor_type == "summed"){
+                    rover_state.at(bracket) = double(accumulate(temp_rover_dist_list.at(bracket).begin(), temp_rover_dist_list.at(bracket).end(), 0.0));
+                }
+                else if (sensor_type == "density"){
+                    rover_state.at(bracket) = double(accumulate(temp_rover_dist_list.at(bracket).begin(), temp_rover_dist_list.at(bracket).end(), 0.0) / num_rover_bracket);
+                }
             } else {
                 rover_state.at(bracket) = -1.0;
             }

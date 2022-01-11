@@ -16,11 +16,11 @@ using namespace std;
 
 
 class Ccea{
-    int n_elites = 1;
+    int n_elites = num_elites;
     int n_weights = ((n_inputs+1) * n_hidden) + ((n_hidden+1) * n_outputs);
-    double epsilon = 0.1;
-    double mut_chance = 0.1;
-    double mut_rate = 0.1;
+    double epsilon = eps;
+    double mut_chance = mutation_chance;
+    double mut_rate = mutation_rate;
 public:
     vector < vector <double> > population;
     vector <double> fitness;

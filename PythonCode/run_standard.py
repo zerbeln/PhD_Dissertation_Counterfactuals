@@ -90,7 +90,7 @@ def rover_global():
 
         # Reset Rover and CCEA Pop
         for rover_id in range(n_rovers):  # Randomly initialize ccea populations
-            rd.rovers["R{0}".format(rover_id)].reset_rover(rd.initial_rover_positions[rover_id])
+            rd.rovers["R{0}".format(rover_id)].reset_rover()
             pops["EA{0}".format(rover_id)].create_new_population()  # Create new CCEA population
         reward_history = []
 

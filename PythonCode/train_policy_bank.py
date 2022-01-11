@@ -1,6 +1,6 @@
-from Python_Code.ccea import Ccea
-from Python_Code.local_rewards import *
-from Python_Code.rover_domain import RoverDomain
+from ccea import Ccea
+from RewardFunctions.local_rewards import *
+from RoverDomain_Core.rover_domain import RoverDomain
 import pickle
 import os
 import numpy as np
@@ -251,7 +251,7 @@ def train_towards_poi():
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
                     rd.update_observer_distances()
                     for rover_id in range(n_rovers):
-                        reward = towards_poi_reward(rover_id, rd.observer_distances)
+                        reward = towards_poi_reward(rover_id, rd.pois)
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information
@@ -322,7 +322,7 @@ def train_away_poi():
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
                     rd.update_observer_distances()
                     for rover_id in range(n_rovers):
-                        reward = away_poi_reward(rover_id, rd.observer_distances)
+                        reward = away_poi_reward(rover_id, rd.pois)
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information
@@ -396,7 +396,7 @@ def train_two_poi(target_poi):
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
                     rd.update_observer_distances()
                     for rover_id in range(n_rovers):
-                        reward = two_poi_reward(rover_id, rd.observer_distances, rd.pois, target_poi)
+                        reward = two_poi_reward(rover_id, rd.pois, target_poi)
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information
@@ -471,7 +471,7 @@ def train_four_quadrants(target_q):
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
                     rd.update_observer_distances()
                     for rover_id in range(n_rovers):
-                        reward = four_quadrant_rewards(rover_id, rd.observer_distances, rd.pois, target_q)
+                        reward = four_quadrant_rewards(rover_id, rd.pois, target_q)
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information

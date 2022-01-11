@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <fstream>
 #include <algorithm>
@@ -21,6 +22,25 @@ void record_reward_history(vector <double> reward_vec){
     csvfile << "\n";
     csvfile.close();
 
+}
+
+string int_to_str(int x) {
+    stringstream ss;
+    ss << x;
+    return ss.str();
+}
+
+void save_best_policies(int rover_id, vector <double> policy){
+    ofstream txtfile;
+
+    string filepath = "CPP_Policy_Bank/RoverPolicy" + int_to_str(rover_id) + ".txt";
+    txtfile.open(filepath);
+    int vec_size = policy.size();
+
+    for (int i = 0; i < vec_size; i++){
+        txtfile << policy.at(i) << ",";
+    }
+    txtfile.close();
 }
 
 void rover_global_rewards(){
@@ -134,6 +154,10 @@ void rover_global_rewards(){
         }
 
         record_reward_history(reward_history);
+        for (int rov_id = 0; rov_id < n_rovers; rov_id++){
+            nn_weights = pops.at(rov_id).population.at(0);
+            save_best_policies(rov_id, nn_weights);
+        }
     }
 
 }
@@ -249,6 +273,10 @@ void rover_difference_rewards(){
             }
         }
         record_reward_history(reward_history);
+        for (int rov_id = 0; rov_id < n_rovers; rov_id++){
+            nn_weights = pops.at(rov_id).population.at(0);
+            save_best_policies(rov_id, nn_weights);
+        }
     }
 }
 
@@ -363,13 +391,26 @@ void rover_dpp_rewards(){
             }
         }
         record_reward_history(reward_history);
+        for (int rov_id = 0; rov_id < n_rovers; rov_id++){
+            nn_weights = pops.at(rov_id).population.at(0);
+            save_best_policies(rov_id, nn_weights);
+        }
     }
 }
 
 int main() {
-    rover_global_rewards();
-    // rover_difference_rewards();
-    // rover_dpp_rewards();
+    if (reward_type == "Global"){
+        cout << "GLOBAL REWARDS" << endl;
+        rover_global_rewards();
+    }
+    else if (reward_type == "Difference"){
+        cout << "DIFFERENCE REWARDS" << endl;
+        rover_difference_rewards();
+    }
+    else if (reward_type == "DPP"){
+        cout << "D++ REWARDS" << endl;
+        rover_dpp_rewards();
+    }
 
     return 0;
 }
