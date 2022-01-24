@@ -63,34 +63,26 @@ def load_saved_policies(file_name, rover_id, srun):
     return weights
 
 
-def create_policy_bank(playbook_type, srun, n_inp, n_out, n_hid):
+def create_policy_bank(playbook_type, rover_id, srun):
     """
     Choose which playbook of policies to load for the rovers
     """
     policy_bank = {}
 
     if playbook_type == "Four_Quadrants":
-        for rover_id in range(p["n_rovers"]):
-            w0 = load_saved_policies("TowardQuadrant0", rover_id, srun)
-            w1 = load_saved_policies("TowardQuadrant1", rover_id, srun)
-            w2 = load_saved_policies("TowardQuadrant2", rover_id, srun)
-            w3 = load_saved_policies("TowardQuadrant3", rover_id, srun)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 0)] = SuggestionNetwork(n_inp, n_out, n_hid)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 0)].get_weights(w0)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 1)] = SuggestionNetwork(n_inp, n_out, n_hid)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 1)].get_weights(w1)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 2)] = SuggestionNetwork(n_inp, n_out, n_hid)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 2)].get_weights(w2)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 3)] = SuggestionNetwork(n_inp, n_out, n_hid)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 3)].get_weights(w3)
+        w0 = load_saved_policies("TowardQuadrant0", rover_id, srun)
+        w1 = load_saved_policies("TowardQuadrant1", rover_id, srun)
+        w2 = load_saved_policies("TowardQuadrant2", rover_id, srun)
+        w3 = load_saved_policies("TowardQuadrant3", rover_id, srun)
+        policy_bank["Policy0"] = w0
+        policy_bank["Policy1"] = w1
+        policy_bank["Policy2"] = w2
+        policy_bank["Policy3"] = w3
     elif playbook_type == "Two_POI":
-        for rover_id in range(p["n_rovers"]):
-            w0 = load_saved_policies("TowardPOI0", rover_id, srun)
-            w1 = load_saved_policies("TowardPOI1", rover_id, srun)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 0)] = SuggestionNetwork(n_inp, n_out, n_hid)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 0)].get_weights(w0)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 1)] = SuggestionNetwork(n_inp, n_out, n_hid)
-            policy_bank["Rover{0}Policy{1}".format(rover_id, 1)].get_weights(w1)
+        w0 = load_saved_policies("TowardPOI0", rover_id, srun)
+        w1 = load_saved_policies("TowardPOI1", rover_id, srun)
+        policy_bank["Policy0"] = w0
+        policy_bank["Policy1"] = w1
 
     return policy_bank
 
@@ -126,13 +118,15 @@ def get_angle_dist(x, y, tx, ty):
     return angle, dist
 
 
-def construct_counterfactual_state(poi_info, rover_info, rover_id, suggestion):
+def construct_counterfactual_state(pois, rovers, rover_id, suggestion):
     """
     Create a counteractual state input to represent agent suggestions
     """
-    rover_pos = rover_info["Rover{0}".format(rover_id)].pos
-    cfact_poi, poi_quadrants = create_counterfactual_poi_state(poi_info, rover_pos, suggestion)
-    cfact_rover = create_counterfactual_rover_state(rover_info, rover_pos, rover_id, poi_quadrants, suggestion)
+
+    rx = rovers["R{0}".format(rover_id)].x_pos
+    ry = rovers["R{0}".format(rover_id)].y_pos
+    cfact_poi = create_counterfactual_poi_state(pois, rx, ry, suggestion)
+    cfact_rover = create_counterfactual_rover_state(rovers, rx, ry, rover_id, suggestion)
 
     counterfactual_state = np.zeros(8)
     for i in range(4):
@@ -142,60 +136,57 @@ def construct_counterfactual_state(poi_info, rover_info, rover_id, suggestion):
     return counterfactual_state
 
 
-def create_counterfactual_poi_state(poi_info, rover_pos, suggestion):
+def create_counterfactual_poi_state(pois, rx, ry, suggestion):
     """
     Construct a counterfactual state input for POI detections
     :return: Portion of the counterfactual state constructed from POI scanner
     """
-    poi_state = np.zeros(int(360.0 / p["angle_res"]))
+    c_poi_state = np.zeros(int(360.0 / p["angle_res"]))
     temp_poi_dist_list = [[] for _ in range(int(360.0 / p["angle_res"]))]
-    poi_quadrants = np.zeros(p["n_poi"], int)
 
     # Log POI distances into brackets
-    n_poi = len(poi_info)
-    for poi_id in range(n_poi):
-        angle, dist = get_angle_dist(rover_pos[0], rover_pos[1], poi_info[poi_id, 0], poi_info[poi_id, 1])
+    for poi in pois:
+        angle, dist = get_angle_dist(rx, ry, pois[poi].x_position, pois[poi].y_position)
 
         bracket = int(angle / p["angle_res"])
         if bracket > 3:
             bracket -= 4
-        poi_quadrants[poi_id] = bracket
-        if poi_info[poi_id, 3] == suggestion:
-            temp_poi_dist_list[bracket].append(10*poi_info[poi_id, 2] / dist)
+        if pois[poi].quadrant == suggestion:
+            temp_poi_dist_list[bracket].append(10*pois[poi].value / dist)
 
     # Encode POI information into the state vector
     for bracket in range(int(360 / p["angle_res"])):
         num_poi_bracket = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
         if num_poi_bracket > 0:
             if p["sensor_model"] == 'density':
-                poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_bracket  # Density Sensor
+                c_poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_bracket  # Density Sensor
             elif p["sensor_model"] == 'summed':
-                poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
+                c_poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
             else:
                 sys.exit('Incorrect sensor model')
         else:
-            poi_state[bracket] = -1.0
+            c_poi_state[bracket] = -1.0
 
-    return poi_state, poi_quadrants
+    return c_poi_state
 
 
-def create_counterfactual_rover_state(rover_info, rover_pos, self_id, poi_quadrants, suggestion):
+def create_counterfactual_rover_state(rovers, rx, ry, rover_id, suggestion):
     """
     Construct a counterfactual state input for rover detections
     :return: Portion of the counterfactual state vector created from rover scanner
     """
-    center_x = p["x_dim"]
-    center_y = p["y_dim"]
+    center_x = p["x_dim"]/2
+    center_y = p["y_dim"]/2
     rover_state = np.zeros(int(360.0 / p["angle_res"]))
     temp_rover_dist_list = [[] for _ in range(int(360.0 / p["angle_res"]))]
 
     # Log rover distances into brackets
-    for rover_id in range(p["n_rovers"]):
-        if self_id != rover_id:  # Ignore self
-            rov_x = rover_info["Rover{0}".format(rover_id)].pos[0]
-            rov_y = rover_info["Rover{0}".format(rover_id)].pos[1]
+    for r in rovers:
+        if rovers[r].self_id != rover_id:  # Ignore self
+            rov_x = rovers[r].x_pos
+            rov_y = rovers[r].y_pos
 
-            angle, dist = get_angle_dist(rover_pos[0], rover_pos[1], rov_x, rov_y)
+            angle, dist = get_angle_dist(rx, ry, rov_x, rov_y)
             bracket = int(angle / p["angle_res"])
             if bracket > 3:
                 bracket -= 4
@@ -238,11 +229,6 @@ def train_suggestions_playbook():
     pbank_type = p["policy_bank_type"]
     sample_rate = p["sample_rate"]
 
-    # Rover Motor Control
-    n_inp = p["n_inputs"]
-    n_hid = p["n_hidden"]
-    n_out = p["n_outputs"]
-
     # Suggestion Parameters
     n_suggestions = p["n_suggestions"]
     s_inp = p["s_inputs"]
@@ -262,12 +248,11 @@ def train_suggestions_playbook():
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
 
-        # Reset Rover and CCEA Pop
+        # Reset Rover and CCEA Pop and Load Pre-Trained Policies
         for rover_id in range(n_rovers):
             pops["EA{0}".format(rover_id)].create_new_population()  # Create new CCEA population
+            rd.rovers["R{0}".format(rover_id)].policy_bank = create_policy_bank(pbank_type, rover_id, srun)
 
-        # Load Pre-Trained Policies
-        policy_bank = create_policy_bank(pbank_type, srun, n_inp, n_out, n_hid)
         s_id = np.zeros(n_rovers, int)  # Identifies what suggestion each rover is using
         policy_rewards = [[] for i in range(n_rovers)]
         for gen in range(generations):
@@ -285,7 +270,7 @@ def train_suggestions_playbook():
                 for rover_id in range(n_rovers):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-                    pops["SN{0}".format(rover_id)].get_weights(weights)
+                    pops["SN{0}".format(rover_id)].get_weights(weights)  # Suggestion Network Gets Weights
 
                 for sgst in range(n_suggestions):
                     for rover_id in range(n_rovers):
@@ -294,41 +279,43 @@ def train_suggestions_playbook():
 
                     rover_rewards = np.zeros((n_rovers, rover_steps+1))  # Keep track of rover rewards at each t
                     for rover_id in range(n_rovers):  # Initial rover scan of environment
-                        rd.rovers["R{0}".format(rover_id)].scan_environment(rd.rovers, rd.pois, n_rovers)
+                        rd.rovers["R{0}".format(rover_id)].scan_environment(rd.rovers, rd.pois)
                         sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
                         suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id[rover_id])
                         sug_input = np.concatenate((suggestion, sensor_data), axis=0)
-                        pops["SN{0}".format(rover_id)].get_inputs(sug_input)
+                        pops["SN{0}".format(rover_id)].get_inputs(sug_input)  # Suggestion Net Gets Inputs
 
                         # Determine action based on sensor inputs and suggestion
-                        sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()
+                        sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()  # Get suggestion net outputs
                         pol_id = np.argmax(sug_outputs)
                         if pol_id == s_id[rover_id]:
                             rover_rewards[rover_id, 0] += 1
-                        rv_actions = policy_bank["Rover{0}Policy{1}".format(rover_id, pol_id)].run_network(sensor_data)
-                        rd.rovers["R{0}".format(rover_id)].rover_actions = rv_actions
+                        weights = rd.rovers["R{0}".format(rover_id)].policy_bank["Policy{0}".format(pol_id)]
+                        rd.rovers["R{0}".format(rover_id)].get_weights(weights)
+                        rd.rovers["R{0}".format(rover_id)].get_nn_outputs()
 
                     for step_id in range(rover_steps):
                         # Rover takes an action in the world
                         for rover_id in range(n_rovers):
-                            rd.rovers["R{0}".format(rover_id)].suggestion_step(rd.world_x, rd.world_y)
+                            rd.rovers["R{0}".format(rover_id)].step(rd.world_x, rd.world_y)
 
                         # Rover scans environment and processes suggestions
                         for rover_id in range(n_rovers):
-                            rd.rovers["R{0}".format(rover_id)].scan_environment(rd.rovers, rd.pois, n_rovers)
+                            rd.rovers["R{0}".format(rover_id)].scan_environment(rd.rovers, rd.pois)
                             sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
                             rd.update_observer_distances()
                             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id[rover_id])
                             sug_input = np.concatenate((suggestion, sensor_data), axis=0)
                             pops["SN{0}".format(rover_id)].get_inputs(sug_input)
 
-                            # Choose policy based on sensors and suggestion
+                            # Determine action based on sensor inputs and suggestion
                             sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()
                             pol_id = np.argmax(sug_outputs)
                             if pol_id == s_id[rover_id]:
-                                rover_rewards[rover_id, step_id+1] += 1
-                            rv_actions = policy_bank["Rover{0}Policy{1}".format(rover_id, pol_id)].run_network(sensor_data)
-                            rd.rovers["R{0}".format(rover_id)].rover_actions = rv_actions
+                                rover_rewards[rover_id, 0] += 1
+                            weights = rd.rovers["R{0}".format(rover_id)].policy_bank["Policy{0}".format(pol_id)]
+                            rd.rovers["R{0}".format(rover_id)].get_weights(weights)
+                            rd.rovers["R{0}".format(rover_id)].get_nn_outputs()
 
                     for rover_id in range(n_rovers):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])

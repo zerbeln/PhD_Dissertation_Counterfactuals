@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <vector>
 #include <random>
+#include <ctime>
+#include <chrono>
 #include <algorithm>
 #include "parameters.h"
 
@@ -26,20 +28,23 @@ public:
     vector <double> fitness;
     vector <int> team_selection;
 
+
     void create_new_population(){
-        srand(time(NULL));
         population.clear();
         fitness.clear();
-        default_random_engine generator;
+
         cauchy_distribution <double> dist(0.0, 1.0);
-        vector <double> temp(n_weights, 0.0);
+        unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+        default_random_engine generator(seed);
+        vector <double> temp;
 
         for (int p = 0; p < pop_size; p++){
-            fitness.push_back(0.0);
-            for (int w = 0; w < n_weights; w++){
-                temp.at(w) = dist(generator);
-            }
 
+            fitness.push_back(0.0);
+            temp.clear();
+            for (int w = 0; w < n_weights; w++){
+                temp.push_back(dist(generator));
+            }
             population.push_back(temp);
         }
     }
@@ -51,12 +56,12 @@ public:
     }
 
     void mutate_weights(){
-        srand(time(NULL));
         int pol_id = n_elites;
         double weight;
         float rnum;
 
-        default_random_engine generator;
+        unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+        default_random_engine generator(seed);
         normal_distribution <double> dist(0.0, mut_rate);
 
         while (pol_id < pop_size){

@@ -88,12 +88,11 @@ def two_poi_reward(rover_id, pois, target_poi):
     """
 
     reward = 0
-    for poi in pois:
-        if target_poi == poi.poi_id:
-            dist = poi.observer_distances[rover_id]
 
-            if dist < p["observation_radius"]:
-                reward += poi.value/ dist
+    dist = pois["P{0}".format(target_poi)].observer_distances[rover_id]
+
+    if dist < p["observation_radius"]:
+        reward += pois["P{0}".format(target_poi)].value/dist
 
     return reward
 
@@ -104,11 +103,11 @@ def four_quadrant_rewards(rover_id, pois, target_quadrant):
     """
     reward = 0
     for poi in pois:
-        if target_quadrant == poi.quadrant:
-            dist = poi.observer_distances[rover_id]
+        if target_quadrant == pois[poi].quadrant:
+            dist = pois[poi].observer_distances[rover_id]
 
             if dist < p["observation_radius"]:
-                reward += poi.value / dist
+                reward += pois[poi].value / dist
 
     return reward
 

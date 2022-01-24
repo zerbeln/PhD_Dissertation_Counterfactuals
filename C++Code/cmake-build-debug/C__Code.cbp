@@ -87,7 +87,13 @@
 		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/agent.h">
 			<Option target="C__Code"/>
 		</Unit>
+		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/calc_angle_dist.h">
+			<Option target="C__Code"/>
+		</Unit>
 		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/ccea.h">
+			<Option target="C__Code"/>
+		</Unit>
+		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/local_rewards.h">
 			<Option target="C__Code"/>
 		</Unit>
 		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/main.cpp">
@@ -103,9 +109,6 @@
 			<Option target="C__Code"/>
 		</Unit>
 		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/rover_domain.h">
-			<Option target="C__Code"/>
-		</Unit>
-		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/train_policy_bank.h">
 			<Option target="C__Code"/>
 		</Unit>
 		<Unit filename="/home/zerbeln/Github/S-DPP/C++Code/CMakeLists.txt">

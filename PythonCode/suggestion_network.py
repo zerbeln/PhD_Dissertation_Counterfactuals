@@ -11,14 +11,14 @@ class SuggestionNetwork:
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
         self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.float128)), [self.n_outputs, 1])
 
-    def get_inputs(self, suggest_inputs):  # Get inputs from state-vector
+    def get_inputs(self, s_inputs):  # Get inputs from state-vector
         """
         Transfer state information to the neuro-controller
         :return:
         """
 
-        for i in suggest_inputs:
-            self.input_layer[i, 0] = i
+        for i in range(self.n_inputs):
+            self.input_layer[i, 0] = s_inputs[i]
 
     def get_weights(self, weights):
         """

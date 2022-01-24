@@ -32,13 +32,36 @@ class RoverDomain:
 
         # Initialize POI positions and values
         self.pois_info = np.zeros((self.num_pois, 5))  # [X, Y, Val, Coupling, Quadrant]
-        self.poi_pos_random()
-        self.poi_vals_random(3, 10)
+        if p["poi_config_type"] == "Random":
+            self.poi_pos_random()
+            self.poi_vals_random(3, 10)
+        elif p["poi_config_type"] == "Two_POI":
+            self.poi_pos_two_poi()
+            self.poi_vals_identical(10.0)
+        elif p["poi_config_type"] == "Four_Corners":
+            self.poi_pos_four_corners()
+            self.poi_vals_random(3.0, 10.0)
+        elif p["poi_config_type"] == "Circle":
+            self.poi_pos_circle()
+            self.poi_vals_random(3.0, 10.0)
+        elif p["poi_config_type"] == "Concentric_Circle":
+            self.poi_pos_concentric_circles()
+            self.poi_vals_random(3.0, 10.0)
+        elif p["poi_config_type"] == "Four_Quadrants":
+            self.poi_pos_three_quadrants()
+            self.poi_vals_three_quadrant()
+        else:
+            print("ERROR, WRONG POI CONFIG KEY")
         self.save_poi_configuration()
 
         # Initialize Rover Positions
         self.initial_rover_positions = np.zeros((self.n_rovers, 3))  # [X, Y, Theta]
-        self.rover_pos_random()
+        if p["rover_config_type"] == "Random":
+            self.rover_pos_random()
+        elif p["rover_config_type"] == "Concentrated":
+            self.rover_pos_center_concentrated()
+        elif p["rover_config_type"] == "Four_Quadrants":
+            self.rover_pos_quadrant_zero()
         self.save_rover_configuration()
 
     def load_world(self):
@@ -312,10 +335,6 @@ class RoverDomain:
         """
         POI positions set randomly across the map (but not in range of any rover)
         """
-
-        origin_x = self.world_x / 2
-        origin_y = self.world_y / 2
-
         for poi_id in range(self.num_pois):
             x = random.uniform(0, self.world_x-1.0)
             y = random.uniform(0, self.world_y-1.0)
@@ -343,7 +362,7 @@ class RoverDomain:
             self.pois_info[poi_id, 1] = y
             self.pois_info[poi_id, 3] = p["coupling"]
 
-            angle = self.get_angle(origin_x, origin_y, self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+            angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
             q = int(angle/p["angle_res"])
             self.pois_info[poi_id, 4] = q
 
@@ -358,13 +377,11 @@ class RoverDomain:
         y = self.world_y/2.0
         theta = 0.0
 
-        origin_x = self.world_x / 2
-        origin_y = self.world_y / 2
         for poi_id in range(self.num_pois):
             self.pois_info[poi_id, 0] = x + radius*math.cos(theta*math.pi/180)
             self.pois_info[poi_id, 1] = y + radius*math.sin(theta*math.pi/180)
             self.pois_info[poi_id, 3] = p["coupling"]
-            angle = self.get_angle(origin_x, origin_y, self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+            angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
             q = int(angle / p["angle_res"])
             self.pois_info[poi_id, 4] = q
             theta += interval
@@ -377,8 +394,6 @@ class RoverDomain:
         inner_radius = 6.5
         outter_radius = 15.0
         interval = float(360 /(self.num_pois/2))
-        origin_x = self.world_x / 2
-        origin_y = self.world_y / 2
 
         x = self.world_x/2.0
         y = self.world_y/2.0
@@ -390,7 +405,7 @@ class RoverDomain:
                 self.pois_info[poi_id, 0] = x + inner_radius * math.cos(inner_theta * math.pi / 180)
                 self.pois_info[poi_id, 1] = y + inner_radius * math.sin(inner_theta * math.pi / 180)
                 self.pois_info[poi_id, 3] = p["coupling"]
-                angle = self.get_angle(origin_x, origin_y, self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+                angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
                 q = int(angle / p["angle_res"])
                 self.pois_info[poi_id, 4] = q
                 inner_theta += interval
@@ -398,7 +413,7 @@ class RoverDomain:
                 self.pois_info[poi_id, 0] = x + outter_radius * math.cos(outter_theta * math.pi / 180)
                 self.pois_info[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
                 self.pois_info[poi_id, 3] = p["coupling"]
-                angle = self.get_angle(origin_x, origin_y, self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+                angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
                 q = int(angle / p["angle_res"])
                 self.pois_info[poi_id, 4] = q
                 outter_theta += interval
@@ -408,8 +423,6 @@ class RoverDomain:
         For world with 5 POI, three in Quadrant 1, 1 in Quadrant 2, 1 in Quadrant 3
         """
         assert(self.num_pois == 5)
-        origin_x = self.world_x / 2
-        origin_y = self.world_y / 2
 
         self.pois_info[0, 0] = 10
         self.pois[0, 1] = 10
@@ -428,7 +441,7 @@ class RoverDomain:
 
         for poi_id in range(self.num_pois):
             self.pois_info[poi_id, 3] = p["coupling"]
-            angle = self.get_angle(origin_x, origin_y, self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+            angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
             q = int(angle / p["angle_res"])
             self.pois_info[poi_id, 4] = q
 
@@ -437,46 +450,50 @@ class RoverDomain:
         Sets two POI on the map, one on the left, one on the right at Y-Dimension/2
         """
         assert(self.num_pois == 2)
-        origin_x = self.world_x / 2
-        origin_y = self.world_y / 2
 
         # Left POI
         self.pois_info[0, 0] = 1.0
         self.pois_info[0, 1] = (self.world_y/2.0) - 1
         self.pois_info[0, 3] = p["coupling"]
-        angle = self.get_angle(origin_x, origin_y, self.pois_info[0, 0], self.pois_info[0, 1])
+        angle = self.get_angle(self.pois_info[0, 0], self.pois_info[0, 1])
         self.pois_info[0, 4] = int(angle / p["angle_res"])
 
         # Right POI
         self.pois_info[1, 0] = self.world_x - 2.0
         self.pois_info[1, 1] = (self.world_y/2.0) + 1
         self.pois_info[1, 3] = p["coupling"]
-        angle = self.get_angle(origin_x, origin_y, self.pois_info[1, 0], self.pois_info[1, 1])
+        angle = self.get_angle(self.pois_info[1, 0], self.pois_info[1, 1])
         self.pois_info[1, 4] = int(angle / p["angle_res"])
 
-        print(self.pois_info)
-
-    def init_poi_pos_four_corners(self):  # Statically set 4 POI (one in each corner)
+    def poi_pos_four_corners(self):  # Statically set 4 POI (one in each corner)
         """
         Sets 4 POI on the map in a box formation around the center
         """
         assert(self.num_pois == 4)  # There must only be 4 POI for this initialization
 
         # Bottom left
-        self.pois_info[0, 0] = 2.0; self.pois_info[0, 1] = 2.0
-        self.pois_info[0, 3] = p["coupling"]; self.pois_info[0, 4] = 1
+        self.pois_info[0, 0] = 2.0
+        self.pois_info[0, 1] = 2.0
+        self.pois_info[0, 3] = p["coupling"]
+        self.pois_info[0, 4] = 1
 
         # Top left
-        self.pois_info[1, 0] = 2.0; self.pois_info[1, 1] = (self.world_y - 2.0)
-        self.pois_info[1, 3] = p["coupling"]; self.pois_info[1, 4] = 2
+        self.pois_info[1, 0] = 2.0
+        self.pois_info[1, 1] = (self.world_y - 2.0)
+        self.pois_info[1, 3] = p["coupling"]
+        self.pois_info[1, 4] = 2
 
         # Bottom right
-        self.pois_info[2, 0] = (self.world_x - 2.0); self.pois_info[2, 1] = 2.0
-        self.pois_info[2, 3] = p["coupling"]; self.pois_info[2, 4] = 0
+        self.pois_info[2, 0] = (self.world_x - 2.0)
+        self.pois_info[2, 1] = 2.0
+        self.pois_info[2, 3] = p["coupling"]
+        self.pois_info[2, 4] = 0
 
         # Top right
-        self.pois_info[3, 0] = (self.world_x - 2.0); self.pois_info[3, 1] = (self.world_y - 2.0)
-        self.pois_info[3, 3] = p["coupling"]; self.pois_info[3, 4] = 3
+        self.pois_info[3, 0] = (self.world_x - 2.0)
+        self.pois_info[3, 1] = (self.world_y - 2.0)
+        self.pois_info[3, 3] = p["coupling"]
+        self.pois_info[3, 4] = 3
 
     # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
     def poi_vals_random(self, v_low, v_high):
@@ -508,16 +525,12 @@ class RoverDomain:
         # Quadrant 2 (Single Low Value)
         self.pois_info[4, 2] = 5.0
 
-    def get_angle(self, origin_x, origin_y, px, py):
+    def get_angle(self, px, py):
         """
         Computes angles and distance between two predators relative to (1,0) vector (x-axis)
-        :param origin_x: X-Position of center of the world
-        :param origin_y: Y-Position of center of the world
-        :param px: X-Position of POI
-        :param py: Y-Position of POI
-        :return: angle, dist
         """
-
+        origin_x = self.world_x / 2
+        origin_y = self.world_y / 2
         x = px - origin_x
         y = py - origin_y
 

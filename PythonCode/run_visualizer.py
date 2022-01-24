@@ -51,7 +51,7 @@ def load_saved_policies_python(file_name, rover_id, srun):
     return weights
 
 def load_saved_policies_cpp(file_name, rover_id, srun):
-    dir_name = 'CPP_Policy_Bank/'.format(rover_id)
+    dir_name = 'Policy_Bank/'.format(rover_id)
     fpath_name = os.path.join(dir_name, file_name)
 
     # Read Weights from txt file generated from C++
@@ -118,8 +118,8 @@ def test_trained_policy():
         # Load Trained Suggestion Interpreter Weights
         for rk in rd.rovers:
             rover_id = rd.rovers[rk].self_id
-            # rov_weights = load_saved_policies_python('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            rov_weights = load_saved_policies_cpp('RoverPolicy{0}.txt'.format(rover_id), rover_id, srun)
+            rov_weights = load_saved_policies_python('RoverWeights{0}'.format(rover_id), rover_id, srun)
+            # rov_weights = load_saved_policies_cpp('RoverPolicy{0}.txt'.format(rover_id), rover_id, srun)
             rd.rovers[rk].get_weights(rov_weights)
 
         # Reset Rover

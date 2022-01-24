@@ -24,7 +24,7 @@ class Rover:
         self.x_pos = rov_x
         self.y_pos = rov_y
         self.theta_pos = rov_theta
-        self.initial_pos = np.zeros(3)  # Keeps initial position of rover stored for quick reset
+        self.initial_pos = [rov_x, rov_y, rov_theta]  # Keeps initial position of rover stored for quick reset
         self.dmax = p["dmax"]  # Maximum distance a rover can move each time step
 
         # Rover Sensor Characteristics -----------------------------------------------------------------------
@@ -46,6 +46,9 @@ class Rover:
         self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.float128)), [self.n_inputs, 1])
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
         self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.float128)), [self.n_outputs, 1])
+
+        # Rover CBM --------------------------------------------------------------------------------------------
+        self.policy_bank = {}  # Pre-trained set of skills used by rovers
 
     def reset_rover(self):
         """
@@ -81,32 +84,6 @@ class Rover:
             y = 0
         elif y > world_y-1:
             y = world_y-1
-
-        self.x_pos = x
-        self.y_pos = y
-
-    def suggestion_step(self, world_x, world_y):
-        """
-        Rover executes current actions provided by neuro-controller (for suggestions training only)
-        """
-
-        # Update rover positions based on outputs and assign to dummy variables
-        dx = 2 * self.dmax * (self.rover_actions[0] - 0.5)
-        dy = 2 * self.dmax * (self.rover_actions[1] - 0.5)
-
-        # Update X Position
-        x = dx + self.x_pos
-        if x < 0:
-            x = 0
-        elif x > world_x - 1:
-            x = world_x - 1
-
-        # Update Y Position
-        y = dy + self.y_pos
-        if y < 0:
-            y = 0
-        elif y > world_y - 1:
-            y = world_y - 1
 
         self.x_pos = x
         self.y_pos = y

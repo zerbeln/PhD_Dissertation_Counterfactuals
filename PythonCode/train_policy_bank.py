@@ -501,9 +501,9 @@ if __name__ == '__main__':
 
     if p["policy_bank_type"] == "Two_POI":
         print("Training Go Towards POI: ", 0)
-        train_two_poi(2)
-        print("Training Go Towards POI: ", 1)
         train_two_poi(0)
+        print("Training Go Towards POI: ", 1)
+        train_two_poi(1)
     elif p["policy_bank_type"] == "Four_Quadrants":
         print("Training Go To Quadrant 0")
         train_four_quadrants(0)
