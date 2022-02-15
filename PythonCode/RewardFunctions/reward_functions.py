@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from parameters import parameters as p
 
 
@@ -15,7 +16,7 @@ def calc_difference(pois, global_reward):
         counterfactual_global_reward = 0.0
         for pk in pois:  # For each POI
             observer_count = 0
-            rover_distances = pois[pk].observer_distances.copy()
+            rover_distances = copy.deepcopy(pois[pk].observer_distances)
             rover_distances[agent_id] = 1000.00
             rover_distances = np.sort(rover_distances)
 
@@ -51,7 +52,7 @@ def calc_dpp(pois, global_reward):
         for pk in pois:
             observer_count = 0
 
-            rover_distances = pois[pk].observer_distances.copy()
+            rover_distances = copy.deepcopy(pois[pk].observer_distances)
             counterfactual_rovers = np.ones(n_counters) * pois[pk].observer_distances[agent_id]
             rover_distances = np.append(rover_distances, counterfactual_rovers)
             rover_distances = np.sort(rover_distances)
@@ -76,7 +77,7 @@ def calc_dpp(pois, global_reward):
                 counterfactual_global_reward = 0.0
                 for pk in pois:
                     observer_count = 0
-                    rover_distances = pois[pk].observer_distances.copy()
+                    rover_distances = copy.deepcopy(pois[pk].observer_distances)
                     counterfactual_rovers = np.ones(n_counters) * pois[pk].observer_distances[agent_id]
                     rover_distances = np.append(rover_distances, counterfactual_rovers)
                     rover_distances = np.sort(rover_distances)

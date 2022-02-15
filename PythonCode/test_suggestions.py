@@ -7,6 +7,7 @@ import os
 import sys
 import math
 import numpy as np
+import random
 from parameters import parameters as p
 
 
@@ -60,20 +61,14 @@ def create_policy_bank(playbook_type, rover_id, srun):
     """
     policy_bank = {}
 
-    if playbook_type == "Four_Quadrants":
-        w0 = load_saved_policies("TowardQuadrant0", rover_id, srun)
-        w1 = load_saved_policies("TowardQuadrant1", rover_id, srun)
-        w2 = load_saved_policies("TowardQuadrant2", rover_id, srun)
-        w3 = load_saved_policies("TowardQuadrant3", rover_id, srun)
-        policy_bank["Policy0"] = w0
-        policy_bank["Policy1"] = w1
-        policy_bank["Policy2"] = w2
-        policy_bank["Policy3"] = w3
-    elif playbook_type == "Two_POI":
-        w0 = load_saved_policies("TowardPOI0", rover_id, srun)
-        w1 = load_saved_policies("TowardPOI1", rover_id, srun)
-        policy_bank["Policy0"] = w0
-        policy_bank["Policy1"] = w1
+    if playbook_type == "Target_Quadrant":
+        for q_id in range(4):
+            w = load_saved_policies("TowardQuadrant{0}".format(q_id), rover_id, srun)
+            policy_bank["Policy{0}".format(q_id)] = w
+    elif playbook_type == "Target_POI":
+        for poi_id in range(p["n_poi"]):
+            w = load_saved_policies("TowardPOI{0}".format(poi_id), rover_id, srun)
+            policy_bank["Policy{0}".format(poi_id)] = w
 
     return policy_bank
 
@@ -117,7 +112,7 @@ def construct_counterfactual_state(pois, rovers, rover_id, suggestion):
     rx = rovers["R{0}".format(rover_id)].x_pos
     ry = rovers["R{0}".format(rover_id)].y_pos
     cfact_poi = create_counterfactual_poi_state(pois, rx, ry, suggestion)
-    cfact_rover = create_counterfactual_rover_state(rovers, rx, ry, rover_id, suggestion)
+    cfact_rover = create_counterfactual_rover_state(pois, rovers, rx, ry, rover_id, suggestion)
 
     counterfactual_state = np.zeros(8)
     for i in range(4):
@@ -142,8 +137,10 @@ def create_counterfactual_poi_state(pois, rx, ry, suggestion):
         bracket = int(angle / p["angle_res"])
         if bracket > 3:
             bracket -= 4
-        if pois[poi].quadrant == suggestion:
-            temp_poi_dist_list[bracket].append(10*pois[poi].value / dist)
+        if pois[poi].poi_id == suggestion:
+            temp_poi_dist_list[bracket].append(10 * pois[poi].value / dist)
+        else:
+            temp_poi_dist_list[bracket].append(-1 * pois[poi].value / dist)
 
     # Encode POI information into the state vector
     for bracket in range(int(360 / p["angle_res"])):
@@ -161,15 +158,17 @@ def create_counterfactual_poi_state(pois, rx, ry, suggestion):
     return c_poi_state
 
 
-def create_counterfactual_rover_state(rovers, rx, ry, rover_id, suggestion):
+def create_counterfactual_rover_state(pois, rovers, rx, ry, rover_id, suggestion):
     """
     Construct a counterfactual state input for rover detections
     :return: Portion of the counterfactual state vector created from rover scanner
     """
-    center_x = p["x_dim"]/2
-    center_y = p["y_dim"]/2
+    center_x = p["x_dim"] / 2
+    center_y = p["y_dim"] / 2
     rover_state = np.zeros(int(360.0 / p["angle_res"]))
     temp_rover_dist_list = [[] for _ in range(int(360.0 / p["angle_res"]))]
+
+    poi_quadrant = pois["P{0}".format(suggestion)].quadrant
 
     # Log rover distances into brackets
     for r in rovers:
@@ -183,13 +182,14 @@ def create_counterfactual_rover_state(rovers, rx, ry, rover_id, suggestion):
                 bracket -= 4
 
             w_angle, w_dist = get_angle_dist(center_x, center_y, rov_x, rov_y)
-            world_bracket = int(w_angle/p["angle_res"])
+            world_bracket = int(w_angle / p["angle_res"])
             if world_bracket > 3:
                 world_bracket -= 4
 
-            if suggestion == world_bracket:
-                temp_rover_dist_list[bracket].append(10 / dist)
-
+            if poi_quadrant == world_bracket:
+                temp_rover_dist_list[bracket].append(-1 / dist)
+            else:
+                temp_rover_dist_list[bracket].append(1 / dist)
     # Encode Rover information into the state vector
     for bracket in range(int(360 / p["angle_res"])):
         num_rovers_bracket = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
@@ -275,7 +275,8 @@ def test_suggestions_policy_bank(pbank_type, sgst):
                 rd.rovers["R{0}".format(rover_id)].scan_environment(rd.rovers, rd.pois)
                 rd.update_observer_distances()
                 sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
-                pops["SN{0}".format(rover_id)].get_inputs(np.concatenate((suggestion, sensor_data), axis=0))
+                sug_input = np.concatenate((suggestion, sensor_data), axis=0)
+                pops["SN{0}".format(rover_id)].get_inputs(sug_input)
 
                 # Determine action based on sensor inputs and suggestion
                 sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()
@@ -301,10 +302,19 @@ def test_suggestions_policy_bank(pbank_type, sgst):
 if __name__ == '__main__':
 
     # Create list of suggestions for rovers to use during training
-    rover_suggestions = []
-    if p["policy_bank_type"] == "Two_POI":
-        rover_suggestions = [1, 1, 1]
-    elif p["policy_bank_type"] == "Four_Quadrants":
-        rover_suggestions = [1, 2, 0, 0, 3, 0]
+    rover_suggestions = np.ones(p["n_rovers"], int)
+    if p["suggestion_type"] == "Identical":
+        suggestion_id = 0
+        rover_suggestions *= suggestion_id
+    elif p["suggestion_type"] == "Unique":
+        for rov_id in range(p["n_rovers"]):
+            if rov_id < p["n_poi"]:
+                rover_suggestions[rov_id] = rov_id
+            else:
+                rover_suggestions[rov_id] = random.randint(0, p["n_suggestions"])
+    else:
+        for rov_id in range(p["n_rovers"]):
+            rover_suggestions[rov_id] = random.randint(0, p["n_suggestions"])
+    print(rover_suggestions)
     test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
 

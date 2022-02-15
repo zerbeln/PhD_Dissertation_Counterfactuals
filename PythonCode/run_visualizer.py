@@ -147,7 +147,8 @@ def test_trained_policy():
             # Rover scans environment and processes suggestions
             for rk in rd.rovers:
                 rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-            rd.update_observer_distances()
+            for poi in rd.pois:
+                rd.pois[poi].update_observer_distances(rd.rovers)
 
             # Calculate Global Reward
             g_rewards[step_id] = rd.calc_global()

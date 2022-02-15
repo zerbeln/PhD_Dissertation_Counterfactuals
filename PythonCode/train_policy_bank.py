@@ -249,7 +249,8 @@ def train_towards_poi():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     for rover_id in range(n_rovers):
                         reward = towards_poi_reward(rover_id, rd.pois)
                         rover_rewards[rover_id, step_id] = reward
@@ -320,7 +321,8 @@ def train_away_poi():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     for rover_id in range(n_rovers):
                         reward = away_poi_reward(rover_id, rd.pois)
                         rover_rewards[rover_id, step_id] = reward
@@ -340,7 +342,7 @@ def train_away_poi():
             save_best_policies(weights, srun, "AwayPOI", rover_id)
 
 
-def train_two_poi(target_poi):
+def train_target_poi(target_poi):
     """
     Train rover policies for world with Two POI (left and right side of map)
     """
@@ -394,9 +396,10 @@ def train_two_poi(target_poi):
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     for rover_id in range(n_rovers):
-                        reward = two_poi_reward(rover_id, rd.pois, target_poi)
+                        reward = target_poi_reward(rover_id, rd.pois, target_poi)
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information
@@ -414,7 +417,7 @@ def train_two_poi(target_poi):
             save_best_policies(weights, srun, "TowardPOI{0}".format(target_poi), rover_id)
 
 
-def train_four_quadrants(target_q):
+def train_target_quadrant(target_q):
     """
     Train rover policies for travelling towards POI within a specific quadrant
     """
@@ -469,9 +472,10 @@ def train_four_quadrants(target_q):
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     for rover_id in range(n_rovers):
-                        reward = four_quadrant_rewards(rover_id, rd.pois, target_q)
+                        reward = target_quadrant_reward(rover_id, rd.pois, target_q)
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information
@@ -499,17 +503,11 @@ if __name__ == '__main__':
     Train policy playbooks for rover team
     """
 
-    if p["policy_bank_type"] == "Two_POI":
-        print("Training Go Towards POI: ", 0)
-        train_two_poi(0)
-        print("Training Go Towards POI: ", 1)
-        train_two_poi(1)
-    elif p["policy_bank_type"] == "Four_Quadrants":
-        print("Training Go To Quadrant 0")
-        train_four_quadrants(0)
-        print("Training Go To Quadrant 1")
-        train_four_quadrants(1)
-        print("Training Go To Quadrant 2")
-        train_four_quadrants(2)
-        print("Training Go To Quadrant 3")
-        train_four_quadrants(3)
+    if p["policy_bank_type"] == "Target_POI":
+        for poi_id in range(p["n_poi"]):
+            print("Training Go Towards POI: ", poi_id)
+            train_target_poi(poi_id)
+    elif p["policy_bank_type"] == "Target_Quadrant":
+        for q_id in range(4):
+            print("Training Go To Quadrant: ", q_id)
+            train_target_quadrant(q_id)

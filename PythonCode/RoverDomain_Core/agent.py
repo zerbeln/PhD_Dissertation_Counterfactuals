@@ -15,7 +15,15 @@ class Poi:
         self.coupling = pc
         self.quadrant = pq
         self.observer_distances = np.zeros(p["n_rovers"])
+        self.observed = False
 
+    def reset_poi(self):
+        self.observer_distances = np.zeros(p["n_rovers"])
+
+    def update_observer_distances(self, rovers):
+        for rov in rovers:
+            rover_id = rovers[rov].self_id
+            self.observer_distances[rover_id] = rovers[rov].poi_distances[self.poi_id]
 
 class Rover:
     def __init__(self, rov_id, rov_x, rov_y, rov_theta):
@@ -35,7 +43,7 @@ class Rover:
 
         # Rover Data -----------------------------------------------------------------------------------------
         self.sensor_readings = np.zeros(p["n_inputs"], dtype=np.float128)  # Number of sensor inputs for Neural Network
-        self.poi_distances = np.ones(p["n_poi"]) * 1000.00  # Records distances measured from sensors
+        self.poi_distances = np.zeros(p["n_poi"])  # Records distances measured from sensors
         self.rover_actions = np.zeros(p["n_outputs"], dtype=np.float128)  # Motor actions from neural network outputs
 
         # Rover Motor Controller -----------------------------------------------------------------------------
@@ -58,7 +66,7 @@ class Rover:
         self.y_pos = self.initial_pos[1]
         self.theta_pos = self.initial_pos[2]
         self.sensor_readings = np.zeros(self.n_inputs, dtype=np.float128)
-        self.poi_distances = np.ones(p["n_poi"]) * 1000.00
+        self.poi_distances = np.zeros(p["n_poi"])
 
     def step(self, world_x, world_y):
         """

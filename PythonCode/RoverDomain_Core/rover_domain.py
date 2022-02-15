@@ -3,6 +3,7 @@ import math
 import random
 import os
 import csv
+import copy
 from parameters import parameters as p
 from RoverDomain_Core.agent import Poi, Rover
 
@@ -41,10 +42,13 @@ class RoverDomain:
         elif p["poi_config_type"] == "Four_Corners":
             self.poi_pos_four_corners()
             self.poi_vals_random(3.0, 10.0)
+        elif p["poi_config_type"] == "Columns":
+            self.poi_pos_columns()
+            self.poi_vals_random(3.0, 10.0)
         elif p["poi_config_type"] == "Circle":
             self.poi_pos_circle()
             self.poi_vals_random(3.0, 10.0)
-        elif p["poi_config_type"] == "Concentric_Circle":
+        elif p["poi_config_type"] == "Con_Circle":
             self.poi_pos_concentric_circles()
             self.poi_vals_random(3.0, 10.0)
         elif p["poi_config_type"] == "Four_Quadrants":
@@ -81,29 +85,21 @@ class RoverDomain:
         global_reward = 0.0
 
         for pk in self.pois:
-            poi_coupling = int(self.pois[pk].coupling)
             observer_count = 0
-            rover_distances = np.sort(self.pois[pk].observer_distances)  # Arranges distances from least to greatest
+            rover_distances = copy.deepcopy(self.pois[pk].observer_distances)
+            rover_distances = np.sort(rover_distances)  # Arranges distances from least to greatest
 
-            for c in range(poi_coupling):
+            for c in range(int(self.pois[pk].coupling)):
                 dist = rover_distances[c]
                 if dist < self.obs_radius:
                     observer_count += 1
 
             # Update global reward if POI is observed
-            if observer_count >= poi_coupling:
-                summed_observer_distances = sum(rover_distances[0:poi_coupling])
+            if observer_count >= int(self.pois[pk].coupling):
+                summed_observer_distances = sum(rover_distances[0:int(self.pois[pk].coupling)])
                 global_reward += self.pois[pk].value / (summed_observer_distances/self.pois[pk].coupling)
 
         return global_reward
-
-    def update_observer_distances(self):
-        """
-        Update the array which tracks each rover's distance from each POI
-        """
-        for poi_id in range(self.num_pois):
-            for rover_id in range(self.n_rovers):
-                self.pois["P{0}".format(poi_id)].observer_distances[rover_id] = self.rovers["R{0}".format(rover_id)].poi_distances[poi_id]
 
     def save_poi_configuration(self):
         """
@@ -220,7 +216,7 @@ class RoverDomain:
         """
         Rovers given random starting positions within a radius of the center. Starting orientations are random
         """
-        radius = 3.0
+        radius = 8.0
         center_x = self.world_x/2.0
         center_y = self.world_y/2.0
 
@@ -494,6 +490,49 @@ class RoverDomain:
         self.pois_info[3, 1] = (self.world_y - 2.0)
         self.pois_info[3, 3] = p["coupling"]
         self.pois_info[3, 4] = 3
+
+    def poi_pos_columns(self):
+        """
+        Sets 6 POI in two columns on opposite sides of the map
+        """
+
+        assert (self.num_pois == 6)  # There must only be 4 POI for this initialization
+
+        # Bottom left
+        self.pois_info[0, 0] = 2.0
+        self.pois_info[0, 1] = 2.0
+        self.pois_info[0, 3] = p["coupling"]
+        self.pois_info[0, 4] = 1
+
+        # Middle Left
+        self.pois_info[1, 0] = 2.0
+        self.pois_info[1, 1] = self.world_y/2
+        self.pois_info[1, 3] = p["coupling"]
+        self.pois_info[1, 4] = 1
+
+        # Top left
+        self.pois_info[2, 0] = 2.0
+        self.pois_info[2, 1] = (self.world_y - 2.0)
+        self.pois_info[2, 3] = p["coupling"]
+        self.pois_info[2, 4] = 2
+
+        # Bottom right
+        self.pois_info[3, 0] = (self.world_x - 2.0)
+        self.pois_info[3, 1] = 2.0
+        self.pois_info[3, 3] = p["coupling"]
+        self.pois_info[3, 4] = 0
+
+        # Middle Right
+        self.pois_info[4, 0] = (self.world_x - 2.0)
+        self.pois_info[4, 1] = self.world_y/2
+        self.pois_info[4, 3] = p["coupling"]
+        self.pois_info[4, 4] = 0
+
+        # Top right
+        self.pois_info[5, 0] = (self.world_x - 2.0)
+        self.pois_info[5, 1] = (self.world_y - 2.0)
+        self.pois_info[5, 3] = p["coupling"]
+        self.pois_info[5, 4] = 3
 
     # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
     def poi_vals_random(self, v_low, v_high):

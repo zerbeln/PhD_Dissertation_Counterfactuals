@@ -82,7 +82,7 @@ def greedy_reward_loose(rover_id, pois):
     return reward
 
 
-def two_poi_reward(rover_id, pois, target_poi):
+def target_poi_reward(rover_id, pois, target_poi):
     """
     Local rewards for going towards either the left or right POI
     """
@@ -97,7 +97,7 @@ def two_poi_reward(rover_id, pois, target_poi):
     return reward
 
 
-def four_quadrant_rewards(rover_id, pois, target_quadrant):
+def target_quadrant_reward(rover_id, pois, target_quadrant):
     """
     Local reward for training rovers to travel towards POI within a specific quadrant
     """

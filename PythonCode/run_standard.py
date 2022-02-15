@@ -97,7 +97,6 @@ def rover_global():
         for gen in range(generations):
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].select_policy_teams()
-                pops["EA{0}".format(rover_id)].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rk in rd.rovers:
                     rd.rovers[rk].reset_rover()
@@ -114,7 +113,8 @@ def rover_global():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rovers scan environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_rewards[step_id] = rd.calc_global()
 
                 # Update fitness of policies using reward information
@@ -141,7 +141,8 @@ def rover_global():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_rewards[step_id] = rd.calc_global()
 
                 reward_history.append(sum(g_rewards))
@@ -195,7 +196,6 @@ def rover_difference():
         for gen in range(generations):
             for pkey in pops:
                 pops[pkey].select_policy_teams()
-                pops[pkey].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rk in rd.rovers:
                     rover_id = rd.rovers[rk].self_id
@@ -212,7 +212,8 @@ def rover_difference():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rovers scan environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_reward = rd.calc_global()
                     dif_reward = calc_difference(rd.pois, g_reward)
                     for rover_id in range(n_rovers):
@@ -242,7 +243,8 @@ def rover_difference():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_rewards[step_id] = rd.calc_global()
 
                 reward_history.append(sum(g_rewards))
@@ -295,10 +297,8 @@ def rover_dpp():
         reward_history = []
 
         for gen in range(generations):
-            print(gen)
             for pkey in pops:
                 pops[pkey].select_policy_teams()
-                pops[pkey].reset_fitness()
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 for rk in rd.rovers:
                     rover_id = rd.rovers[rk].self_id
@@ -315,7 +315,8 @@ def rover_dpp():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rovers scan environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
 
                     g_reward = rd.calc_global()
                     rover_rewards = calc_dpp(rd.pois, g_reward)
@@ -346,7 +347,8 @@ def rover_dpp():
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_rewards[step_id] = rd.calc_global()
 
                 reward_history.append(sum(g_rewards))
@@ -418,7 +420,8 @@ def rover_sdpp(sgst):
                     for rk in rd.rovers:  # Rovers scan environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
 
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_reward = rd.calc_global()
                     rover_rewards = calc_sdpp(rd.pois, g_reward, sgst)
                     for rover_id in range(n_rovers):
@@ -449,7 +452,8 @@ def rover_sdpp(sgst):
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
 
-                    rd.update_observer_distances()
+                    for poi in rd.pois:
+                        rd.pois[poi].update_observer_distances(rd.rovers)
                     g_rewards[step_id] = rd.calc_global()
 
                 reward_history.append(sum(g_rewards))

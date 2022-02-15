@@ -258,6 +258,9 @@ void rover_difference_rewards(){
                     }
                     for (int r = 0; r < n_rovers; r++){
                         rd.rovers.at(r).scan_environment(rd.pois, rd.rovers);
+                        for (int p = 0; p < n_poi; p++){
+                            rd.pois.at(p).observer_distances.at(r) = rd.rovers.at(r).poi_distances.at(p);
+                        }
                         rd.rovers.at(r).get_nn_outputs();
                     }
                     g_reward = rd.calc_global();
@@ -296,6 +299,9 @@ void rover_difference_rewards(){
                     }
                     for (int r = 0; r < n_rovers; r++){
                         rd.rovers.at(r).scan_environment(rd.pois, rd.rovers);
+                        for (int p = 0; p < n_poi; p++){
+                            rd.pois.at(p).observer_distances.at(r) = rd.rovers.at(r).poi_distances.at(p);
+                        }
                         rd.rovers.at(r).get_nn_outputs();
                     }
                     g_reward = rd.calc_global();
@@ -376,6 +382,9 @@ void rover_dpp_rewards(){
                     }
                     for (int r = 0; r < n_rovers; r++){
                         rd.rovers.at(r).scan_environment(rd.pois, rd.rovers);
+                        for (int p = 0; p < n_poi; p++){
+                            rd.pois.at(p).observer_distances.at(r) = rd.rovers.at(r).poi_distances.at(p);
+                        }
                         rd.rovers.at(r).get_nn_outputs();
                     }
                     g_reward = rd.calc_global();
@@ -414,6 +423,9 @@ void rover_dpp_rewards(){
                     }
                     for (int r = 0; r < n_rovers; r++){
                         rd.rovers.at(r).scan_environment(rd.pois, rd.rovers);
+                        for (int p = 0; p < n_poi; p++){
+                            rd.pois.at(p).observer_distances.at(r) = rd.rovers.at(r).poi_distances.at(p);
+                        }
                         rd.rovers.at(r).get_nn_outputs();
                     }
                     g_reward = rd.calc_global();
