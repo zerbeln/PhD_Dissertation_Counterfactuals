@@ -16,6 +16,7 @@ class Poi:
         self.quadrant = pq
         self.observer_distances = np.zeros(p["n_rovers"])
         self.observed = False
+        self.hazardous = False  # Boolean that indicates whether or not a PoI is in a hazard zone
 
     def reset_poi(self):
         self.observer_distances = np.zeros(p["n_rovers"])

@@ -24,7 +24,7 @@ def save_time_history(time_history, file_name):
         writer.writerow(time_history)
 
 
-def save_reward_history(rover_id, reward_history, file_name):
+def save_skill_reward_history(rover_id, reward_history, file_name):
     """
     Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
     """
@@ -353,6 +353,7 @@ def train_target_poi(target_poi):
     population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
+    sample_rate = p["sample_rate"]
 
     # Rover Motor Control
     n_inp = p["n_inputs"]
@@ -375,6 +376,7 @@ def train_target_poi(target_poi):
         for pkey in pops:
             pops[pkey].create_new_population()
 
+        skill_rewards = [[] for i in range(n_rovers)]
         for gen in range(generations):
             for pkey in pops:
                 pops[pkey].select_policy_teams()
@@ -406,6 +408,8 @@ def train_target_poi(target_poi):
                 for rover_id in range(n_rovers):
                     pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
                     pops["EA{0}".format(rover_id)].fitness[pol_id] = sum(rover_rewards[rover_id])
+                    if gen % sample_rate == 0:
+                        skill_rewards[rover_id].append(sum(rover_rewards[rover_id]))
 
             for pkey in pops:
                 pops[pkey].down_select()  # Choose new parents and create new offspring population
@@ -415,6 +419,7 @@ def train_target_poi(target_poi):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "TowardPOI{0}".format(target_poi), rover_id)
+            save_skill_reward_history(rover_id, skill_rewards[rover_id], "Skill{0}_Training.csv".format(target_poi))
 
 
 def train_target_quadrant(target_q):

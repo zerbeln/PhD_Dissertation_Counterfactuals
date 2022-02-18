@@ -147,7 +147,7 @@ def create_counterfactual_poi_state(pois, rx, ry, suggestion):
         if pois[poi].poi_id == suggestion:
             temp_poi_dist_list[bracket].append(5*pois[poi].value/dist)
         else:
-            temp_poi_dist_list[bracket].append(-1 * pois[poi].value/dist)
+            temp_poi_dist_list[bracket].append(-1*pois[poi].value/dist)
 
     # Encode POI information into the state vector
     for bracket in range(int(360 / p["angle_res"])):
@@ -228,7 +228,7 @@ def train_suggestions_playbook():
     sample_rate = p["sample_rate"]
 
     # Suggestion Parameters
-    n_suggestions = p["n_suggestions"]
+    n_skills = p["n_suggestions"]
     s_inp = p["s_inputs"]
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
@@ -254,12 +254,12 @@ def train_suggestions_playbook():
         policy_rewards = [[] for i in range(n_rovers)]
         for gen in range(generations):
             # Create list of suggestions for rovers to use during training and reset rovers to initial positions
-            rover_suggestions = []
+            rover_skills = []
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].select_policy_teams()
                 pops["EA{0}".format(rover_id)].reset_fitness()
-                sugg = random.sample(range(n_suggestions), n_suggestions)
-                rover_suggestions.append(sugg)
+                skill_sample = random.sample(range(n_skills), n_skills)
+                rover_skills.append(skill_sample)
 
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
                 # Get weights for suggestion interpreter
@@ -279,17 +279,17 @@ def train_suggestions_playbook():
                     sensor_data = rd.rovers[rov].sensor_readings  # Unaltered sensor readings
 
                     # Test networks ability to interpret suggestions
-                    for sgst in range(n_suggestions):
-                        s_id = int(rover_suggestions[rover_id][sgst])
+                    for skill in range(n_skills):
+                        s_id = int(rover_skills[rover_id][skill])
                         suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
-                        sug_input = np.sum((suggestion, sensor_data), axis=0)
-                        pops["SN{0}".format(rover_id)].get_inputs(sug_input)  # Suggestion Net Gets Inputs
-                        sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()  # Get suggestion net outputs
-                        pol_id = np.argmax(sug_outputs)
+                        sug_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
+                        pops["SN{0}".format(rover_id)].get_inputs(sug_input)  # CBA network receives shaped input
+                        sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()  # CBA picks skill
+                        pol_id = np.argmax(sug_outputs)  # Selected Skill
                         chosen_pol[rover_id] = pol_id
                         if pol_id == s_id:
-                            rover_rewards[rover_id, 0] += 1
-                    rover_rewards[rover_id, 0] /= n_suggestions
+                            rover_rewards[rover_id, 0] += 1  # Reward of +1 for correctly selected skill
+                    rover_rewards[rover_id, 0] /= n_skills
 
                     # Rover uses selected policy
                     pol_id = int(chosen_pol[rover_id])
@@ -308,17 +308,17 @@ def train_suggestions_playbook():
                         rd.rovers[rov].scan_environment(rd.rovers, rd.pois)
                         sensor_data = rd.rovers[rov].sensor_readings
 
-                        for sgst in range(n_suggestions):
-                            s_id = int(rover_suggestions[rover_id][sgst])
+                        for skill in range(n_skills):
+                            s_id = int(rover_skills[rover_id][skill])
                             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
-                            sug_input = np.sum((suggestion, sensor_data), axis=0)
-                            pops["SN{0}".format(rover_id)].get_inputs(sug_input)
-                            sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()
-                            pol_id = np.argmax(sug_outputs)
+                            sug_input = np.sum((suggestion, sensor_data), axis=0) # Shaped agent perception
+                            pops["SN{0}".format(rover_id)].get_inputs(sug_input) # CBA network receives shaped input
+                            sug_outputs = pops["SN{0}".format(rover_id)].get_outputs() # CBA picks skill
+                            pol_id = np.argmax(sug_outputs)  # Selected Skill
                             chosen_pol[rover_id] = pol_id
                             if pol_id == s_id:
-                                rover_rewards[rover_id, step_id] += 1
-                        rover_rewards[rover_id, step_id] /= n_suggestions
+                                rover_rewards[rover_id, step_id] += 1  # Reward of +1 for correctly selected skill
+                        rover_rewards[rover_id, step_id] /= n_skills
 
                         # Rover uses selected policy
                         pol_id = int(chosen_pol[rover_id])
@@ -340,7 +340,7 @@ def train_suggestions_playbook():
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "SelectionWeights{0}".format(rover_id), rover_id)
-            save_reward_history(rover_id, policy_rewards[rover_id], "Suggestion_Rewards.csv")
+            save_reward_history(rover_id, policy_rewards[rover_id], "CBA_Rewards.csv")
 
 
 if __name__ == '__main__':

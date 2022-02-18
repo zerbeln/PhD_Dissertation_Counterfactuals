@@ -110,6 +110,10 @@ def test_trained_policy():
     rd = RoverDomain()  # Create instance of the rover domain
     rd.load_world()
 
+    # Generate Hazard Areas (If Testing For Hazards)
+    if p["active_hazards"]:
+        rd.pois["P0"].hazardous = True
+
     reward_history = []  # Keep track of team performance throughout training
     average_reward = 0
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))

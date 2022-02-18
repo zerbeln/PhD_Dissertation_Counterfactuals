@@ -89,7 +89,7 @@ class RoverDomain:
             rover_distances = copy.deepcopy(self.pois[pk].observer_distances)
             rover_distances = np.sort(rover_distances)  # Arranges distances from least to greatest
 
-            for c in range(int(self.pois[pk].coupling)):
+            for c in range(self.n_rovers):
                 dist = rover_distances[c]
                 if dist < self.obs_radius:
                     observer_count += 1
@@ -97,8 +97,10 @@ class RoverDomain:
             # Update global reward if POI is observed
             if observer_count >= int(self.pois[pk].coupling):
                 summed_observer_distances = sum(rover_distances[0:int(self.pois[pk].coupling)])
-                global_reward += self.pois[pk].value / (summed_observer_distances/self.pois[pk].coupling)
-
+                if self.pois[pk].hazardous:
+                    global_reward -= 10.0
+                else:
+                    global_reward += self.pois[pk].value / (summed_observer_distances / self.pois[pk].coupling)
         return global_reward
 
     def save_poi_configuration(self):
