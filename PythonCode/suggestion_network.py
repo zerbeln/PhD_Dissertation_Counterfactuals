@@ -1,11 +1,14 @@
 import numpy as np
+from parameters import parameters as p
+import math
 
 
-class SuggestionNetwork:
-    def __init__(self, n_in, n_out, n_hid):
-        self.n_inputs = n_in
-        self.n_outputs = n_out
-        self.n_hnodes = n_hid  # Number of nodes in hidden layer
+class CBANetwork:
+    def __init__(self):
+        self.n_inputs = p["s_inputs"]
+        self.n_outputs = p["s_outputs"]
+        self.n_hnodes = p["s_hidden"]
+        self.n_policies = p["n_policies"]
         self.weights = {}
         self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.float128)), [self.n_inputs, 1])
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
@@ -33,21 +36,17 @@ class SuggestionNetwork:
 
     def get_outputs(self):
         """
-        Run NN to generate outputs
-        :return:
+        Run CBA NN to generate outputs
         """
-        outputs = np.zeros(self.n_outputs, dtype=np.float128)
-
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
         self.hidden_layer = self.sigmoid(self.hidden_layer)
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
         self.output_layer = self.sigmoid(self.output_layer)
 
-        for i in range(self.n_outputs):
-            outputs[i] = self.output_layer[i, 0]
+        snn_out = math.floor(self.output_layer[0, 0] * self.n_policies)
 
-        return outputs
+        return snn_out
 
     def run_network(self, s_input):
         """

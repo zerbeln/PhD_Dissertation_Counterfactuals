@@ -1,8 +1,6 @@
 from ccea import Ccea
-from suggestion_network import SuggestionNetwork
+from suggestion_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
-from RoverDomain_Core.agent import Rover
-from RewardFunctions.suggestion_rewards import *
 import math
 import sys
 import pickle
@@ -241,7 +239,7 @@ def train_suggestions_playbook():
     pops = {}
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=s_inp, n_out=s_out, n_hid=s_hid)
-        pops["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
+        pops["CBA{0}".format(rover_id)] = CBANetwork()
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)
@@ -266,7 +264,7 @@ def train_suggestions_playbook():
                 for rover_id in range(n_rovers):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-                    pops["SN{0}".format(rover_id)].get_weights(weights)  # Suggestion Network Gets Weights
+                    pops["CBA{0}".format(rover_id)].get_weights(weights)  # Suggestion Network Gets Weights
 
                 for rov in rd.rovers:
                     rd.rovers[rov].reset_rover()
@@ -282,12 +280,11 @@ def train_suggestions_playbook():
                     for skill in range(n_skills):
                         s_id = int(rover_skills[rover_id][skill])
                         suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
-                        sug_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
-                        pops["SN{0}".format(rover_id)].get_inputs(sug_input)  # CBA network receives shaped input
-                        sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()  # CBA picks skill
-                        pol_id = np.argmax(sug_outputs)  # Selected Skill
-                        chosen_pol[rover_id] = pol_id
-                        if pol_id == s_id:
+                        cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
+                        pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
+                        cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
+                        chosen_pol[rover_id] = int(cba_outputs)
+                        if chosen_pol[rover_id] == s_id:
                             rover_rewards[rover_id, 0] += 1  # Reward of +1 for correctly selected skill
                     rover_rewards[rover_id, 0] /= n_skills
 
@@ -311,12 +308,11 @@ def train_suggestions_playbook():
                         for skill in range(n_skills):
                             s_id = int(rover_skills[rover_id][skill])
                             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
-                            sug_input = np.sum((suggestion, sensor_data), axis=0) # Shaped agent perception
-                            pops["SN{0}".format(rover_id)].get_inputs(sug_input) # CBA network receives shaped input
-                            sug_outputs = pops["SN{0}".format(rover_id)].get_outputs() # CBA picks skill
-                            pol_id = np.argmax(sug_outputs)  # Selected Skill
-                            chosen_pol[rover_id] = pol_id
-                            if pol_id == s_id:
+                            cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
+                            pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
+                            cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
+                            chosen_pol[rover_id] = int(cba_outputs)
+                            if chosen_pol[rover_id] == s_id:
                                 rover_rewards[rover_id, step_id] += 1  # Reward of +1 for correctly selected skill
                         rover_rewards[rover_id, step_id] /= n_skills
 

@@ -1,4 +1,4 @@
-from suggestion_network import SuggestionNetwork
+from suggestion_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from RewardFunctions.local_rewards import *
 from Visualizer.visualizer import run_visualizer
@@ -261,9 +261,6 @@ def test_skill_performance(skill_id):
         save_rover_path(final_rover_path, "Rover_Paths")
         save_reward_history(skill_performance, "Skill{0}_Performance.csv".format(skill_id))
 
-    if p["vis_running"]:
-        run_visualizer()
-
 
 def test_suggestions_policy_bank(pbank_type, sgst):
     """
@@ -273,11 +270,6 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     stat_runs = p["stat_runs"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
-
-    # Suggestion Parameters
-    s_inp = p["s_inputs"]
-    s_hid = p["s_hidden"]
-    s_out = p["s_outputs"]
 
     # World Setup
     rd = RoverDomain()
@@ -290,7 +282,7 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
     for rover_id in range(n_rovers):
-        pops["SN{0}".format(rover_id)] = SuggestionNetwork(s_inp, s_out, s_hid)
+        pops["CBA{0}".format(rover_id)] = CBANetwork()
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -300,7 +292,7 @@ def test_suggestions_policy_bank(pbank_type, sgst):
         for rover_id in range(n_rovers):
             rd.rovers["R{0}".format(rover_id)].policy_bank = create_policy_bank(pbank_type, rover_id, srun)
             s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
-            pops["SN{0}".format(rover_id)].get_weights(s_weights)
+            pops["CBA{0}".format(rover_id)].get_weights(s_weights)
 
         for rov in rd.rovers:
             rd.rovers[rov].reset_rover()
@@ -316,12 +308,12 @@ def test_suggestions_policy_bank(pbank_type, sgst):
             rover_id = rd.rovers[rk].self_id
             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
             sensor_data = rd.rovers[rk].sensor_readings
-            sug_input = np.sum((suggestion, sensor_data), axis=0)
-            pops["SN{0}".format(rover_id)].get_inputs(sug_input)
+            cba_input = np.sum((suggestion, sensor_data), axis=0)
+            pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
             # Determine action based on sensor inputs and suggestion
-            sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()
-            pol_id = np.argmax(sug_outputs)
+            cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
+            pol_id = int(cba_outputs)
             weights = rd.rovers[rk].policy_bank["Policy{0}".format(pol_id)]
             rd.rovers[rk].get_weights(weights)
             rd.rovers[rk].get_nn_outputs()
@@ -343,12 +335,12 @@ def test_suggestions_policy_bank(pbank_type, sgst):
             for rover_id in range(n_rovers):
                 suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
                 sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
-                sug_input = np.sum((suggestion, sensor_data), axis=0)
-                pops["SN{0}".format(rover_id)].get_inputs(sug_input)
+                cba_input = np.sum((suggestion, sensor_data), axis=0)
+                pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
                 # Determine action based on sensor inputs and suggestion
-                sug_outputs = pops["SN{0}".format(rover_id)].get_outputs()
-                pol_id = np.argmax(sug_outputs)
+                cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
+                pol_id = int(cba_outputs)
                 weights = rd.rovers["R{0}".format(rover_id)].policy_bank["Policy{0}".format(pol_id)]
                 rd.rovers["R{0}".format(rover_id)].get_weights(weights)
                 rd.rovers["R{0}".format(rover_id)].get_nn_outputs()
@@ -375,19 +367,21 @@ if __name__ == '__main__':
         test_skill_performance(skill_id)
 
     # Test Performance of CBA
-    # rover_suggestions = np.ones(p["n_rovers"], int)
-    # if p["suggestion_type"] == "Identical":
-    #     suggestion_id = 1
-    #     rover_suggestions *= suggestion_id
-    # elif p["suggestion_type"] == "Unique":
-    #     for rov_id in range(p["n_rovers"]):
-    #         if rov_id < p["n_poi"]:
-    #             rover_suggestions[rov_id] = rov_id
-    #         else:
-    #             rover_suggestions[rov_id] = random.randint(0, p["n_suggestions"]-1)
-    # else:
-    #     for rov_id in range(p["n_rovers"]):
-    #         rover_suggestions[rov_id] = random.randint(0, p["n_suggestions"]-1)
-    # print(rover_suggestions)
-    # test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
+    rover_suggestions = np.ones(p["n_rovers"], int)
+    if p["suggestion_type"] == "Identical":
+        suggestion_id = 1
+        rover_suggestions *= suggestion_id
+    elif p["suggestion_type"] == "Unique":
+        for rov_id in range(p["n_rovers"]):
+            if rov_id < p["n_poi"]:
+                rover_suggestions[rov_id] = rov_id
+            else:
+                rover_suggestions[rov_id] = random.randint(0, p["n_suggestions"]-1)
+    elif p["suggestion_type"] == "Random":
+        for rov_id in range(p["n_rovers"]):
+            rover_suggestions[rov_id] = random.randint(0, p["n_suggestions"]-1)
+    else:  # Custom
+        rover_suggestions = [0, 1, 0]
+    print(rover_suggestions)
+    test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
 
