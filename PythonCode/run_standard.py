@@ -1,6 +1,6 @@
 from ccea import Ccea
 from RewardFunctions.reward_functions import calc_difference, calc_dpp
-from RewardFunctions.suggestion_rewards import calc_sdpp
+from RewardFunctions.cba_rewards import calc_sdpp
 from RoverDomain_Core.rover_domain import RoverDomain
 import pickle
 import csv

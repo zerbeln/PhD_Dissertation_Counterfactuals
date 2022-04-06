@@ -8,7 +8,7 @@ class CBANetwork:
         self.n_inputs = p["s_inputs"]
         self.n_outputs = p["s_outputs"]
         self.n_hnodes = p["s_hidden"]
-        self.n_policies = p["n_policies"]
+        self.n_policies = p["n_skills"]
         self.weights = {}
         self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.float128)), [self.n_inputs, 1])
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
@@ -17,7 +17,6 @@ class CBANetwork:
     def get_inputs(self, s_inputs):  # Get inputs from state-vector
         """
         Transfer state information to the neuro-controller
-        :return:
         """
 
         for i in range(self.n_inputs):
@@ -26,8 +25,7 @@ class CBANetwork:
     def get_weights(self, weights):
         """
         Apply chosen network weights to the agent's neuro-controller
-        :param nn_weights: Dictionary of network weights received from the CCEA
-        :return:
+        :param weights: Dictionary of network weights received from the CCEA
         """
         self.weights["Layer1"] = np.reshape(np.mat(weights["L1"]), [self.n_hnodes, self.n_inputs])
         self.weights["Layer2"] = np.reshape(np.mat(weights["L2"]), [self.n_outputs, self.n_hnodes])
@@ -39,12 +37,12 @@ class CBANetwork:
         Run CBA NN to generate outputs
         """
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
-        self.hidden_layer = self.sigmoid(self.hidden_layer)
+        self.hidden_layer = self.tanh(self.hidden_layer)
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
-        self.output_layer = self.sigmoid(self.output_layer)
+        self.output_layer = self.tanh(self.output_layer)
 
-        snn_out = math.floor(self.output_layer[0, 0] * self.n_policies)
+        snn_out = np.argmax(self.output_layer[:, 0])
 
         return snn_out
 

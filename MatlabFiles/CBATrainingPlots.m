@@ -3,21 +3,21 @@
 clear all; close all; clc
 
 %% Test Parameters
-n_rovers = 6;
-n_poi = 5;
+n_rovers = 3;
+n_poi = 2;
 stat_runs = 50;
-generations = 1500;
+generations = 1000;
 coupling = 1;
 
 %% Input from files
 
 % Rover Skill Compliance Data
-five_r1 = importdata('CBA/Output_Data/Rover0/Suggestion_Rewards.csv');
-five_r2 = importdata('CBA/Output_Data/Rover1/Suggestion_Rewards.csv');
-five_r3 = importdata('CBA/Output_Data/Rover2/Suggestion_Rewards.csv');
-five_r4 = importdata('CBA/Output_Data/Rover3/Suggestion_Rewards.csv');
-five_r5 = importdata('CBA/Output_Data/Rover4/Suggestion_Rewards.csv');
-five_r6 = importdata('CBA/Output_Data/Rover5/Suggestion_Rewards.csv');
+five_r1 = importdata('CBA/Output_Data/Rover0/CBA_Rewards.csv');
+five_r2 = importdata('CBA/Output_Data/Rover1/CBA_Rewards.csv');
+five_r3 = importdata('CBA/Output_Data/Rover2/CBA_Rewards.csv');
+five_r4 = importdata('CBA/Output_Data/Rover3/CBA_Rewards.csv');
+five_r5 = importdata('CBA/Output_Data/Rover4/CBA_Rewards.csv');
+five_r6 = importdata('CBA/Output_Data/Rover5/CBA_Rewards.csv');
 
 % Rover Skill Performance Data
 s1_perf = importdata('CBA/Output_Data/Skill0_Performance.csv');

@@ -408,9 +408,9 @@ def train_target_poi(target_poi):
                 for rover_id in range(n_rovers):
                     pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
                     pops["EA{0}".format(rover_id)].fitness[pol_id] = sum(rover_rewards[rover_id])
-                    if gen % sample_rate == 0:
-                        skill_rewards[rover_id].append(sum(rover_rewards[rover_id]))
-
+            if gen % sample_rate == 0 or gen == generations-1:
+                for rover_id in range(n_rovers):
+                    skill_rewards[rover_id].append(max(pops["EA{0}".format(rover_id)].fitness))
             for pkey in pops:
                 pops[pkey].down_select()  # Choose new parents and create new offspring population
 
@@ -426,13 +426,13 @@ def train_target_quadrant(target_q):
     """
     Train rover policies for travelling towards POI within a specific quadrant
     """
-
     # Parameters
     stat_runs = p["stat_runs"]
     generations = p["pbank_generations"]
     population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
+    sample_rate = p["sample_rate"]
 
     # Rover Motor Control
     n_inp = p["n_inputs"]
@@ -446,16 +446,16 @@ def train_target_quadrant(target_q):
     # Create dictionary of rover instances
     pops = {}
     for rover_id in range(n_rovers):
-        pops["pop{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    code_run_times = np.zeros(stat_runs)
     for srun in range(stat_runs):  # Perform statistical runs
-        start_time = time.time()
+        print("Run: %i" % srun)
 
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
 
+        skill_rewards = [[] for i in range(n_rovers)]
         for gen in range(generations):
             for pkey in pops:
                 pops[pkey].select_policy_teams()
@@ -464,8 +464,8 @@ def train_target_quadrant(target_q):
                 for rk in rd.rovers:
                     rover_id = rd.rovers[rk].self_id
                     rd.rovers[rk].reset_rover()
-                    pol_id = int(pops["pop{0}".format(rover_id)].team_selection[team_id])
-                    weights = pops["pop{0}".format(rover_id)].population["pol{0}".format(pol_id)]
+                    pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
+                    weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(pol_id)]
                     rd.rovers[rk].get_weights(weights)
 
                 # Initial rover scan of environment
@@ -485,22 +485,20 @@ def train_target_quadrant(target_q):
 
                 # Update fitness of policies using reward information
                 for rover_id in range(n_rovers):
-                    pol_id = int(pops["pop{0}".format(rover_id)].team_selection[team_id])
-                    pops["pop{0}".format(rover_id)].fitness[pol_id] = sum(rover_rewards[rover_id])
-
+                    pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
+                    pops["EA{0}".format(rover_id)].fitness[pol_id] = sum(rover_rewards[rover_id])
+            if gen % sample_rate == 0 or gen == generations - 1:
+                for rover_id in range(n_rovers):
+                    skill_rewards[rover_id].append(max(pops["EA{0}".format(rover_id)].fitness))
             for pkey in pops:
                 pops[pkey].down_select()  # Choose new parents and create new offspring population
 
         # Record best policy trained for each rover
         for rover_id in range(n_rovers):
-            policy_id = np.argmax(pops["pop{0}".format(rover_id)].fitness)
-            weights = pops["pop{0}".format(rover_id)].population["pol{0}".format(policy_id)]
+            policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
+            weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "TowardQuadrant{0}".format(target_q), rover_id)
-
-        end_time = time.time()
-        code_run_times[srun] = end_time - start_time
-
-    save_time_history(code_run_times, "RunTimes.csv")
+            save_skill_reward_history(rover_id, skill_rewards[rover_id], "Skill{0}_Training.csv".format(target_q))
 
 
 if __name__ == '__main__':

@@ -101,21 +101,22 @@ class Rover:
         """
         Constructs the state information that gets passed to the rover's neuro-controller
         """
-        poi_state = self.poi_scan(pois)
-        rover_state = self.rover_scan(rovers)
+        n_brackets = int(360.0 / self.sensor_res)
+        poi_state = self.poi_scan(pois, n_brackets)
+        rover_state = self.rover_scan(rovers, n_brackets)
 
-        for i in range(4):
+        for i in range(n_brackets):
             self.sensor_readings[i] = poi_state[i]
             self.input_layer[i, 0] = poi_state[i]
-            self.sensor_readings[4 + i] = rover_state[i]
-            self.input_layer[4 + i, 0] = rover_state[i]
+            self.sensor_readings[n_brackets + i] = rover_state[i]
+            self.input_layer[n_brackets + i, 0] = rover_state[i]
 
-    def poi_scan(self, pois):
+    def poi_scan(self, pois, n_brackets):
         """
         Rover queries scanner that detects POIs
         """
-        poi_state = np.zeros(int(360.0 / self.sensor_res))
-        temp_poi_dist_list = [[] for _ in range(int(360.0 / self.sensor_res))]
+        poi_state = np.zeros(n_brackets)
+        temp_poi_dist_list = [[] for _ in range(n_brackets)]
 
         # Log POI distances into brackets
         poi_id = 0
@@ -124,13 +125,13 @@ class Rover:
 
             self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
-            if bracket > 3:
-                bracket -= 4
+            if bracket > n_brackets-1:
+                bracket -= n_brackets
             temp_poi_dist_list[bracket].append(pois[pk].value / dist)
             poi_id += 1
 
         # Encode POI information into the state vector
-        for bracket in range(int(360 / self.sensor_res)):
+        for bracket in range(n_brackets):
             num_poi_bracket = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
             if num_poi_bracket > 0:
                 if self.sensor_type == 'density':
@@ -144,12 +145,12 @@ class Rover:
 
         return poi_state
 
-    def rover_scan(self, rovers):
+    def rover_scan(self, rovers, n_brackets):
         """
         Rover activates scanner to detect other rovers within the environment
         """
-        rover_state = np.zeros(int(360.0 / self.sensor_res))
-        temp_rover_dist_list = [[] for _ in range(int(360.0 / self.sensor_res))]
+        rover_state = np.zeros(n_brackets)
+        temp_rover_dist_list = [[] for _ in range(n_brackets)]
 
         # Log rover distances into brackets
         for rk in rovers:
@@ -159,12 +160,12 @@ class Rover:
 
                 angle, dist = self.get_angle_dist(self.x_pos, self.y_pos, rov_x, rov_y)
                 bracket = int(angle / self.sensor_res)
-                if bracket > 3:
-                    bracket -= 4
+                if bracket > n_brackets-1:
+                    bracket -= n_brackets
                 temp_rover_dist_list[bracket].append(1 / dist)
 
         # Encode Rover information into the state vector
-        for bracket in range(int(360 / self.sensor_res)):
+        for bracket in range(n_brackets):
             num_rovers_bracket = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
             if num_rovers_bracket > 0:
                 if self.sensor_type == 'density':
