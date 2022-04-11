@@ -74,9 +74,48 @@ def create_policy_bank(playbook_type, rover_id, srun):
     return policy_bank
 
 
-def get_angle_dist(x, y, tx, ty):
+def get_global_angle(x, y):
     """
-    Computes angles and distance between two predators relative to (1,0) vector (x-axis)
+    Returns angle of object with respect to the global reference frame
+    """
+    dx = x - (p["x_dim"] / 2)
+    dy = y - (p["y_dim"] / 2)
+
+    angle = math.atan2(dy, dx) * (180.0 / math.pi)
+    while angle < 0.0:
+        angle += 360.0
+    while angle > 360.0:
+        angle -= 360.0
+    if math.isnan(angle):
+        angle = 0.0
+
+    return angle
+
+
+def get_object_rover_dist(x, y, tx, ty):
+    """
+    Computes distance between a rover and the object it is scanning
+    :param tx: X-Position of sensor target
+    :param ty: Y-Position of sensor target
+    :param x: X-Position of scanning rover
+    :param y: Y-Position of scanning rover
+    :return: angle, dist
+    """
+
+    dx = tx - x
+    dy = ty - y
+
+    dist = (dx ** 2) + (dy ** 2)
+
+    if dist < p["dmax"]:
+        dist = p["dmax"]
+
+    return dist
+
+
+def get_relative_angle_dist(x, y, tx, ty):
+    """
+    Computes angles and distance between a rover and the object it is scanning
     :param tx: X-Position of sensor target
     :param ty: Y-Position of sensor target
     :param x: X-Position of scanning rover
@@ -133,11 +172,14 @@ def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
 
     # Log POI distances into brackets
     for poi in pois:
-        angle, dist = get_angle_dist(rx, ry, pois[poi].x_position, pois[poi].y_position)
+        # angle, dist = get_relative_angle_dist(rx, ry, pois[poi].x_position, pois[poi].y_position)
+        angle = get_global_angle(pois[poi].x_position, pois[poi].y_position)
+        dist = get_object_rover_dist(rx, ry, pois[poi].x_position, pois[poi].y_position)
 
         bracket = int(angle / p["angle_res"])
         if bracket > n_brackets-1:
             bracket -= n_brackets
+
         if pois[poi].poi_id == suggestion:  # This can also be switched from POI ID to POI Quadrant
             temp_poi_dist_list[bracket].append(pois[poi].value/dist)
         else:
@@ -163,8 +205,6 @@ def create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id
     """
     Construct a counterfactual state input for rover detections
     """
-    center_x = p["x_dim"]/2
-    center_y = p["y_dim"]/2
     rover_state = np.zeros(n_brackets)
     temp_rover_dist_list = [[] for _ in range(n_brackets)]
 
@@ -176,17 +216,15 @@ def create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id
             rov_x = rovers[r].x_pos
             rov_y = rovers[r].y_pos
 
-            angle, dist = get_angle_dist(rx, ry, rov_x, rov_y)
+            # angle, dist = get_relative_angle_dist(rx, ry, rov_x, rov_y)
+            angle = get_global_angle(rov_x, rov_y)
+            dist = get_object_rover_dist(rx, ry, rov_x, rov_y)
+
             bracket = int(angle / p["angle_res"])
             if bracket > n_brackets-1:
                 bracket -= n_brackets
 
-            w_angle, w_dist = get_angle_dist(center_x, center_y, rov_x, rov_y)
-            world_bracket = int(w_angle/p["angle_res"])
-            if world_bracket > 3:
-                world_bracket -= 4
-
-            if poi_quadrant == world_bracket:
+            if poi_quadrant == bracket:
                 temp_rover_dist_list[bracket].append(0/dist)
             else:
                 temp_rover_dist_list[bracket].append(0/dist)

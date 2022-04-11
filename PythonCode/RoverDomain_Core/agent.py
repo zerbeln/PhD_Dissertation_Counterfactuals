@@ -121,7 +121,9 @@ class Rover:
         # Log POI distances into brackets
         poi_id = 0
         for pk in pois:
-            angle, dist = self.get_angle_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
+            # angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
+            angle = self.get_global_angle(pois[pk].x_position, pois[pk].y_position)
+            dist = self.get_object_rover_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
 
             self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
@@ -158,7 +160,10 @@ class Rover:
                 rov_x = rovers[rk].x_pos
                 rov_y = rovers[rk].y_pos
 
-                angle, dist = self.get_angle_dist(self.x_pos, self.y_pos, rov_x, rov_y)
+                # angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, rov_x, rov_y)
+                angle = self.get_global_angle(rov_x, rov_y)
+                dist = self.get_object_rover_dist(self.x_pos, self.y_pos, rov_x, rov_y)
+
                 bracket = int(angle / self.sensor_res)
                 if bracket > n_brackets-1:
                     bracket -= n_brackets
@@ -179,9 +184,26 @@ class Rover:
 
         return rover_state
 
-    def get_angle_dist(self, x, y, tx, ty):
+    def get_global_angle(self, x, y):
         """
-        Computes angles and distance between two predators relative to (1,0) vector (x-axis)
+        Returns angle of object a rover is scanning with respect to the global reference frame
+        """
+        dx = x - (p["x_dim"]/2)
+        dy = y - (p["y_dim"]/2)
+
+        angle = math.atan2(dy, dx)*(180.0/math.pi)
+        while angle < 0.0:
+            angle += 360.0
+        while angle > 360.0:
+            angle -= 360.0
+        if math.isnan(angle):
+            angle = 0.0
+
+        return angle
+
+    def get_object_rover_dist(self, x, y, tx, ty):
+        """
+        Computes distance between a rover and the object it is scanning
         :param tx: X-Position of sensor target
         :param ty: Y-Position of sensor target
         :param x: X-Position of scanning rover
@@ -189,10 +211,30 @@ class Rover:
         :return: angle, dist
         """
 
-        vx = x - tx
-        vy = y - ty
+        dx = tx - x
+        dy = ty - y
 
-        angle = math.atan2(vy, vx)*(180.0/math.pi)
+        dist = (dx ** 2) + (dy ** 2)
+
+        if dist < self.delta_min:
+            dist = self.delta_min
+
+        return dist
+
+    def get_relative_angle_dist(self, x, y, tx, ty):
+        """
+        Computes angles and distance between a rover and the object it is scanning
+        :param tx: X-Position of sensor target
+        :param ty: Y-Position of sensor target
+        :param x: X-Position of scanning rover
+        :param y: Y-Position of scanning rover
+        :return: angle, dist
+        """
+
+        dx = tx - x
+        dy = ty - y
+
+        angle = math.atan2(dy, dx)*(180.0/math.pi)
 
         while angle < 0.0:
             angle += 360.0
@@ -201,7 +243,7 @@ class Rover:
         if math.isnan(angle):
             angle = 0.0
 
-        dist = (vx**2) + (vy**2)
+        dist = (dx**2) + (dy**2)
 
         # Clip distance to not overwhelm activation function in NN
         if dist < self.delta_min:
