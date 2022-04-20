@@ -328,6 +328,11 @@ def test_suggestions_policy_bank(pbank_type, sgst):
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
         rd.pois["P0"].hazardous = True
+        rd.pois["P1"].hazardous = True
+        rd.pois["P2"].hazardous = True
+        rd.pois["P3"].hazardous = True
+        rd.pois["P4"].hazardous = True
+        rd.pois["P5"].hazardous = True
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
@@ -345,6 +350,7 @@ def test_suggestions_policy_bank(pbank_type, sgst):
             s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
             pops["CBA{0}".format(rover_id)].get_weights(s_weights)
 
+        # Reset Rover
         for rov in rd.rovers:
             rd.rovers[rov].reset_rover()
             final_rover_path[srun, rd.rovers[rov].self_id, 0, 0] = rd.rovers[rov].x_pos
@@ -355,7 +361,9 @@ def test_suggestions_policy_bank(pbank_type, sgst):
             rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
         for poi in rd.pois:
             rd.pois[poi].update_observer_distances(rd.rovers)
-        for rk in rd.rovers:  # Initial rover scan of environment
+
+        # Create counterfactual for CBA
+        for rk in rd.rovers:
             rover_id = rd.rovers[rk].self_id
             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
             sensor_data = rd.rovers[rk].sensor_readings
@@ -383,6 +391,7 @@ def test_suggestions_policy_bank(pbank_type, sgst):
                 rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
             for poi in rd.pois:
                 rd.pois[poi].update_observer_distances(rd.rovers)
+
             for rover_id in range(n_rovers):
                 suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
                 sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
@@ -434,7 +443,7 @@ if __name__ == '__main__':
         for rov_id in range(p["n_rovers"]):
             rover_suggestions[rov_id] = random.randint(0, p["n_skills"]-1)
     else:  # Custom
-        rover_suggestions = [0, 1, 0]
+        rover_suggestions = [0, 1, 3, 2, 2, 1]
     print(rover_suggestions)
     test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
 

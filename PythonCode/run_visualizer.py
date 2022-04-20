@@ -113,12 +113,16 @@ def test_trained_policy():
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
         rd.pois["P0"].hazardous = True
+        rd.pois["P1"].hazardous = True
+        rd.pois["P2"].hazardous = True
+        rd.pois["P3"].hazardous = True
+        rd.pois["P4"].hazardous = True
+        rd.pois["P5"].hazardous = True
 
     reward_history = []  # Keep track of team performance throughout training
     average_reward = 0
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     for srun in range(stat_runs):  # Perform statistical runs
-
         # Load Trained Suggestion Interpreter Weights
         for rk in rd.rovers:
             rover_id = rd.rovers[rk].self_id
@@ -128,25 +132,25 @@ def test_trained_policy():
 
         # Reset Rover
         for rk in rd.rovers:
-            rover_id = rd.rovers[rk].self_id
             rd.rovers[rk].reset_rover()
-            final_rover_path[srun, rover_id, 0, 0] = rd.rovers[rk].x_pos
-            final_rover_path[srun, rover_id, 0, 1] = rd.rovers[rk].y_pos
-            final_rover_path[srun, rover_id, 0, 2] = rd.rovers[rk].theta_pos
+            final_rover_path[srun, rd.rovers[rk].self_id, 0, 0] = rd.rovers[rk].x_pos
+            final_rover_path[srun, rd.rovers[rk].self_id, 0, 1] = rd.rovers[rk].y_pos
+            final_rover_path[srun, rd.rovers[rk].self_id, 0, 2] = rd.rovers[rk].theta_pos
 
         # Initial rover scan of environment
         for rk in rd.rovers:
             rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
+        for poi in rd.pois:
+            rd.pois[poi].update_observer_distances(rd.rovers)
 
         g_rewards = np.zeros(rover_steps)
         for step_id in range(rover_steps):
             # Rover takes an action in the world
             for rk in rd.rovers:
-                rover_id = rd.rovers[rk].self_id
                 rd.rovers[rk].step(rd.world_x, rd.world_y)
-                final_rover_path[srun, rover_id, step_id + 1, 0] = rd.rovers[rk].x_pos
-                final_rover_path[srun, rover_id, step_id + 1, 1] = rd.rovers[rk].y_pos
-                final_rover_path[srun, rover_id, step_id + 1, 2] = rd.rovers[rk].theta_pos
+                final_rover_path[srun, rd.rovers[rk].self_id, step_id + 1, 0] = rd.rovers[rk].x_pos
+                final_rover_path[srun, rd.rovers[rk].self_id, step_id + 1, 1] = rd.rovers[rk].y_pos
+                final_rover_path[srun, rd.rovers[rk].self_id, step_id + 1, 2] = rd.rovers[rk].theta_pos
 
             # Rover scans environment and processes suggestions
             for rk in rd.rovers:

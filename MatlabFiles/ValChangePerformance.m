@@ -10,26 +10,26 @@ generations = 2000;
 
 %% Input from files
 
-% Coupling Change C1
+% Value Change V1
 g_v1 = importdata('V1/Global/Output_Data/Final_GlobalRewards.csv');
 d_v1 = importdata('V1/Difference/Output_Data/Final_GlobalRewards.csv');
 dpp_v1 = importdata('V1/D++/Output_Data/Final_GlobalRewards.csv');
 cba_v1 = importdata('V1/CBA/Output_Data/Final_GlobalRewards.csv');
 
-% Coupling Change C2
+% Value Change V2
 g_v2 = importdata('V2/Global/Output_Data/Final_GlobalRewards.csv');
 d_v2 = importdata('V2/Difference/Output_Data/Final_GlobalRewards.csv');
 dpp_v2 = importdata('V2/D++/Output_Data/Final_GlobalRewards.csv');
 cba_v2 = importdata('V2/CBA/Output_Data/Final_GlobalRewards.csv');
 
-% Coupling Change C3
+% Value Change V3
 g_v3 = importdata('V3/Global/Output_Data/Final_GlobalRewards.csv');
 d_v3 = importdata('V3/Difference/Output_Data/Final_GlobalRewards.csv');
 dpp_v3 = importdata('V3/D++/Output_Data/Final_GlobalRewards.csv');
 cba_v3 = importdata('V3/CBA/Output_Data/Final_GlobalRewards.csv');
 
 %% Data Analysis
-% Coupling Change C1
+% Value Change V1
 gf_v1 = mean(g_v1.data);
 ge_v1 = std(g_v1.data)/stat_runs;
 df_v1 = mean(d_v1.data);
@@ -39,7 +39,7 @@ dppe_v1 = std(dpp_v1.data)/stat_runs;
 cbaf_v1 = mean(cba_v1);
 cbae_v1 = std(cba_v1)/stat_runs;
 
-% Coupling Change C2
+% Value Change V2
 gf_v2 = mean(g_v2.data);
 ge_v2 = std(g_v2.data)/stat_runs;
 df_v2 = mean(d_v2.data);
@@ -49,7 +49,7 @@ dppe_v2 = std(dpp_v2.data)/stat_runs;
 cbaf_v2 = mean(cba_v2);
 cbae_v2 = std(cba_v2)/stat_runs;
 
-% Coupling Change C3
+% Value Change V3
 gf_v3 = mean(g_v3.data);
 ge_v3 = std(g_v3.data)/stat_runs;
 df_v3 = mean(d_v3.data);
