@@ -1,11 +1,11 @@
 parameters = {}
 
 # Run Parameters
-parameters["stat_runs"] = 1
+parameters["stat_runs"] = 10
 parameters["starting_srun"] = 0
-parameters["generations"] = 10  # Number of generations for CCEA in each stat run
-parameters["pbank_generations"] = 10  # Number of generations used for training policy bank
-parameters["reward_type"] = "Difference"  # Global, Difference, DPP, SDPP (for non-suggestion training)
+parameters["generations"] = 2000  # Number of generations for CCEA in each stat run
+parameters["pbank_generations"] = 2000  # Number of generations used for training policy bank
+parameters["reward_type"] = "Global"  # Global, Difference, DPP, SDPP (for non-suggestion training)
 parameters["coupling"] = 1  # Number of rovers required to view a POI for credit
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
@@ -24,13 +24,13 @@ parameters["active_hazards"] = False  # Determine if hazard zones are active (Tr
 
 # Rover Parameters
 parameters["sensor_model"] = "summed"  # Should either be "density" or "summed"
-parameters["angle_res"] = 360 / 16  # Resolution of sensors (determines number of sectors)
+parameters["angle_res"] = 360 / 4  # Resolution of sensors (determines number of sectors)
 parameters["observation_radius"] = 4.0  # Maximum range at which rovers can observe a POI
 parameters["min_distance"] = 1.0  # Minimum distance which may appear in the denominator of credit eval functions
 parameters["dmax"] = 2.5  # Maximum distance a rover can move in a single time step
 
 # Suggestion Parameters
-parameters["policy_bank_type"] = "Target_POI"  # Target_Quadrant or Target_POI
+parameters["skill_type"] = "Target_POI"  # Target_Quadrant or Target_POI
 parameters["n_skills"] = parameters["n_poi"]  # Number of pre-trained policies in the policy bank
 parameters["suggestion_type"] = "Custom"  # Identical, Unique, Random, Custom
 parameters["s_inputs"] = int(2 * (360 / parameters["angle_res"]))

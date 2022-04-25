@@ -159,10 +159,11 @@ def test_trained_policy():
                 rd.pois[poi].update_observer_distances(rd.rovers)
 
             # Calculate Global Reward
-            g_rewards[step_id] = rd.calc_global()
+            poi_rewards = rd.calc_global()
+            g_rewards[step_id] = sum(poi_rewards)
 
-        reward_history.append(sum(g_rewards))
-        average_reward += sum(g_rewards)
+        reward_history.append(max(g_rewards))
+        average_reward += max(g_rewards)
         save_rover_path(final_rover_path, "Rover_Paths")
 
     average_reward /= stat_runs

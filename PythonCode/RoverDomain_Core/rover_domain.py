@@ -82,7 +82,7 @@ class RoverDomain:
         """
         Calculate the global reward at the current time step
         """
-        global_reward = 0.0
+        global_reward = np.zeros(self.num_pois)
 
         for pk in self.pois:
             observer_count = 0
@@ -96,11 +96,12 @@ class RoverDomain:
 
             # Update global reward if POI is observed
             if observer_count >= int(self.pois[pk].coupling):
-                summed_observer_distances = sum(rover_distances[0:int(self.pois[pk].coupling)])
+                summed_dist = sum(rover_distances[0:int(self.pois[pk].coupling)])
                 if self.pois[pk].hazardous:
-                    global_reward -= 10.0
+                    global_reward[self.pois[pk].poi_id] = -10.0
                 else:
-                    global_reward += self.pois[pk].value / (summed_observer_distances / self.pois[pk].coupling)
+                    global_reward[self.pois[pk].poi_id] = self.pois[pk].value / (summed_dist/self.pois[pk].coupling)
+
         return global_reward
 
     def save_poi_configuration(self):

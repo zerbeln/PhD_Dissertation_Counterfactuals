@@ -265,9 +265,9 @@ def test_skill_performance(skill_id):
         # Load Trained Suggestion Interpreter Weights
         for rov in rd.rovers:
             rover_id = rd.rovers[rov].self_id
-            if p["policy_bank_type"] == "Target_POI":
+            if p["skill_type"] == "Target_POI":
                 weights = load_saved_policies("TowardPOI{0}".format(skill_id), rover_id, srun)
-            elif p["policy_bank_type"] == "Target_Quadrant":
+            elif p["skill_type"] == "Target_Quadrant":
                 weights = load_saved_policies("TowardQuadrant{0}".format(skill_id), rover_id, srun)
             rd.rovers[rov].get_weights(weights)
             rd.rovers[rov].reset_rover()
@@ -297,9 +297,9 @@ def test_skill_performance(skill_id):
 
             # Calculate Global Reward
             for rover_id in range(n_rovers):
-                if p["policy_bank_type"] == "Target_POI":
+                if p["skill_type"] == "Target_POI":
                     rewards[rover_id].append(target_poi_reward(rover_id, rd.pois, skill_id))
-                elif p["policy_bank_type"] == "Target_Quadrant":
+                elif p["skill_type"] == "Target_Quadrant":
                     rewards[rover_id].append(target_quadrant_reward(rover_id, rd.pois, skill_id))
 
 
@@ -406,10 +406,11 @@ def test_suggestions_policy_bank(pbank_type, sgst):
                 rd.rovers["R{0}".format(rover_id)].get_nn_outputs()
 
             # Calculate Global Reward
-            g_rewards[step_id] = rd.calc_global()
+            poi_rewards = rd.calc_global()
+            g_rewards[step_id] = sum(poi_rewards)
 
-        reward_history.append(sum(g_rewards))
-        average_reward += sum(g_rewards)
+        reward_history.append(max(g_rewards))
+        average_reward += max(g_rewards)
 
         save_rover_path(final_rover_path, "Rover_Paths")
 
@@ -445,5 +446,5 @@ if __name__ == '__main__':
     else:  # Custom
         rover_suggestions = [0, 1, 3, 2, 2, 1]
     print(rover_suggestions)
-    test_suggestions_policy_bank(p["policy_bank_type"], rover_suggestions)
+    test_suggestions_policy_bank(p["skill_type"], rover_suggestions)
 

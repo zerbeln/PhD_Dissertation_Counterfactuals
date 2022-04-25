@@ -408,9 +408,12 @@ def train_target_poi(target_poi):
                 for rover_id in range(n_rovers):
                     pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
                     pops["EA{0}".format(rover_id)].fitness[pol_id] = sum(rover_rewards[rover_id])
+
+            # Track Skill Training Performance
             if gen % sample_rate == 0 or gen == generations-1:
                 for rover_id in range(n_rovers):
                     skill_rewards[rover_id].append(max(pops["EA{0}".format(rover_id)].fitness))
+
             for pkey in pops:
                 pops[pkey].down_select()  # Choose new parents and create new offspring population
 
@@ -487,6 +490,8 @@ def train_target_quadrant(target_q):
                 for rover_id in range(n_rovers):
                     pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
                     pops["EA{0}".format(rover_id)].fitness[pol_id] = sum(rover_rewards[rover_id])
+
+            # Track Skill Training Performance
             if gen % sample_rate == 0 or gen == generations - 1:
                 for rover_id in range(n_rovers):
                     skill_rewards[rover_id].append(max(pops["EA{0}".format(rover_id)].fitness))
@@ -506,11 +511,13 @@ if __name__ == '__main__':
     Train policy playbooks for rover team
     """
 
-    if p["policy_bank_type"] == "Target_POI":
+    if p["skill_type"] == "Target_POI":
         for poi_id in range(p["n_poi"]):
             print("Training Go Towards POI: ", poi_id)
             train_target_poi(poi_id)
-    elif p["policy_bank_type"] == "Target_Quadrant":
+    elif p["skill_type"] == "Target_Quadrant":
         for q_id in range(4):
             print("Training Go To Quadrant: ", q_id)
             train_target_quadrant(q_id)
+    else:
+        print("INCORRECT SKILL TRAINING METHOD")

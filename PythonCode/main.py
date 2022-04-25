@@ -1,6 +1,7 @@
 from ccea import Ccea
 from suggestion_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
+from RewardFunctions.local_rewards import *
 import math
 import sys
 import pickle
@@ -258,11 +259,11 @@ def train_cba_skill_selector():
     population_size = p["pop_size"]
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
-    pbank_type = p["policy_bank_type"]
     sample_rate = p["sample_rate"]
 
     # Suggestion Parameters
     n_skills = p["n_skills"]
+    pbank_type = p["skill_type"]
     s_inp = p["s_inputs"]
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
@@ -296,79 +297,89 @@ def train_cba_skill_selector():
                 skill_sample = random.sample(range(n_skills), n_skills)
                 rover_skills.append(skill_sample)
 
+            rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
             for team_number in range(population_size):  # Each policy in CCEA is tested in teams
-                # Get weights for suggestion interpreter
-                for rover_id in range(n_rovers):
-                    policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
-                    weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-                    pops["CBA{0}".format(rover_id)].get_weights(weights)  # Suggestion Network Gets Weights
+                for skill in range(n_skills):
 
-                for rov in rd.rovers:
-                    rd.rovers[rov].reset_rover()
+                    # Get weights for CBA skill selector
+                    for rover_id in range(n_rovers):
+                        policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
+                        weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
+                        pops["CBA{0}".format(rover_id)].get_weights(weights)  # Suggestion Network Gets Weights
 
-                rover_rewards = np.zeros((n_rovers, rover_steps+1))  # Keep track of rover rewards at each t
-                chosen_pol = np.zeros(n_rovers)
-                for rov in rd.rovers:  # Initial rover scan of environment
-                    rover_id = rd.rovers[rov].self_id
-                    rd.rovers[rov].scan_environment(rd.rovers, rd.pois)
-                    sensor_data = rd.rovers[rov].sensor_readings  # Unaltered sensor readings
+                    # Reset rovers to initial conditions
+                    for rov in rd.rovers:
+                        rd.rovers[rov].reset_rover()
 
-                    # Test networks ability to interpret suggestions
-                    for skill in range(n_skills):
+                    chosen_pol = np.zeros(n_rovers)
+                    for rov in rd.rovers:  # Initial rover scan of environment
+                        rover_id = rd.rovers[rov].self_id
+                        rd.rovers[rov].scan_environment(rd.rovers, rd.pois)
+                        sensor_data = rd.rovers[rov].sensor_readings  # Unaltered sensor readings
+
+                        # Select a skill using counterfactually shaped state information
                         s_id = int(rover_skills[rover_id][skill])
                         suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
                         cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                         pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
                         cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
                         chosen_pol[rover_id] = int(cba_outputs)
-                        if chosen_pol[rover_id] == s_id:
-                            rover_rewards[rover_id, 0] += 1  # Reward of +1 for correctly selected skill
-                    rover_rewards[rover_id, 0] /= n_skills
+                        # if chosen_pol[rover_id] == s_id:
+                        #     rover_rewards[rover_id, 0] += 1  # Reward of +1 for correctly selected skill
+                        # rover_rewards[rover_id, 0] /= n_skills
 
-                    # Rover uses selected policy
-                    pol_id = int(chosen_pol[rover_id])
-                    weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
-                    rd.rovers[rov].get_weights(weights)
-                    rd.rovers[rov].get_nn_outputs()
+                        # Rover uses selected skill
+                        pol_id = int(chosen_pol[rover_id])
+                        weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
+                        rd.rovers[rov].get_weights(weights)
+                        rd.rovers[rov].get_nn_outputs()
 
-                for step_id in range(rover_steps):
-                    # Rover takes an action in the world
-                    for rov in rd.rovers:
-                        rd.rovers[rov].step(rd.world_x, rd.world_y)
+                    for step_id in range(rover_steps):
+                        # Rover takes an action in the world
+                        for rov in rd.rovers:
+                            rd.rovers[rov].step(rd.world_x, rd.world_y)
 
-                    # Rover scans environment and processes suggestions
-                    for rov in rd.rovers:
-                        rover_id = rd.rovers[rov].self_id
-                        rd.rovers[rov].scan_environment(rd.rovers, rd.pois)
-                        sensor_data = rd.rovers[rov].sensor_readings
+                        # Rover scans environment and processes counterfactually shaped perceptions
+                        for rov in rd.rovers:
+                            rover_id = rd.rovers[rov].self_id
+                            rd.rovers[rov].scan_environment(rd.rovers, rd.pois)
+                            sensor_data = rd.rovers[rov].sensor_readings
 
-                        for skill in range(n_skills):
+                            # Select a skill using counterfactually shaped state information
                             s_id = int(rover_skills[rover_id][skill])
                             suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
                             cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
                             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
                             chosen_pol[rover_id] = int(cba_outputs)
-                            if chosen_pol[rover_id] == s_id:
-                                rover_rewards[rover_id, step_id] += 1  # Reward of +1 for correctly selected skill
-                        rover_rewards[rover_id, step_id] /= n_skills
+                            # if chosen_pol[rover_id] == s_id:
+                            #     rover_rewards[rover_id, step_id] += 1  # Reward of +1 for correctly selected skill
+                            # rover_rewards[rover_id, step_id] /= n_skills
 
-                        # Rover uses selected policy
-                        pol_id = int(chosen_pol[rover_id])
-                        weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
-                        rd.rovers[rov].get_weights(weights)
-                        rd.rovers[rov].get_nn_outputs()
+                            # Rover uses selected skill
+                            pol_id = int(chosen_pol[rover_id])
+                            weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
+                            rd.rovers[rov].get_weights(weights)
+                            rd.rovers[rov].get_nn_outputs()
 
-                for rover_id in range(n_rovers):
-                    policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
-                    pops["EA{0}".format(rover_id)].fitness[policy_id] += sum(rover_rewards[rover_id])/float(rover_steps)
+                            # Calculate Rewards
+                            reward = target_poi_reward(rover_id, rd.pois, s_id)
+                            rover_rewards[rover_id, step_id] = reward
 
-            # Choose new parents and create new offspring population
+                    # Update policy fitnesses
+                    for rover_id in range(n_rovers):
+                        policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
+                        pops["EA{0}".format(rover_id)].fitness[policy_id] += max(rover_rewards[rover_id])
+
+            # Choose parents and create new offspring population
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].down_select()
+
+                # Record training performance data
                 if gen % sample_rate == 0:
                     policy_rewards[rover_id].append(max(pops["EA{0}".format(rover_id)].fitness))
 
+        # Record trial data
         for rover_id in range(n_rovers):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]

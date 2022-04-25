@@ -4,13 +4,14 @@ from parameters import parameters as p
 
 
 # DIFFERENCE REWARDS --------------------------------------------------------------------------------------------------
-def calc_difference(pois, global_reward):
+def calc_difference(pois, poi_rewards):
     """
     Calculate each rover's difference reward at the current time step
     """
     obs_rad = p["observation_radius"]
     n_rovers = p["n_rovers"]
 
+    global_reward = sum(poi_rewards)
     difference_rewards = np.zeros(n_rovers)
     for agent_id in range(n_rovers):  # For each rover
         counterfactual_global_reward = 0.0
@@ -36,13 +37,14 @@ def calc_difference(pois, global_reward):
 
 
 # D++ REWARD ----------------------------------------------------------------------------------------------------------
-def calc_dpp(pois, global_reward):
+def calc_dpp(pois, poi_rewards):
     """
     Calculate D++ rewards for each rover at the current time step
     """
     n_rovers = p["n_rovers"]
     obs_rad = p["observation_radius"]
-    d_rewards = calc_difference(pois, global_reward)
+    global_reward = sum(poi_rewards)
+    d_rewards = calc_difference(pois, poi_rewards)
     dpp_rewards = np.zeros(n_rovers)
 
     # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
