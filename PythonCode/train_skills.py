@@ -369,7 +369,8 @@ def train_target_poi(target_poi):
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    for srun in range(stat_runs):  # Perform statistical runs
+    srun = p["starting_srun"]
+    while srun < stat_runs:  # Perform statistical runs
         print("Run: %i" % srun)
 
         # Reset Rover and CCEA Pop
@@ -424,6 +425,8 @@ def train_target_poi(target_poi):
             save_best_policies(weights, srun, "TowardPOI{0}".format(target_poi), rover_id)
             save_skill_reward_history(rover_id, skill_rewards[rover_id], "Skill{0}_Training.csv".format(target_poi))
 
+        srun += 1
+
 
 def train_target_quadrant(target_q):
     """
@@ -451,7 +454,8 @@ def train_target_quadrant(target_q):
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    for srun in range(stat_runs):  # Perform statistical runs
+    srun = p["starting_srun"]
+    while srun < stat_runs:  # Perform statistical runs
         print("Run: %i" % srun)
 
         # Create new CCEA populations
@@ -504,6 +508,8 @@ def train_target_quadrant(target_q):
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "TowardQuadrant{0}".format(target_q), rover_id)
             save_skill_reward_history(rover_id, skill_rewards[rover_id], "Skill{0}_Training.csv".format(target_q))
+
+        srun += 1
 
 
 if __name__ == '__main__':

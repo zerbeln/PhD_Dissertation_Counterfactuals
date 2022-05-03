@@ -118,15 +118,17 @@ def rover_global():
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
 
-                    g_rewards = rd.calc_global()
+                    step_rewards = rd.calc_global()
                     for poi_id in range(rd.num_pois):
-                        poi_rewards[poi_id, step_id] = g_rewards[poi_id]
+                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
 
                 # Update fitness of policies using reward information
+                g_reward = 0
+                for poi_id in range(rd.num_pois):
+                     g_reward += max(poi_rewards[poi_id])
                 for rover_id in range(n_rovers):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
-                    for poi_id in range(rd.num_pois):
-                        pops["EA{0}".format(rover_id)].fitness[policy_id] += max(poi_rewards[poi_id])
+                    pops["EA{0}".format(rover_id)].fitness[policy_id] = g_reward
 
             # Testing Phase (test best policies found so far) ----------------------------------------------------------
             if gen % sample_rate == 0 or gen == generations - 1:
@@ -151,9 +153,9 @@ def rover_global():
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
 
-                    g_rewards = rd.calc_global()
+                    step_rewards = rd.calc_global()
                     for poi_id in range(rd.num_pois):
-                        poi_rewards[poi_id, step_id] = g_rewards[poi_id]
+                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
 
                 g_reward = 0
                 for poi_id in range(rd.num_pois):
@@ -265,9 +267,9 @@ def rover_difference():
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
 
-                    g_rewards = rd.calc_global()
+                    step_rewards = rd.calc_global()
                     for poi_id in range(rd.num_pois):
-                        poi_rewards[poi_id, step_id] = g_rewards[poi_id]
+                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
 
                 g_reward = 0
                 for poi_id in range(rd.num_pois):
@@ -298,7 +300,6 @@ def rover_dpp():
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
     sample_rate = p["sample_rate"]
-    assert (p["coupling"] > 1)
 
     # Rover Motor Control
     n_inp = p["n_inputs"]
@@ -378,9 +379,9 @@ def rover_dpp():
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
 
-                    g_rewards = rd.calc_global()
+                    step_rewards = rd.calc_global()
                     for poi_id in range(rd.num_pois):
-                        poi_rewards[poi_id, step_id] = g_rewards[poi_id]
+                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
 
                 g_reward = 0
                 for poi_id in range(rd.num_pois):
@@ -401,7 +402,7 @@ def rover_dpp():
 
 def rover_sdpp(sgst):
     """
-    Train rovers in tightly coupled rover domain using D++
+    Train rovers in tightly coupled rover domain using D++ with counterfactual suggestions
     """
 
     # Parameters
@@ -411,7 +412,6 @@ def rover_sdpp(sgst):
     n_rovers = p["n_rovers"]
     rover_steps = p["steps"]
     sample_rate = p["sample_rate"]
-    assert (p["coupling"] > 1)
 
     # Rover Motor Control
     n_inp = p["n_inputs"]
@@ -445,7 +445,9 @@ def rover_sdpp(sgst):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
                     rd.rovers[rk].get_weights(weights)
-                for rk in rd.rovers:  # Rover runs initial scan of environment
+
+                # Rover runs initial scan of environment
+                for rk in rd.rovers:
                     rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
 
                 sdpp_rewards = np.zeros((n_rovers, rover_steps))
@@ -454,9 +456,9 @@ def rover_sdpp(sgst):
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rovers scan environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
+
                     g_reward = rd.calc_global()
                     rover_rewards = calc_sdpp(rd.pois, g_reward, sgst)
                     for rover_id in range(n_rovers):
@@ -480,7 +482,7 @@ def rover_sdpp(sgst):
                     weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
                     rd.rovers[rk].get_weights(weights)
 
-                g_rewards = np.zeros(rover_steps)
+                poi_rewards = np.zeros((rd.num_pois, rover_steps))
                 for step_id in range(rover_steps):
                     for rk in rd.rovers:  # Rover processes information from scan and acts
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
@@ -489,9 +491,15 @@ def rover_sdpp(sgst):
 
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
-                    g_rewards[step_id] = rd.calc_global()
 
-                reward_history.append(sum(g_rewards))
+                    step_rewards = rd.calc_global()
+                    for poi_id in range(rd.num_pois):
+                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
+
+                g_reward = 0
+                for poi_id in range(rd.num_pois):
+                    g_reward += max(poi_rewards[poi_id])
+                reward_history.append(g_reward)
             # TEST OVER ------------------------------------------------------------------------------------------------
 
             for pkey in pops:
@@ -510,7 +518,7 @@ if __name__ == '__main__':
     """
 
     reward_type = p["reward_type"]
-    sgst = [0, 0, 0]
+    sgst = [1, 1, 1, 1, 1, 1]  # Counterfactual Suggestions for S-D++ (must match number of rovers)
 
     if reward_type == "Global":
         print("GLOBAL REWARDS")

@@ -121,9 +121,9 @@ class Rover:
         # Log POI distances into brackets
         poi_id = 0
         for pk in pois:
-            # angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
-            angle = self.get_global_angle(pois[pk].x_position, pois[pk].y_position)
-            dist = self.get_object_rover_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
+            angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
+            # angle = self.get_global_angle(pois[pk].x_position, pois[pk].y_position)
+            # dist = self.get_object_rover_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
 
             self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
@@ -160,9 +160,9 @@ class Rover:
                 rov_x = rovers[rk].x_pos
                 rov_y = rovers[rk].y_pos
 
-                # angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, rov_x, rov_y)
-                angle = self.get_global_angle(rov_x, rov_y)
-                dist = self.get_object_rover_dist(self.x_pos, self.y_pos, rov_x, rov_y)
+                angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, rov_x, rov_y)
+                # angle = self.get_global_angle(rov_x, rov_y)
+                # dist = self.get_object_rover_dist(self.x_pos, self.y_pos, rov_x, rov_y)
 
                 bracket = int(angle / self.sensor_res)
                 if bracket > n_brackets-1:
