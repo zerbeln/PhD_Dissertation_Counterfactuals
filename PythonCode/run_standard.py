@@ -85,7 +85,8 @@ def rover_global():
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    for srun in range(stat_runs):  # Perform statistical runs
+    srun = p["starting_srun"]
+    while srun < stat_runs:  # Perform statistical runs
         print("Run: %i" % srun)
 
         # Create new population of policies for each rover
@@ -173,6 +174,8 @@ def rover_global():
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
+        srun += 1
+
 
 def rover_difference():
     """
@@ -200,7 +203,8 @@ def rover_difference():
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    for srun in range(stat_runs):  # Perform statistical runs
+    srun = p["starting_srun"]
+    while srun < stat_runs:  # Perform statistical runs
         print("Run: %i" % srun)
 
         # Create new population of policies for each rover
@@ -287,6 +291,8 @@ def rover_difference():
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
+        srun += 1
+
 
 def rover_dpp():
     """
@@ -314,7 +320,8 @@ def rover_dpp():
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    for srun in range(stat_runs):  # Perform statistical runs
+    srun = p["starting_srun"]
+    while srun < stat_runs:  # Perform statistical runs
         print("Run: %i" % srun)
 
         # Create new population of policies for each rover
@@ -399,6 +406,8 @@ def rover_dpp():
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
+        srun += 1
+
 
 def rover_sdpp(sgst):
     """
@@ -426,7 +435,8 @@ def rover_sdpp(sgst):
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
-    for srun in range(stat_runs):  # Perform statistical runs
+    srun = p["starting_srun"]
+    while srun < stat_runs:  # Perform statistical runs
         print("Run: %i" % srun)
 
         # Reset Rover and CCEA Pop
@@ -510,6 +520,8 @@ def rover_sdpp(sgst):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
+
+        srun += 1
 
 
 if __name__ == '__main__':
