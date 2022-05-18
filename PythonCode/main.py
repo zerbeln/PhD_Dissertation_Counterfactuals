@@ -129,8 +129,8 @@ def get_relative_angle_dist(x, y, tx, ty):
     :return: angle, dist
     """
 
-    vx = x - tx
-    vy = y - ty
+    vx = tx - x
+    vy = ty - y
 
     angle = math.atan2(vy, vx)*(180.0/math.pi)
 
@@ -150,7 +150,7 @@ def get_relative_angle_dist(x, y, tx, ty):
     return angle, dist
 
 
-def construct_counterfactual_state(pois, rovers, rover_id, suggestion):
+def get_counterfactual_state(pois, rovers, rover_id, suggestion):
     """
     Create a counteractual state input to represent agent suggestions
     """
@@ -170,7 +170,7 @@ def construct_counterfactual_state(pois, rovers, rover_id, suggestion):
 
 def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
     """
-    Construct a counterfactual state input for POI detections
+    Construct a counterfactual state based on POI sensors
     """
     c_poi_state = np.zeros(n_brackets)
     temp_poi_dist_list = [[] for _ in range(n_brackets)]
@@ -187,7 +187,7 @@ def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
         if pois[poi].poi_id == suggestion:  # This can also be switched from POI ID to POI Quadrant
             temp_poi_dist_list[bracket].append(pois[poi].value/dist)
         else:
-            temp_poi_dist_list[bracket].append(-2 * pois[poi].value/dist)
+            temp_poi_dist_list[bracket].append(-1 * pois[poi].value/dist)
 
     # Encode POI information into the state vector
     for bracket in range(n_brackets):
@@ -207,7 +207,7 @@ def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
 
 def create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id, suggestion):
     """
-    Construct a counterfactual state input for rover detections
+    Construct a counterfactual state input based on Rover sensors
     """
     rover_state = np.zeros(n_brackets)
     temp_rover_dist_list = [[] for _ in range(n_brackets)]
@@ -223,6 +223,7 @@ def create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id
             # angle, dist = get_relative_angle_dist(rx, ry, rov_x, rov_y)
             angle = get_global_angle(rov_x, rov_y)
             dist = get_object_rover_dist(rx, ry, rov_x, rov_y)
+
             bracket = int(angle / p["angle_res"])
             if bracket > n_brackets-1:
                 bracket -= n_brackets
@@ -278,8 +279,9 @@ def train_cba_skill_selector():
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=s_inp, n_out=s_out, n_hid=s_hid)
         pops["CBA{0}".format(rover_id)] = CBANetwork()
 
+    # Perform statistical runs
     srun = p["starting_srun"]
-    while srun < stat_runs:  # Perform statistical runs
+    while srun < stat_runs:
         print("Run: %i" % srun)
 
         # Reset Rover and CCEA Pop and Load Pre-Trained Policies
@@ -297,10 +299,10 @@ def train_cba_skill_selector():
                 skill_sample = random.sample(range(n_skills), n_skills)
                 rover_skills.append(skill_sample)
 
-            rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
-            for team_number in range(population_size):  # Each policy in CCEA is tested in teams
+            # Each policy in CCEA is tested in randomly selected teams
+            for team_number in range(population_size):
+                rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
                 for skill in range(n_skills):
-
                     # Get weights for CBA skill selector
                     for rover_id in range(n_rovers):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
@@ -318,19 +320,15 @@ def train_cba_skill_selector():
                         sensor_data = rd.rovers[rov].sensor_readings  # Unaltered sensor readings
 
                         # Select a skill using counterfactually shaped state information
-                        s_id = int(rover_skills[rover_id][skill])
-                        suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
+                        target_pid = int(rover_skills[rover_id][skill])
+                        suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid)
                         cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                         pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
                         cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
                         chosen_pol[rover_id] = int(cba_outputs)
-                        # if chosen_pol[rover_id] == s_id:
-                        #     rover_rewards[rover_id, 0] += 1  # Reward of +1 for correctly selected skill
-                        # rover_rewards[rover_id, 0] /= n_skills
 
                         # Rover uses selected skill
-                        pol_id = int(chosen_pol[rover_id])
-                        weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
+                        weights = rd.rovers[rov].policy_bank["Policy{0}".format(int(chosen_pol[rover_id]))]
                         rd.rovers[rov].get_weights(weights)
                         rd.rovers[rov].get_nn_outputs()
 
@@ -346,24 +344,24 @@ def train_cba_skill_selector():
                             sensor_data = rd.rovers[rov].sensor_readings
 
                             # Select a skill using counterfactually shaped state information
-                            s_id = int(rover_skills[rover_id][skill])
-                            suggestion = construct_counterfactual_state(rd.pois, rd.rovers, rover_id, s_id)
+                            target_pid = int(rover_skills[rover_id][skill])
+                            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid)
                             cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
                             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
                             chosen_pol[rover_id] = int(cba_outputs)
-                            # if chosen_pol[rover_id] == s_id:
-                            #     rover_rewards[rover_id, step_id] += 1  # Reward of +1 for correctly selected skill
-                            # rover_rewards[rover_id, step_id] /= n_skills
 
                             # Rover uses selected skill
-                            pol_id = int(chosen_pol[rover_id])
-                            weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
+                            weights = rd.rovers[rov].policy_bank["Policy{0}".format(int(chosen_pol[rover_id]))]
                             rd.rovers[rov].get_weights(weights)
                             rd.rovers[rov].get_nn_outputs()
 
-                            # Calculate Rewards
-                            reward = target_poi_reward(rover_id, rd.pois, s_id)
+                        for poi in rd.pois:
+                            rd.pois[poi].update_observer_distances(rd.rovers)
+
+                        # Calculate Rewards
+                        for rover_id in range(n_rovers):
+                            reward = target_poi_reward(rover_id, rd.pois, int(rover_skills[rover_id][skill]))
                             rover_rewards[rover_id, step_id] = reward
 
                     # Update policy fitnesses
@@ -394,5 +392,5 @@ if __name__ == '__main__':
     Train suggestions interpreter (must have already pre-trained agent playbook)
     """
 
-    print("Training Suggestion Interpreter")
+    print("Training CBA Skill Selector")
     train_cba_skill_selector()

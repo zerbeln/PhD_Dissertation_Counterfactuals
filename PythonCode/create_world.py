@@ -28,11 +28,12 @@ if __name__ == '__main__':
     Create new world configuration files for POI and rovers
     """
 
+    coupling = 1  # Coupling requirement for POI
     stat_runs = p["stat_runs"]
     rover_path = np.zeros((stat_runs, p["n_rovers"], p["steps"], 3))
 
     rd = RoverDomain()  # Number of POI, Number of Rovers
-    rd.create_world_setup()
+    rd.create_world_setup(coupling)
     rd.load_world()
 
     for rover_id in range(p["n_rovers"]):

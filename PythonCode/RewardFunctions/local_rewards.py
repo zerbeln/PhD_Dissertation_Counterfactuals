@@ -85,6 +85,9 @@ def greedy_reward_loose(rover_id, pois):
 def target_poi_reward(rover_id, pois, target_poi):
     """
     Local rewards for going towards either the left or right POI
+    :param rover_id: Identifier of the rover calculating a local reward
+    :param pois: dictionary of POI class instances
+    :param target_poi: Identifier describing the POI being targeted by the local reward
     """
 
     reward = 0
@@ -92,7 +95,7 @@ def target_poi_reward(rover_id, pois, target_poi):
     dist = pois["P{0}".format(target_poi)].observer_distances[rover_id]
 
     if dist < p["observation_radius"]:
-        reward += pois["P{0}".format(target_poi)].value/dist
+        reward = pois["P{0}".format(target_poi)].value/dist
 
     return reward
 

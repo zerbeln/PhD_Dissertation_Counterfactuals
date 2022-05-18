@@ -50,6 +50,7 @@ def load_saved_policies_python(file_name, rover_id, srun):
 
     return weights
 
+
 def load_saved_policies_cpp(file_name, rover_id, srun):
     dir_name = 'Policy_Bank/'.format(rover_id)
     fpath_name = os.path.join(dir_name, file_name)
@@ -122,8 +123,9 @@ def test_trained_policy():
     reward_history = []  # Keep track of team performance throughout training
     average_reward = 0
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
-    for srun in range(stat_runs):  # Perform statistical runs
-        # Load Trained Suggestion Interpreter Weights
+    for srun in range(stat_runs):
+
+        # Load Trained Rover Networks
         for rk in rd.rovers:
             rover_id = rd.rovers[rk].self_id
             rov_weights = load_saved_policies_python('RoverWeights{0}'.format(rover_id), rover_id, srun)
@@ -169,9 +171,9 @@ def test_trained_policy():
     average_reward /= stat_runs
     print(average_reward)
     save_reward_history(reward_history, "Final_GlobalRewards.csv")
-    run_visualizer()
+    if p["vis_running"]:
+        run_visualizer()
 
 
 if __name__ == '__main__':
     test_trained_policy()
-    # run_visualizer(v_running=True)

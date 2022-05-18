@@ -344,7 +344,7 @@ def train_away_poi():
 
 def train_target_poi(target_poi):
     """
-    Train rover policies for world with Two POI (left and right side of map)
+    Train rover skills for travelling towards specific POI
     """
 
     # Parameters
@@ -369,8 +369,9 @@ def train_target_poi(target_poi):
     for rover_id in range(n_rovers):
         pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
+    # Perform statistical runs
     srun = p["starting_srun"]
-    while srun < stat_runs:  # Perform statistical runs
+    while srun < stat_runs:
         print("Run: %i" % srun)
 
         # Reset Rover and CCEA Pop
@@ -381,8 +382,10 @@ def train_target_poi(target_poi):
         for gen in range(generations):
             for pkey in pops:
                 pops[pkey].select_policy_teams()
-            for team_id in range(population_size):  # Each policy in CCEA is tested in teams
-                rover_rewards = np.zeros((n_rovers, rover_steps))
+
+            # Each policy in CCEA is tested in randomly selected teams
+            for team_id in range(population_size):
+                rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
                 for rk in rd.rovers:
                     rover_id = rd.rovers[rk].self_id
                     rd.rovers[rk].reset_rover()
@@ -394,8 +397,9 @@ def train_target_poi(target_poi):
                 for rk in rd.rovers:
                     rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
 
+                # Rover processes scan information and acts in current time step
                 for step_id in range(rover_steps):
-                    for rk in rd.rovers:  # Rover processes scan information and acts
+                    for rk in rd.rovers:
                         rd.rovers[rk].step(rd.world_x, rd.world_y)
                     for rk in rd.rovers:  # Rover scans environment
                         rd.rovers[rk].scan_environment(rd.rovers, rd.pois)

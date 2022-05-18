@@ -123,8 +123,8 @@ def get_relative_angle_dist(x, y, tx, ty):
     :return: angle, dist
     """
 
-    vx = x - tx
-    vy = y - ty
+    vx = tx - x
+    vy = ty - y
 
     angle = math.atan2(vy, vx)*(180.0/math.pi)
 
@@ -183,7 +183,7 @@ def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
         if pois[poi].poi_id == suggestion:  # This can also be switched from POI ID to POI Quadrant
             temp_poi_dist_list[bracket].append(pois[poi].value/dist)
         else:
-            temp_poi_dist_list[bracket].append(-2 * pois[poi].value/dist)
+            temp_poi_dist_list[bracket].append(-1 * pois[poi].value/dist)
 
     # Encode POI information into the state vector
     for bracket in range(n_brackets):
@@ -260,9 +260,10 @@ def test_skill_performance(skill_id):
 
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     srun = p["starting_srun"]
-    while srun < stat_runs:  # Perform statistical runs
+    while srun < stat_runs:
         skill_performance = []  # Keep track of team performance throughout training
-        # Load Trained Suggestion Interpreter Weights
+
+        # Load Trained Skills
         for rov in rd.rovers:
             rover_id = rd.rovers[rov].self_id
             if p["skill_type"] == "Target_POI":
@@ -312,7 +313,7 @@ def test_skill_performance(skill_id):
         srun += 1
 
 
-def test_suggestions_policy_bank(pbank_type, sgst):
+def test_cba(pbank_type, sgst):
     """
     Test suggestions using the pre-trained policy bank
     """
@@ -411,7 +412,6 @@ def test_suggestions_policy_bank(pbank_type, sgst):
 
         reward_history.append(max(g_rewards))
         average_reward += max(g_rewards)
-
         save_rover_path(final_rover_path, "Rover_Paths")
 
         srun += 1
@@ -446,5 +446,5 @@ if __name__ == '__main__':
     else:  # Custom
         rover_suggestions = [0, 1, 3, 2, 2, 1]
     print(rover_suggestions)
-    test_suggestions_policy_bank(p["skill_type"], rover_suggestions)
+    test_cba(p["skill_type"], rover_suggestions)
 
