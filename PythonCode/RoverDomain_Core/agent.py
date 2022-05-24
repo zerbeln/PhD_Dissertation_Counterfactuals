@@ -2,6 +2,7 @@ import numpy as np
 import math
 import sys
 from parameters import parameters as p
+from global_functions import get_linear_dist, get_squared_dist, get_angle
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -25,6 +26,7 @@ class Poi:
         for rov in rovers:
             rover_id = rovers[rov].self_id
             self.observer_distances[rover_id] = rovers[rov].poi_distances[self.poi_id]
+
 
 class Rover:
     def __init__(self, rov_id, rov_x, rov_y, rov_theta):
@@ -121,9 +123,11 @@ class Rover:
         # Log POI distances into brackets
         poi_id = 0
         for pk in pois:
-            angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
-            # angle = self.get_global_angle(pois[pk].x_position, pois[pk].y_position)
-            # dist = self.get_object_rover_dist(self.x_pos, self.y_pos, pois[pk].x_position, pois[pk].y_position)
+            # angle = get_angle(pois[pk].x_position, pois[pk].y_position, self.x_pos, self.y_pos)
+            angle = get_angle(pois[pk].x_position, pois[pk].y_position, p["x_dim"]/2, p["y_dim"]/2)
+            dist = get_squared_dist(pois[pk].x_position, pois[pk].y_position, self.x_pos, self.y_pos)
+            if dist < self.delta_min:
+                dist = self.delta_min
 
             self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
@@ -160,9 +164,11 @@ class Rover:
                 rov_x = rovers[rk].x_pos
                 rov_y = rovers[rk].y_pos
 
-                angle, dist = self.get_relative_angle_dist(self.x_pos, self.y_pos, rov_x, rov_y)
-                # angle = self.get_global_angle(rov_x, rov_y)
-                # dist = self.get_object_rover_dist(self.x_pos, self.y_pos, rov_x, rov_y)
+                # angle = get_angle(rov_x, rov_y, self.x_pos, self.y_pos)
+                angle = get_angle(rov_x, rov_y, p["x_dim"]/2, p["y_dim"]/2)
+                dist = get_squared_dist(rov_x, rov_y, self.x_pos, self.y_pos)
+                if dist < self.delta_min:
+                    dist = self.delta_min
 
                 bracket = int(angle / self.sensor_res)
                 if bracket > n_brackets-1:
@@ -183,73 +189,6 @@ class Rover:
                 rover_state[bracket] = -1.0
 
         return rover_state
-
-    def get_global_angle(self, x, y):
-        """
-        Returns angle of object a rover is scanning with respect to the global reference frame
-        """
-        dx = x - (p["x_dim"]/2)
-        dy = y - (p["y_dim"]/2)
-
-        angle = math.atan2(dy, dx)*(180.0/math.pi)
-        while angle < 0.0:
-            angle += 360.0
-        while angle > 360.0:
-            angle -= 360.0
-        if math.isnan(angle):
-            angle = 0.0
-
-        return angle
-
-    def get_object_rover_dist(self, x, y, tx, ty):
-        """
-        Computes distance between a rover and the object it is scanning
-        :param tx: X-Position of sensor target
-        :param ty: Y-Position of sensor target
-        :param x: X-Position of scanning rover
-        :param y: Y-Position of scanning rover
-        :return: angle, dist
-        """
-
-        dx = tx - x
-        dy = ty - y
-
-        dist = (dx ** 2) + (dy ** 2)
-
-        if dist < self.delta_min:
-            dist = self.delta_min
-
-        return dist
-
-    def get_relative_angle_dist(self, x, y, tx, ty):
-        """
-        Computes angles and distance between a rover and the object it is scanning
-        :param tx: X-Position of sensor target
-        :param ty: Y-Position of sensor target
-        :param x: X-Position of scanning rover
-        :param y: Y-Position of scanning rover
-        :return: angle, dist
-        """
-
-        dx = tx - x
-        dy = ty - y
-
-        angle = math.atan2(dy, dx)*(180.0/math.pi)
-
-        while angle < 0.0:
-            angle += 360.0
-        while angle > 360.0:
-            angle -= 360.0
-        if math.isnan(angle):
-            angle = 0.0
-
-        dist = (dx**2) + (dy**2)
-
-        # Clip distance to not overwhelm activation function in NN
-        if dist < self.delta_min:
-            dist = self.delta_min
-
-        return angle, dist
 
     # Motor Control NN ------------------------------------------------------------------------------------------------
     def get_weights(self, nn_weights):

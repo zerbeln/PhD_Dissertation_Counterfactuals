@@ -91,7 +91,6 @@ class Ccea:
                         weight += (np.random.normal(0, self.mut_rate)) * weight
                         self.population["pol{0}".format(pol_id)]["b2"][w] = weight
 
-
     def binary_tournament_selection(self):
         """
         Select parents using binary tournament selection

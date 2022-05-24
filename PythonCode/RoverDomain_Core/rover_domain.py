@@ -6,6 +6,7 @@ import csv
 import copy
 from parameters import parameters as p
 from RoverDomain_Core.agent import Poi, Rover
+from global_functions import get_linear_dist, get_squared_dist, get_angle
 
 
 class RoverDomain:
@@ -97,12 +98,11 @@ class RoverDomain:
                     observer_count += 1
 
             # Update global reward if POI is observed
-            if observer_count >= int(self.pois[pk].coupling):
+            if observer_count >= 0 and self.pois[pk].hazardous:
+                global_reward[self.pois[pk].poi_id] = -10.0
+            elif observer_count >= int(self.pois[pk].coupling):
                 summed_dist = sum(rover_distances[0:int(self.pois[pk].coupling)])
-                if self.pois[pk].hazardous:
-                    global_reward[self.pois[pk].poi_id] = -10.0
-                else:
-                    global_reward[self.pois[pk].poi_id] = self.pois[pk].value / (summed_dist/self.pois[pk].coupling)
+                global_reward[self.pois[pk].poi_id] = self.pois[pk].value / (summed_dist/self.pois[pk].coupling)
 
         return global_reward
 
@@ -364,7 +364,7 @@ class RoverDomain:
             self.pois_info[poi_id, 1] = y
             self.pois_info[poi_id, 3] = coupling
 
-            angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+            angle = get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
             self.pois_info[poi_id, 4] = int(angle/p["angle_res"])
 
     def poi_pos_circle(self, coupling):
@@ -382,7 +382,7 @@ class RoverDomain:
             self.pois_info[poi_id, 0] = x + radius*math.cos(theta*math.pi/180)
             self.pois_info[poi_id, 1] = y + radius*math.sin(theta*math.pi/180)
             self.pois_info[poi_id, 3] = coupling
-            angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+            angle = get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
             q = int(angle / p["angle_res"])
             self.pois_info[poi_id, 4] = q
             theta += interval
@@ -406,7 +406,7 @@ class RoverDomain:
                 self.pois_info[poi_id, 0] = x + inner_radius * math.cos(inner_theta * math.pi / 180)
                 self.pois_info[poi_id, 1] = y + inner_radius * math.sin(inner_theta * math.pi / 180)
                 self.pois_info[poi_id, 3] = coupling
-                angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+                angle = get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
                 q = int(angle / p["angle_res"])
                 self.pois_info[poi_id, 4] = q
                 inner_theta += interval
@@ -414,7 +414,7 @@ class RoverDomain:
                 self.pois_info[poi_id, 0] = x + outter_radius * math.cos(outter_theta * math.pi / 180)
                 self.pois_info[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
                 self.pois_info[poi_id, 3] = coupling
-                angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+                angle = get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
                 q = int(angle / p["angle_res"])
                 self.pois_info[poi_id, 4] = q
                 outter_theta += interval
@@ -442,7 +442,7 @@ class RoverDomain:
 
         for poi_id in range(self.num_pois):
             self.pois_info[poi_id, 3] = coupling
-            angle = self.get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1])
+            angle = get_angle(self.pois_info[poi_id, 0], self.pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
             q = int(angle / p["angle_res"])
             self.pois_info[poi_id, 4] = q
 
@@ -456,14 +456,14 @@ class RoverDomain:
         self.pois_info[0, 0] = 1.0
         self.pois_info[0, 1] = (self.world_y/2.0) - 1
         self.pois_info[0, 3] = coupling
-        angle = self.get_angle(self.pois_info[0, 0], self.pois_info[0, 1])
+        angle = get_angle(self.pois_info[0, 0], self.pois_info[0, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[0, 4] = int(angle / p["angle_res"])
 
         # Right POI
         self.pois_info[1, 0] = self.world_x - 2.0
         self.pois_info[1, 1] = (self.world_y/2.0) + 1
         self.pois_info[1, 3] = coupling
-        angle = self.get_angle(self.pois_info[1, 0], self.pois_info[1, 1])
+        angle = get_angle(self.pois_info[1, 0], self.pois_info[1, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[1, 4] = int(angle / p["angle_res"])
 
     def poi_pos_four_corners(self, coupling):  # Statically set 4 POI (one in each corner)
@@ -476,28 +476,28 @@ class RoverDomain:
         self.pois_info[0, 0] = 2.0
         self.pois_info[0, 1] = 2.0
         self.pois_info[0, 3] = coupling
-        angle = self.get_angle(self.pois_info[0, 0], self.pois_info[0, 1])
+        angle = get_angle(self.pois_info[0, 0], self.pois_info[0, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[0, 4] = int(angle / p["angle_res"])
 
         # Top left
         self.pois_info[1, 0] = 2.0
         self.pois_info[1, 1] = (self.world_y - 2.0)
         self.pois_info[1, 3] = coupling
-        angle = self.get_angle(self.pois_info[1, 0], self.pois_info[1, 1])
+        angle = get_angle(self.pois_info[1, 0], self.pois_info[1, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[1, 4] = int(angle / p["angle_res"])
 
         # Bottom right
         self.pois_info[2, 0] = (self.world_x - 2.0)
         self.pois_info[2, 1] = 2.0
         self.pois_info[2, 3] = coupling
-        angle = self.get_angle(self.pois_info[2, 0], self.pois_info[2, 1])
+        angle = get_angle(self.pois_info[2, 0], self.pois_info[2, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[2, 4] = int(angle / p["angle_res"])
 
         # Top right
         self.pois_info[3, 0] = (self.world_x - 2.0)
         self.pois_info[3, 1] = (self.world_y - 2.0)
         self.pois_info[3, 3] = coupling
-        angle = self.get_angle(self.pois_info[3, 0], self.pois_info[3, 1])
+        angle = get_angle(self.pois_info[3, 0], self.pois_info[3, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[3, 4] = int(angle / p["angle_res"])
 
     def poi_pos_columns(self, coupling):
@@ -511,42 +511,42 @@ class RoverDomain:
         self.pois_info[0, 0] = 2.0
         self.pois_info[0, 1] = 2.0
         self.pois_info[0, 3] = coupling
-        angle = self.get_angle(self.pois_info[0, 0], self.pois_info[0, 1])
+        angle = get_angle(self.pois_info[0, 0], self.pois_info[0, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[0, 4] = int(angle / p["angle_res"])
 
         # Middle Left
         self.pois_info[1, 0] = 2.0
         self.pois_info[1, 1] = self.world_y/2
         self.pois_info[1, 3] = coupling
-        angle = self.get_angle(self.pois_info[1, 0], self.pois_info[1, 1])
+        angle = get_angle(self.pois_info[1, 0], self.pois_info[1, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[1, 4] = int(angle / p["angle_res"])
 
         # Top left
         self.pois_info[2, 0] = 2.0
         self.pois_info[2, 1] = (self.world_y - 2.0)
         self.pois_info[2, 3] = coupling
-        angle = self.get_angle(self.pois_info[2, 0], self.pois_info[2, 1])
+        angle = get_angle(self.pois_info[2, 0], self.pois_info[2, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[2, 4] = int(angle / p["angle_res"])
 
         # Bottom right
         self.pois_info[3, 0] = (self.world_x - 2.0)
         self.pois_info[3, 1] = 2.0
         self.pois_info[3, 3] = coupling
-        angle = self.get_angle(self.pois_info[3, 0], self.pois_info[3, 1])
+        angle = get_angle(self.pois_info[3, 0], self.pois_info[3, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[3, 4] = int(angle / p["angle_res"])
 
         # Middle Right
         self.pois_info[4, 0] = (self.world_x - 2.0)
         self.pois_info[4, 1] = self.world_y/2
         self.pois_info[4, 3] = coupling
-        angle = self.get_angle(self.pois_info[4, 0], self.pois_info[4, 1])
+        angle = get_angle(self.pois_info[4, 0], self.pois_info[4, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[4, 4] = int(angle / p["angle_res"])
 
         # Top right
         self.pois_info[5, 0] = (self.world_x - 2.0)
         self.pois_info[5, 1] = (self.world_y - 2.0)
         self.pois_info[5, 3] = coupling
-        angle = self.get_angle(self.pois_info[5, 0], self.pois_info[5, 1])
+        angle = get_angle(self.pois_info[5, 0], self.pois_info[5, 1], p["x_dim"]/2, p["y_dim"]/2)
         self.pois_info[5, 4] = int(angle / p["angle_res"])
 
     # POI VALUE FUNCTIONS -----------------------------------------------------------------------------------
@@ -579,23 +579,4 @@ class RoverDomain:
 
         # Quadrant 2 (Single Low Value)
         self.pois_info[4, 2] = 5.0
-
-    def get_angle(self, px, py):
-        """
-        Computes angles and distance between two predators relative to (1,0) vector (x-axis)
-        """
-        origin_x = self.world_x / 2
-        origin_y = self.world_y / 2
-
-        x = px - origin_x
-        y = py - origin_y
-
-        angle = math.atan2(y, x)*(180.0/math.pi)
-
-        while angle < 0.0:
-            angle += 360.0
-        while angle > 360.0:
-            angle -= 360.0
-
-        return angle
 

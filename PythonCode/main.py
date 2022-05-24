@@ -2,7 +2,7 @@ from ccea import Ccea
 from suggestion_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from RewardFunctions.local_rewards import *
-import math
+from global_functions import get_linear_dist, get_squared_dist, get_angle
 import sys
 import pickle
 import csv
@@ -80,76 +80,6 @@ def create_policy_bank(playbook_type, rover_id, srun):
     return policy_bank
 
 
-def get_global_angle(x, y):
-    """
-    Returns angle of object with respect to the global reference frame
-    """
-    dx = x - (p["x_dim"] / 2)
-    dy = y - (p["y_dim"] / 2)
-
-    angle = math.atan2(dy, dx) * (180.0 / math.pi)
-    while angle < 0.0:
-        angle += 360.0
-    while angle > 360.0:
-        angle -= 360.0
-    if math.isnan(angle):
-        angle = 0.0
-
-    return angle
-
-
-def get_object_rover_dist(x, y, tx, ty):
-    """
-    Computes distance between a rover and the object it is scanning
-    :param tx: X-Position of sensor target
-    :param ty: Y-Position of sensor target
-    :param x: X-Position of scanning rover
-    :param y: Y-Position of scanning rover
-    :return: angle, dist
-    """
-
-    dx = tx - x
-    dy = ty - y
-
-    dist = (dx ** 2) + (dy ** 2)
-
-    if dist < p["dmax"]:
-        dist = p["dmax"]
-
-    return dist
-
-
-def get_relative_angle_dist(x, y, tx, ty):
-    """
-    Computes angles and distance between a rover and the object it is scanning
-    :param tx: X-Position of sensor target
-    :param ty: Y-Position of sensor target
-    :param x: X-Position of scanning rover
-    :param y: Y-Position of scanning rover
-    :return: angle, dist
-    """
-
-    vx = tx - x
-    vy = ty - y
-
-    angle = math.atan2(vy, vx)*(180.0/math.pi)
-
-    while angle < 0.0:
-        angle += 360.0
-    while angle > 360.0:
-        angle -= 360.0
-    if math.isnan(angle):
-        angle = 0.0
-
-    dist = (vx**2) + (vy**2)
-
-    # Clip distance to not overwhelm activation function in NN
-    if dist < p["dmax"]:
-        dist = p["dmax"]
-
-    return angle, dist
-
-
 def get_counterfactual_state(pois, rovers, rover_id, suggestion):
     """
     Create a counteractual state input to represent agent suggestions
@@ -177,9 +107,11 @@ def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
 
     # Log POI distances into brackets
     for poi in pois:
-        # angle, dist = get_relative_angle_dist(rx, ry, pois[poi].x_position, pois[poi].y_position)
-        angle = get_global_angle(pois[poi].x_position, pois[poi].y_position)
-        dist = get_object_rover_dist(rx, ry, pois[poi].x_position, pois[poi].y_position)
+        # angle = get_angle(pois[poi].x_position, pois[poi].y_position, rx, ry)
+        angle = get_angle(pois[poi].x_position, pois[poi].y_position, p["x_dim"]/2, p["y_dim"]/2)
+        dist = get_squared_dist(pois[poi].x_position, pois[poi].y_position, rx, ry)
+        if dist < p["min_distance"]:
+            dist = p["min_distance"]
 
         bracket = int(angle / p["angle_res"])
         if bracket > n_brackets-1:
@@ -200,7 +132,7 @@ def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion):
             else:
                 sys.exit('Incorrect sensor model')
         else:
-            c_poi_state[bracket] = -1.0
+            c_poi_state[bracket] = 0.0
 
     return c_poi_state
 
@@ -220,9 +152,11 @@ def create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id
             rov_x = rovers[r].x_pos
             rov_y = rovers[r].y_pos
 
-            # angle, dist = get_relative_angle_dist(rx, ry, rov_x, rov_y)
-            angle = get_global_angle(rov_x, rov_y)
-            dist = get_object_rover_dist(rx, ry, rov_x, rov_y)
+            # angle = get_angle(rov_x, rov_y, rx, ry)
+            angle = get_angle(rov_x, rov_y, p["x_dim"]/2, p["y_dim"]/2)
+            dist = get_squared_dist(rov_x, rov_y, rx, ry)
+            if dist < p["min_distance"]:
+                dist = p["min_distance"]
 
             bracket = int(angle / p["angle_res"])
             if bracket > n_brackets-1:
@@ -244,7 +178,7 @@ def create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id
             else:
                 sys.exit('Incorrect sensor model')
         else:
-            rover_state[bracket] = -1.0
+            rover_state[bracket] = 0.0
 
     return rover_state
 
@@ -367,7 +301,7 @@ def train_cba_skill_selector():
                     # Update policy fitnesses
                     for rover_id in range(n_rovers):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
-                        pops["EA{0}".format(rover_id)].fitness[policy_id] += max(rover_rewards[rover_id])
+                        pops["EA{0}".format(rover_id)].fitness[policy_id] += sum(rover_rewards[rover_id])/rover_steps
 
             # Choose parents and create new offspring population
             for rover_id in range(n_rovers):
