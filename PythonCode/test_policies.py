@@ -5,36 +5,7 @@ import csv
 import os
 import numpy as np
 from parameters import parameters as p
-
-
-def save_reward_history(reward_history, file_name):
-    """
-    Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
-    """
-
-    dir_name = 'Output_Data/'  # Intended directory for output files
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    save_file_name = os.path.join(dir_name, file_name)
-    with open(save_file_name, 'a+', newline='') as csvfile:  # Record reward history for each stat run
-        writer = csv.writer(csvfile)
-        writer.writerow(['Performance'] + reward_history)
-
-
-def save_rover_path(rover_path, file_name):  # Save path rovers take using best policy found
-    """
-    Records the path each rover takes using best policy from CCEA (used by visualizer)
-    """
-    dir_name = 'Output_Data/'  # Intended directory for output files
-
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    rpath_name = os.path.join(dir_name, file_name)
-    rover_file = open(rpath_name, 'wb')
-    pickle.dump(rover_path, rover_file)
-    rover_file.close()
+from global_functions import create_csv_file, create_pickle_file
 
 
 def load_saved_policies_python(file_name, rover_id, srun):
@@ -113,17 +84,14 @@ def test_trained_policy():
 
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
-        rd.pois["P0"].hazardous = True
-        rd.pois["P1"].hazardous = True
-        rd.pois["P2"].hazardous = True
-        rd.pois["P3"].hazardous = True
-        rd.pois["P4"].hazardous = True
-        rd.pois["P5"].hazardous = True
+        for poi_id in p["hazardous_poi"]:
+            rd.pois["P{0}".format(poi_id)] = True
 
     reward_history = []  # Keep track of team performance throughout training
     average_reward = 0
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
-    for srun in range(stat_runs):
+    srun = p["starting_srun"]
+    while srun < stat_runs:
 
         # Load Trained Rover Networks
         for rk in rd.rovers:
@@ -145,7 +113,7 @@ def test_trained_policy():
         for poi in rd.pois:
             rd.pois[poi].update_observer_distances(rd.rovers)
 
-        g_rewards = np.zeros(rover_steps)
+        rewards = []
         for step_id in range(rover_steps):
             # Rover takes an action in the world
             for rk in rd.rovers:
@@ -162,15 +130,23 @@ def test_trained_policy():
 
             # Calculate Global Reward
             poi_rewards = rd.calc_global()
-            g_rewards[step_id] = sum(poi_rewards)
+            if len(rewards) > 0:
+                for poi_id in range(p["n_poi"]):
+                    if poi_rewards[poi_id] > rewards[poi_id]:
+                        rewards[poi_id] = poi_rewards[poi_id]
+                    elif p["active_hazards"] and poi_rewards[poi_id] < 0:  # captures hazards if active
+                        rewards[poi_id] = poi_rewards[poi_id]
+            else:
+                rewards = poi_rewards
 
-        reward_history.append(max(g_rewards))
-        average_reward += max(g_rewards)
-        save_rover_path(final_rover_path, "Rover_Paths")
+        reward_history.append(sum(rewards))
+        average_reward += sum(rewards)
+        srun += 1
 
     average_reward /= stat_runs
     print(average_reward)
-    save_reward_history(reward_history, "Final_GlobalRewards.csv")
+    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
+    create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     if p["vis_running"]:
         run_visualizer()
 

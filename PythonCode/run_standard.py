@@ -2,61 +2,9 @@ from ccea import Ccea
 from RewardFunctions.reward_functions import calc_difference, calc_dpp
 from RewardFunctions.cba_rewards import calc_sdpp
 from RoverDomain_Core.rover_domain import RoverDomain
-import pickle
-import csv
-import os
 import numpy as np
 from parameters import parameters as p
-
-
-def save_reward_history(reward_history, file_name):
-    """
-    Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
-    """
-
-    dir_name = 'Output_Data/'  # Intended directory for output files
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    save_file_name = os.path.join(dir_name, file_name)
-    with open(save_file_name, 'a+', newline='') as csvfile:  # Record reward history for each stat run
-        writer = csv.writer(csvfile)
-        writer.writerow(reward_history)
-
-
-def save_best_policies(network_weights, srun, file_name, rover_id):
-    """
-    Save trained neural networks for each rover as a pickle file
-    """
-    # Make sure Policy Bank Folder Exists
-    if not os.path.exists('Policy_Bank'):  # If Data directory does not exist, create it
-        os.makedirs('Policy_Bank')
-
-    if not os.path.exists('Policy_Bank/Rover{0}'.format(rover_id)):
-        os.makedirs('Policy_Bank/Rover{0}'.format(rover_id))
-
-    dir_name = 'Policy_Bank/Rover{0}/SRUN{1}'.format(rover_id, srun)
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    fpath_name = os.path.join(dir_name, file_name)
-    weight_file = open(fpath_name, 'wb')
-    pickle.dump(network_weights, weight_file)
-    weight_file.close()
-
-
-def load_saved_policies(file_name, rover_id, srun):
-    """
-    Load saved Neural Network policies from pickle file
-    """
-
-    dir_name = 'Policy_Bank/Rover{0}/SRUN{1}'.format(rover_id, srun)
-    fpath_name = os.path.join(dir_name, file_name)
-    weight_file = open(fpath_name, 'rb')
-    weights = pickle.load(weight_file)
-    weight_file.close()
-
-    return weights
+from global_functions import create_csv_file, save_best_policies
 
 
 def rover_global():
@@ -171,7 +119,7 @@ def rover_global():
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].down_select()
 
-        save_reward_history(reward_history, "Global_Reward.csv")
+        create_csv_file(reward_history, "Output_Data/", "Global_Reward.csv")
         for rover_id in range(n_rovers):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
@@ -291,7 +239,7 @@ def rover_difference():
             for pkey in pops:
                 pops[pkey].down_select()
 
-        save_reward_history(reward_history, "Difference_Reward.csv")
+        create_csv_file(reward_history, "Output_Data/", "Difference_Reward.csv")
         for rover_id in range(n_rovers):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
@@ -408,7 +356,7 @@ def rover_dpp():
             for pkey in pops:
                 pops[pkey].down_select()
 
-        save_reward_history(reward_history, "DPP_Reward.csv")
+        create_csv_file(reward_history, "Output_Data/", "DPP_Reward.csv")
         for rover_id in range(n_rovers):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
@@ -524,7 +472,7 @@ def rover_sdpp(sgst):
             for pkey in pops:
                 pops[pkey].down_select()  # Choose new parents and create new offspring population
 
-        save_reward_history(reward_history, "SDPP_Reward.csv")
+        create_csv_file(reward_history, "Output_Data/", "SDPP_Reward.csv")
         for rover_id in range(n_rovers):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]

@@ -99,6 +99,32 @@ class Rover:
         self.x_pos = x
         self.y_pos = y
 
+    def custom_step(self, world_x, world_y):
+        """
+        Rover executes current actions provided by neuro-controller (not using policy playbook)
+        """
+
+        # Update rover positions based on outputs and assign to dummy variables
+        dx = 2 * self.dmax * self.rover_actions[0]
+        dy = 2 * self.dmax * self.rover_actions[1]
+
+        # Update X Position
+        x = dx + self.x_pos
+        if x < 0:
+            x = 0
+        elif x > world_x - 1:
+            x = world_x - 1
+
+        # Update Y Position
+        y = dy + self.y_pos
+        if y < 0:
+            y = 0
+        elif y > world_y - 1:
+            y = world_y - 1
+
+        self.x_pos = x
+        self.y_pos = y
+
     def scan_environment(self, rovers, pois):
         """
         Constructs the state information that gets passed to the rover's neuro-controller

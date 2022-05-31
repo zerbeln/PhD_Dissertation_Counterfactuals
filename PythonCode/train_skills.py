@@ -1,12 +1,12 @@
 from ccea import Ccea
 from RewardFunctions.local_rewards import *
 from RoverDomain_Core.rover_domain import RoverDomain
-import pickle
 import os
 import numpy as np
 import csv
 from parameters import parameters as p
-import time
+import random
+from global_functions import save_best_policies
 
 
 def save_time_history(time_history, file_name):
@@ -37,27 +37,6 @@ def save_skill_reward_history(rover_id, reward_history, file_name):
     with open(save_file_name, 'a+', newline='') as csvfile:  # Record reward history for each stat run
         writer = csv.writer(csvfile)
         writer.writerow(reward_history)
-
-
-def save_best_policies(network_weights, srun, file_name, rover_id):
-    """
-    Save trained neural networks for each rover as a pickle file
-    """
-    # Make sure Policy Bank Folder Exists
-    if not os.path.exists('Policy_Bank'):  # If Data directory does not exist, create it
-        os.makedirs('Policy_Bank')
-
-    if not os.path.exists('Policy_Bank/Rover{0}'.format(rover_id)):
-        os.makedirs('Policy_Bank/Rover{0}'.format(rover_id))
-
-    dir_name = 'Policy_Bank/Rover{0}/SRUN{1}'.format(rover_id, srun)
-    if not os.path.exists(dir_name):  # If Data directory does not exist, create it
-        os.makedirs(dir_name)
-
-    fpath_name = os.path.join(dir_name, file_name)
-    weight_file = open(fpath_name, 'wb')
-    pickle.dump(network_weights, weight_file)
-    weight_file.close()
 
 
 def train_towards_teammates():
@@ -342,7 +321,7 @@ def train_away_poi():
             save_best_policies(weights, srun, "AwayPOI", rover_id)
 
 
-def train_target_poi(target_poi):
+def train_target_poi(rover_targets):
     """
     Train rover skills for travelling towards specific POI
     """
@@ -387,10 +366,9 @@ def train_target_poi(target_poi):
             for team_id in range(population_size):
                 rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
                 for rk in rd.rovers:
-                    rover_id = rd.rovers[rk].self_id
                     rd.rovers[rk].reset_rover()
-                    pol_id = int(pops["EA{0}".format(rover_id)].team_selection[team_id])
-                    weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(pol_id)]
+                    pol_id = int(pops["EA{0}".format(rd.rovers[rk].self_id)].team_selection[team_id])
+                    weights = pops["EA{0}".format(rd.rovers[rk].self_id)].population["pol{0}".format(pol_id)]
                     rd.rovers[rk].get_weights(weights)
 
                 # Initial rover scan of environment
@@ -406,7 +384,7 @@ def train_target_poi(target_poi):
                     for poi in rd.pois:
                         rd.pois[poi].update_observer_distances(rd.rovers)
                     for rover_id in range(n_rovers):
-                        reward = target_poi_reward(rover_id, rd.pois, target_poi)
+                        reward = target_poi_reward(rover_id, rd.pois, rover_targets[rover_id])
                         rover_rewards[rover_id, step_id] = reward
 
                 # Update fitness of policies using reward information
@@ -424,6 +402,7 @@ def train_target_poi(target_poi):
 
         # Record best policy trained for each rover
         for rover_id in range(n_rovers):
+            target_poi = rover_targets[rover_id]
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "TowardPOI{0}".format(target_poi), rover_id)
@@ -521,13 +500,32 @@ if __name__ == '__main__':
     Train policy playbooks for rover team
     """
 
+    rover_skills = []
+    if p["randomize_skills"]:
+        for rover_id in range(p["n_rovers"]):
+            skill_sample = random.sample(range(p["n_skills"]), p["n_skills"])
+            rover_skills.append(skill_sample)
+    else:
+        for rover_id in range(p["n_rovers"]):
+            rover_skills.append([])
+            for skill_id in range(p["n_skills"]):
+                rover_skills[rover_id].append(skill_id)
+
+    print(rover_skills)
+
     if p["skill_type"] == "Target_POI":
-        for poi_id in range(p["n_poi"]):
-            print("Training Go Towards POI: ", poi_id)
-            train_target_poi(poi_id)
+        for skill_id in range(p["n_poi"]):
+            print("Training Skill: ", skill_id)
+            target_skills = []
+            for rover_id in range(p["n_rovers"]):
+                target_skills.append(rover_skills[rover_id][skill_id])
+            train_target_poi(target_skills)
     elif p["skill_type"] == "Target_Quadrant":
-        for q_id in range(4):
-            print("Training Go To Quadrant: ", q_id)
-            train_target_quadrant(q_id)
+        for skill_id in range(4):
+            print("Training Skill: ", skill_id)
+            target_skills = []
+            for rover_id in range(p["n_rovers"]):
+                target_skills.append(rover_skills[rover_id][skill_id])
+            train_target_quadrant(target_skills)
     else:
         print("INCORRECT SKILL TRAINING METHOD")
