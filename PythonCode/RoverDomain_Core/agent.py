@@ -150,7 +150,7 @@ class Rover:
         poi_id = 0
         for pk in pois:
             # angle = get_angle(pois[pk].x_position, pois[pk].y_position, self.x_pos, self.y_pos)
-            angle = get_angle(pois[pk].x_position, pois[pk].y_position, p["x_dim"]/2, p["y_dim"]/2)
+            angle = get_angle(pois[pk].x_position, pois[pk].y_position, (p["x_dim"]/2), (p["y_dim"]/2))
             dist = get_squared_dist(pois[pk].x_position, pois[pk].y_position, self.x_pos, self.y_pos)
             if dist < self.delta_min:
                 dist = self.delta_min

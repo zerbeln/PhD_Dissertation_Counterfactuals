@@ -85,7 +85,7 @@ def test_trained_policy():
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
         for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)] = True
+            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     reward_history = []  # Keep track of team performance throughout training
     average_reward = 0
@@ -132,9 +132,9 @@ def test_trained_policy():
             poi_rewards = rd.calc_global()
             if len(rewards) > 0:
                 for poi_id in range(p["n_poi"]):
-                    if poi_rewards[poi_id] > rewards[poi_id]:
+                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
                         rewards[poi_id] = poi_rewards[poi_id]
-                    elif p["active_hazards"] and poi_rewards[poi_id] < 0:  # captures hazards if active
+                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
                         rewards[poi_id] = poi_rewards[poi_id]
             else:
                 rewards = poi_rewards

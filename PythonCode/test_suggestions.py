@@ -24,7 +24,7 @@ def find_best_suggestions(pbank_type, srun, c_list):
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
         for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)] = True
+            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
@@ -94,9 +94,9 @@ def find_best_suggestions(pbank_type, srun, c_list):
             poi_rewards = rd.calc_global()
             if len(rewards) > 0:
                 for poi_id in range(p["n_poi"]):
-                    if poi_rewards[poi_id] > rewards[poi_id]:
+                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
                         rewards[poi_id] = poi_rewards[poi_id]
-                    elif p["active_hazards"] and poi_rewards[poi_id] < 0:  # captures hazards if active
+                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
                         rewards[poi_id] = poi_rewards[poi_id]
             else:
                 rewards = poi_rewards
@@ -126,7 +126,7 @@ def test_cba_custom_skills(counterfactuals):
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
         for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)] = True
+            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
@@ -205,9 +205,9 @@ def test_cba_custom_skills(counterfactuals):
             poi_rewards = rd.calc_global()
             if len(rewards) > 0:
                 for poi_id in range(p["n_poi"]):
-                    if poi_rewards[poi_id] > rewards[poi_id]:
+                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
                         rewards[poi_id] = poi_rewards[poi_id]
-                    elif p["active_hazards"] and poi_rewards[poi_id] < 0:  # captures hazards if active
+                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
                         rewards[poi_id] = poi_rewards[poi_id]
             else:
                 rewards = poi_rewards
@@ -240,7 +240,7 @@ def test_cba(pbank_type, counterfactuals):
     # Generate Hazard Areas (If Testing For Hazards)
     if p["active_hazards"]:
         for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)] = True
+            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
@@ -319,9 +319,9 @@ def test_cba(pbank_type, counterfactuals):
             poi_rewards = rd.calc_global()
             if len(rewards) > 0:
                 for poi_id in range(p["n_poi"]):
-                    if poi_rewards[poi_id] > rewards[poi_id]:
+                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
                         rewards[poi_id] = poi_rewards[poi_id]
-                    elif p["active_hazards"] and poi_rewards[poi_id] < 0:  # captures hazards if active
+                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
                         rewards[poi_id] = poi_rewards[poi_id]
             else:
                 rewards = poi_rewards
@@ -349,7 +349,7 @@ if __name__ == '__main__':
             c_list = (product(*t_list))
             counterfactuals["S{0}".format(srun)] = find_best_suggestions(p["skill_type"], srun, c_list)
     else:  # Custom
-        rover_suggestions = [0, 1, 3]
+        rover_suggestions = [0, 0, 0]
         for srun in range(p["stat_runs"]):
             counterfactuals["S{0}".format(srun)] = rover_suggestions
 
