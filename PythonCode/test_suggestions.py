@@ -346,6 +346,7 @@ if __name__ == '__main__':
         n = p["n_rovers"]
         t_list = [choices] * n
         for srun in range(p["stat_runs"]):
+            print(srun+1, "/", p["stat_runs"])
             c_list = (product(*t_list))
             counterfactuals["S{0}".format(srun)] = find_best_suggestions(p["skill_type"], srun, c_list)
     else:  # Custom
