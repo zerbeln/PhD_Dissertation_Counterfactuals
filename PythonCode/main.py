@@ -1,12 +1,12 @@
 from ccea import Ccea
-from suggestion_network import CBANetwork
+from cba_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
-from RewardFunctions.local_rewards import *
+from RewardFunctions.cba_rewards import *
 from global_functions import *
 import random
 import numpy as np
 from parameters import parameters as p
-from custom_rover_skills import travel_to_poi
+from custom_rover_skills import get_custom_action
 from cba import create_policy_bank, get_counterfactual_state
 
 
@@ -23,7 +23,7 @@ def train_cba_learned_skills():
     sample_rate = p["sample_rate"]
 
     # Suggestion Parameters
-    n_skills = p["n_skills"]
+    n_suggestions = p["n_suggestions"]
     pbank_type = p["skill_type"]
     s_inp = p["s_inputs"]
     s_hid = p["s_hidden"]
@@ -56,13 +56,13 @@ def train_cba_learned_skills():
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].select_policy_teams()
                 pops["EA{0}".format(rover_id)].reset_fitness()
-                skill_sample = random.sample(range(n_skills), n_skills)
+                skill_sample = random.sample(range(n_suggestions), n_suggestions)
                 rover_skills.append(skill_sample)
 
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(population_size):
                 rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
-                for skill in range(n_skills):
+                for skill in range(n_suggestions):
                     # Get weights for CBA skill selector
                     for rover_id in range(n_rovers):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
@@ -160,7 +160,7 @@ def train_cba_custom_skills():
     sample_rate = p["sample_rate"]
 
     # Suggestion Parameters
-    n_skills = p["n_skills"]
+    n_suggestions = p["n_suggestions"]
     s_inp = p["s_inputs"]
     s_hid = p["s_hidden"]
     s_out = p["s_outputs"]
@@ -191,13 +191,13 @@ def train_cba_custom_skills():
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].select_policy_teams()
                 pops["EA{0}".format(rover_id)].reset_fitness()
-                skill_sample = random.sample(range(n_skills), n_skills)
+                skill_sample = random.sample(range(n_suggestions), n_suggestions)
                 rover_skills.append(skill_sample)
 
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(population_size):
                 rover_rewards = np.zeros((n_rovers, rover_steps))  # Keep track of rover rewards at each t
-                for skill in range(n_skills):
+                for skill in range(n_suggestions):
                     # Get weights for CBA skill selector
                     for rover_id in range(n_rovers):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
@@ -215,6 +215,7 @@ def train_cba_custom_skills():
 
                         # Select a skill using counterfactually shaped state information
                         target_pid = int(rover_skills[rover_id][skill])
+                        # target_pid = skill
                         suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid)
                         cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                         pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
@@ -224,7 +225,7 @@ def train_cba_custom_skills():
                         # Rover uses selected skill
                         rx = rd.rovers[rov].x_pos
                         ry = rd.rovers[rov].y_pos
-                        rd.rovers[rov].rover_actions = travel_to_poi(chosen_pol, rd.pois, rx, ry)
+                        rd.rovers[rov].rover_actions = get_custom_action(chosen_pol, rd.pois, rx, ry)
 
                     for step_id in range(rover_steps):
                         # Rover takes an action in the world
@@ -239,6 +240,7 @@ def train_cba_custom_skills():
 
                             # Select a skill using counterfactually shaped state information
                             target_pid = int(rover_skills[rover_id][skill])
+                            # target_pid = skill
                             suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid)
                             cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
@@ -248,7 +250,7 @@ def train_cba_custom_skills():
                             # Rover uses selected skill
                             rx = rd.rovers[rov].x_pos
                             ry = rd.rovers[rov].y_pos
-                            rd.rovers[rov].rover_actions = travel_to_poi(chosen_pol, rd.pois, rx, ry)
+                            rd.rovers[rov].rover_actions = get_custom_action(chosen_pol, rd.pois, rx, ry)
 
                         for poi in rd.pois:
                             rd.pois[poi].update_observer_distances(rd.rovers)
@@ -256,6 +258,7 @@ def train_cba_custom_skills():
                         # Calculate Rewards
                         for rover_id in range(n_rovers):
                             reward = target_poi_reward(rover_id, rd.pois, int(rover_skills[rover_id][skill]))
+                            # reward = target_poi_reward(rover_id, rd.pois, skill)
                             rover_rewards[rover_id, step_id] = reward
 
                     # Update policy fitnesses

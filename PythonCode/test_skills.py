@@ -1,5 +1,5 @@
 from RoverDomain_Core.rover_domain import RoverDomain
-from RewardFunctions.local_rewards import *
+from RewardFunctions.cba_rewards import *
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 from parameters import parameters as p

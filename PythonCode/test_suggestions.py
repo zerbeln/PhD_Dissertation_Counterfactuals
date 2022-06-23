@@ -1,14 +1,15 @@
-from suggestion_network import CBANetwork
+from cba_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 from parameters import parameters as p
 from itertools import product
-from custom_rover_skills import travel_to_poi
+from custom_rover_skills import get_custom_action
 from global_functions import *
 from cba import create_policy_bank, get_counterfactual_state
 
 
+# NOTE: MAKE A FIND BEST SUGGESTION FOR CUSTOM SKILLS
 def find_best_suggestions(pbank_type, srun, c_list):
     """
     Test suggestions using the pre-trained policy bank
@@ -168,7 +169,7 @@ def test_cba_custom_skills(counterfactuals):
             # Determine action based on sensor inputs and suggestion
             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
             pol_id = int(cba_outputs)
-            rd.rovers[rov].rover_actions = travel_to_poi(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
+            rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
             rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
 
         rewards = []
@@ -198,7 +199,7 @@ def test_cba_custom_skills(counterfactuals):
                 pol_id = int(cba_outputs)
                 rx = rd.rovers[rov].x_pos
                 ry = rd.rovers[rov].y_pos
-                rd.rovers[rov].rover_actions = travel_to_poi(pol_id, rd.pois, rx, ry)
+                rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rx, ry)
                 rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
 
             # Calculate Global Reward
@@ -342,10 +343,11 @@ if __name__ == '__main__':
     # Test Performance of CBA
     counterfactuals = {}
     if p["suggestion_type"] == "Best":
-        choices = range(p["n_poi"])
+        choices = range(p["n_suggestions"])
         n = p["n_rovers"]
         t_list = [choices] * n
         for srun in range(p["stat_runs"]):
+            print(srun+1, "/", p["stat_runs"])
             c_list = (product(*t_list))
             counterfactuals["S{0}".format(srun)] = find_best_suggestions(p["skill_type"], srun, c_list)
     else:  # Custom

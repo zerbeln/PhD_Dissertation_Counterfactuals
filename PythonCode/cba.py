@@ -27,15 +27,18 @@ def get_counterfactual_state(pois, rovers, rover_id, suggestion):
     Create a counteractual state input to represent agent suggestions
     """
     n_brackets = int(360.0 / p["angle_res"])
-    rx = rovers["R{0}".format(rover_id)].x_pos
-    ry = rovers["R{0}".format(rover_id)].y_pos
-    cfact_poi = create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion)
-    cfact_rover = create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id, suggestion)
+    counterfactual_state = np.zeros(int(n_brackets * 2))
 
-    counterfactual_state = np.zeros(int(n_brackets*2))
-    for i in range(n_brackets):
-        counterfactual_state[i] = cfact_poi[i]
-        counterfactual_state[n_brackets + i] = cfact_rover[i]
+    # If suggestion is to go towards a POI -> create a counterfactual otherwise, use no counterfactual
+    if suggestion < p["n_poi"]:
+        rx = rovers["R{0}".format(rover_id)].x_pos
+        ry = rovers["R{0}".format(rover_id)].y_pos
+        cfact_poi = create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion)
+        cfact_rover = create_counterfactual_rover_state(pois, rovers, rx, ry, n_brackets, rover_id, suggestion)
+
+        for i in range(n_brackets):
+            counterfactual_state[i] = cfact_poi[i]
+            counterfactual_state[n_brackets + i] = cfact_rover[i]
 
     return counterfactual_state
 
