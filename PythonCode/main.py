@@ -187,12 +187,9 @@ def train_cba_custom_skills():
         policy_rewards = [[] for i in range(n_rovers)]
         for gen in range(generations):
             # Create list of suggestions for rovers to use during training and reset rovers to initial positions
-            rover_skills = []
             for rover_id in range(n_rovers):
                 pops["EA{0}".format(rover_id)].select_policy_teams()
                 pops["EA{0}".format(rover_id)].reset_fitness()
-                skill_sample = random.sample(range(n_suggestions), n_suggestions)
-                rover_skills.append(skill_sample)
 
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(population_size):
@@ -214,9 +211,8 @@ def train_cba_custom_skills():
                         sensor_data = rd.rovers[rov].sensor_readings  # Unaltered sensor readings
 
                         # Select a skill using counterfactually shaped state information
-                        target_pid = int(rover_skills[rover_id][skill])
-                        # target_pid = skill
-                        suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid)
+                        target_pid = skill
+                        suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid, sensor_data)
                         cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                         pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
                         cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
@@ -239,9 +235,8 @@ def train_cba_custom_skills():
                             sensor_data = rd.rovers[rov].sensor_readings
 
                             # Select a skill using counterfactually shaped state information
-                            target_pid = int(rover_skills[rover_id][skill])
-                            # target_pid = skill
-                            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid)
+                            target_pid = skill
+                            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, target_pid, sensor_data)
                             cba_input = np.sum((suggestion, sensor_data), axis=0)  # Shaped agent perception
                             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)  # CBA network receives shaped input
                             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()  # CBA picks skill
@@ -257,8 +252,7 @@ def train_cba_custom_skills():
 
                         # Calculate Rewards
                         for rover_id in range(n_rovers):
-                            reward = target_poi_reward(rover_id, rd.pois, int(rover_skills[rover_id][skill]))
-                            # reward = target_poi_reward(rover_id, rd.pois, skill)
+                            reward = target_poi_reward(rover_id, rd.pois, skill)
                             rover_rewards[rover_id, step_id] = reward
 
                     # Update policy fitnesses

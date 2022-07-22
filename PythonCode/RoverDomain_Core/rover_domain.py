@@ -194,7 +194,7 @@ class RoverDomain:
             rover_x = random.uniform(0.0, self.world_x-1.0)
             rover_y = random.uniform(0.0, self.world_y-1.0)
             rover_theta = random.uniform(0.0, 360.0)
-            buffer = 4  # Smallest distance to the outer POI observation area a rover can spawn
+            buffer = 3  # Smallest distance to the outer POI observation area a rover can spawn
 
             # Make sure rover does not spawn within observation range of a POI
             rover_too_close = True
