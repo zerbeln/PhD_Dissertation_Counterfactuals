@@ -1,6 +1,17 @@
 import math
 
 
+def get_custom_action(chosen_pol, pois, rover_x, rover_y):
+    n_poi = len(pois)
+
+    if chosen_pol < n_poi:
+        action = travel_to_poi(chosen_pol, pois, rover_x, rover_y)
+    else:
+        action = remain_stationary()
+
+    return action
+
+
 def travel_to_poi(target_poi, pois, rover_x, rover_y):
 
     poi_x = pois["P{0}".format(target_poi)].x_position

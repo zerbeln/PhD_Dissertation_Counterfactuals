@@ -1,6 +1,6 @@
 from ccea import Ccea
 from RewardFunctions.reward_functions import calc_difference, calc_dpp
-from RewardFunctions.cba_rewards import calc_sdpp
+from RewardFunctions.cas_rewards import calc_sdpp
 from RoverDomain_Core.rover_domain import RoverDomain
 import numpy as np
 from parameters import parameters as p

@@ -1,14 +1,15 @@
-from suggestion_network import CBANetwork
+from cba_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 from parameters import parameters as p
 from itertools import product
-from custom_rover_skills import travel_to_poi
+from custom_rover_skills import get_custom_action
 from global_functions import *
 from cba import create_policy_bank, get_counterfactual_state
 
 
+# NOTE: MAKE A FIND BEST SUGGESTION FOR CUSTOM SKILLS
 def find_best_suggestions(pbank_type, srun, c_list):
     """
     Test suggestions using the pre-trained policy bank
@@ -33,7 +34,8 @@ def find_best_suggestions(pbank_type, srun, c_list):
 
     # Load Trained Suggestion Interpreter Weights
     for rover_id in range(n_rovers):
-        rd.rovers["R{0}".format(rover_id)].policy_bank = create_policy_bank(pbank_type, rover_id, srun)
+        if not p["custom_skills"]:
+            rd.rovers["R{0}".format(rover_id)].policy_bank = create_policy_bank(pbank_type, rover_id, srun)
         s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
         pops["CBA{0}".format(rover_id)].get_weights(s_weights)
 
@@ -51,44 +53,54 @@ def find_best_suggestions(pbank_type, srun, c_list):
             rd.pois[poi].update_observer_distances(rd.rovers)
 
         # Create counterfactual for CBA
-        for rk in rd.rovers:
-            rover_id = rd.rovers[rk].self_id
+        for rov in rd.rovers:
+            rover_id = rd.rovers[rov].self_id
             suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
-            sensor_data = rd.rovers[rk].sensor_readings
+            sensor_data = rd.rovers[rov].sensor_readings
             cba_input = np.sum((suggestion, sensor_data), axis=0)
             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
             # Determine action based on sensor inputs and suggestion
             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
             pol_id = int(cba_outputs)
-            weights = rd.rovers[rk].policy_bank["Policy{0}".format(pol_id)]
-            rd.rovers[rk].get_weights(weights)
-            rd.rovers[rk].get_nn_outputs()
+            if p["custom_skills"]:
+                rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
+            else:
+                weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
+                rd.rovers[rov].get_weights(weights)
+                rd.rovers[rov].get_nn_outputs()
 
         rewards = []
         for step_id in range(rover_steps):
             # Rover takes an action in the world
             for rov in rd.rovers:
-                rd.rovers[rov].step(rd.world_x, rd.world_y)
+                if p["custom_skills"]:
+                    rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
+                else:
+                    rd.rovers[rov].step(rd.world_x, rd.world_y)
 
             # Rover scans environment and processes suggestions
-            for rk in rd.rovers:  # Rover scans environment
-                rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
+            for rov in rd.rovers:  # Rover scans environment
+                rd.rovers[rov].scan_environment(rd.rovers, rd.pois)
             for poi in rd.pois:
                 rd.pois[poi].update_observer_distances(rd.rovers)
 
-            for rover_id in range(n_rovers):
+            for rov in rd.rovers:
+                rover_id = rd.rovers[rov].self_id
                 suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
-                sensor_data = rd.rovers["R{0}".format(rover_id)].sensor_readings
+                sensor_data = rd.rovers[rov].sensor_readings
                 cba_input = np.sum((suggestion, sensor_data), axis=0)
                 pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
                 # Determine action based on sensor inputs and suggestion
                 cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
                 pol_id = int(cba_outputs)
-                weights = rd.rovers["R{0}".format(rover_id)].policy_bank["Policy{0}".format(pol_id)]
-                rd.rovers["R{0}".format(rover_id)].get_weights(weights)
-                rd.rovers["R{0}".format(rover_id)].get_nn_outputs()
+                if p["custom_skills"]:
+                    rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
+                else:
+                    weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
+                    rd.rovers[rov].get_weights(weights)
+                    rd.rovers[rov].get_nn_outputs()
 
             # Calculate Global Reward
             poi_rewards = rd.calc_global()
@@ -160,15 +172,15 @@ def test_cba_custom_skills(counterfactuals):
         # Create counterfactual for CBA
         for rov in rd.rovers:
             rover_id = rd.rovers[rov].self_id
-            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
             sensor_data = rd.rovers[rov].sensor_readings
+            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
             cba_input = np.sum((suggestion, sensor_data), axis=0)
             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
             # Determine action based on sensor inputs and suggestion
             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
             pol_id = int(cba_outputs)
-            rd.rovers[rov].rover_actions = travel_to_poi(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
+            rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
             rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
 
         rewards = []
@@ -188,8 +200,8 @@ def test_cba_custom_skills(counterfactuals):
 
             for rov in rd.rovers:
                 rover_id = rd.rovers[rov].self_id
-                suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
                 sensor_data = rd.rovers[rov].sensor_readings
+                suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
                 cba_input = np.sum((suggestion, sensor_data), axis=0)
                 pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
@@ -198,7 +210,7 @@ def test_cba_custom_skills(counterfactuals):
                 pol_id = int(cba_outputs)
                 rx = rd.rovers[rov].x_pos
                 ry = rd.rovers[rov].y_pos
-                rd.rovers[rov].rover_actions = travel_to_poi(pol_id, rd.pois, rx, ry)
+                rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rx, ry)
                 rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
 
             # Calculate Global Reward
@@ -342,7 +354,7 @@ if __name__ == '__main__':
     # Test Performance of CBA
     counterfactuals = {}
     if p["suggestion_type"] == "Best":
-        choices = range(p["n_poi"])
+        choices = range(p["n_suggestions"])
         n = p["n_rovers"]
         t_list = [choices] * n
         for srun in range(p["stat_runs"]):
