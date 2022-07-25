@@ -9,7 +9,6 @@ from global_functions import *
 from cba import create_policy_bank, get_counterfactual_state
 
 
-# NOTE: MAKE A FIND BEST SUGGESTION FOR CUSTOM SKILLS
 def find_best_suggestions(pbank_type, srun, c_list):
     """
     Test suggestions using the pre-trained policy bank
@@ -117,7 +116,6 @@ def find_best_suggestions(pbank_type, srun, c_list):
             best_reward = sum(rewards)
             best_rover_suggestion = sgst
 
-    assert (len(best_rover_suggestion) == n_rovers)
     create_csv_file(best_rover_suggestion, "Output_Data/", "BestRoverCounterfactuals.csv")
     return best_rover_suggestion
 
@@ -286,8 +284,8 @@ def test_cba(pbank_type, counterfactuals):
         # Create counterfactual for CBA
         for rov in rd.rovers:
             rover_id = rd.rovers[rov].self_id
-            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
             sensor_data = rd.rovers[rov].sensor_readings
+            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
             cba_input = np.sum((suggestion, sensor_data), axis=0)
             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
@@ -315,8 +313,8 @@ def test_cba(pbank_type, counterfactuals):
 
             for rov in rd.rovers:
                 rover_id = rd.rovers[rov].self_id
-                suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
                 sensor_data = rd.rovers[rov].sensor_readings
+                suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
                 cba_input = np.sum((suggestion, sensor_data), axis=0)
                 pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
@@ -353,13 +351,18 @@ def test_cba(pbank_type, counterfactuals):
 if __name__ == '__main__':
     # Test Performance of CBA
     counterfactuals = {}
-    if p["suggestion_type"] == "Best":
+    if p["suggestion_type"] == "Best_Total":
         choices = range(p["n_suggestions"])
         n = p["n_rovers"]
         t_list = [choices] * n
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
             c_list = (product(*t_list))
+            counterfactuals["S{0}".format(srun)] = find_best_suggestions(p["skill_type"], srun, c_list)
+    elif p["suggestion_type"] == "Best_Random":
+        c_list = np.random.randint(0, p["n_suggestions"], (p["c_list_size"], p["n_rovers"]))
+        for srun in range(p["stat_runs"]):
+            print(srun+1, "/", p["stat_runs"])
             counterfactuals["S{0}".format(srun)] = find_best_suggestions(p["skill_type"], srun, c_list)
     else:  # Custom
         rover_suggestions = [0, 0, 0]
