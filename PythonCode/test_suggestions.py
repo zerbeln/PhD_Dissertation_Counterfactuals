@@ -55,8 +55,8 @@ def find_best_suggestions(pbank_type, srun, c_list):
         # Create counterfactual for CBA
         for rov in rd.rovers:
             rover_id = rd.rovers[rov].self_id
-            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
             sensor_data = rd.rovers[rov].sensor_readings
+            suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
             cba_input = np.sum((suggestion, sensor_data), axis=0)
             pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
@@ -87,8 +87,8 @@ def find_best_suggestions(pbank_type, srun, c_list):
 
             for rov in rd.rovers:
                 rover_id = rd.rovers[rov].self_id
-                suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id])
                 sensor_data = rd.rovers[rov].sensor_readings
+                suggestion = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
                 cba_input = np.sum((suggestion, sensor_data), axis=0)
                 pops["CBA{0}".format(rover_id)].get_inputs(cba_input)
 
