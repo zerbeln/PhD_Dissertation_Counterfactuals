@@ -69,7 +69,8 @@ def find_best_suggestions(pbank_type, srun, c_list):
                 rd.rovers[rov].get_weights(weights)
                 rd.rovers[rov].get_nn_outputs()
 
-        rewards = []
+        rewards = np.zeros(p["n_poi"])
+        n_incursions = 0  # Number of times rovers violate a hazardous area
         for step_id in range(rover_steps):
             # Rover takes an action in the world
             for rov in rd.rovers:
@@ -103,14 +104,12 @@ def find_best_suggestions(pbank_type, srun, c_list):
 
             # Calculate Global Reward
             poi_rewards = rd.calc_global()
-            if len(rewards) > 0:
-                for poi_id in range(p["n_poi"]):
-                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
-                        rewards[poi_id] = poi_rewards[poi_id]
-                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
-                        rewards[poi_id] = poi_rewards[poi_id]
-            else:
-                rewards = poi_rewards
+            for poi_id in range(p["n_poi"]):
+                if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
+                    n_incursions += 1
+                    poi_rewards[poi_id] = -10.0 * n_incursions
+                elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
+                    rewards[poi_id] = poi_rewards[poi_id]
 
         if best_reward is None or sum(rewards) > best_reward:
             best_reward = sum(rewards)
@@ -145,6 +144,7 @@ def test_cba_custom_skills(counterfactuals):
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
+    incursion_tracker = []
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     srun = p["starting_srun"]
     while srun < stat_runs:  # Perform statistical runs
@@ -181,7 +181,8 @@ def test_cba_custom_skills(counterfactuals):
             rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
             rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
 
-        rewards = []
+        rewards = np.zeros(p["n_poi"])
+        n_incursions = 0
         for step_id in range(rover_steps):
             # Rover takes an action in the world
             for rov in rd.rovers:
@@ -213,23 +214,22 @@ def test_cba_custom_skills(counterfactuals):
 
             # Calculate Global Reward
             poi_rewards = rd.calc_global()
-            if len(rewards) > 0:
-                for poi_id in range(p["n_poi"]):
-                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
-                        rewards[poi_id] = poi_rewards[poi_id]
-                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
-                        rewards[poi_id] = poi_rewards[poi_id]
-            else:
-                rewards = poi_rewards
+            for poi_id in range(p["n_poi"]):
+                if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
+                    n_incursions += 1
+                    rewards[poi_id] = -10.0 * n_incursions
+                elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
+                    rewards[poi_id] = poi_rewards[poi_id]
 
         reward_history.append(sum(rewards))
+        incursion_tracker.append(n_incursions)
         average_reward += sum(rewards)
         srun += 1
 
-    average_reward /= stat_runs
-    print(average_reward)
+    print(average_reward/stat_runs)
     create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
+    create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
         run_visualizer()
 
@@ -259,6 +259,7 @@ def test_cba(pbank_type, counterfactuals):
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
+    incursion_tracker = []
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     srun = p["starting_srun"]
     while srun < stat_runs:  # Perform statistical runs
@@ -296,7 +297,8 @@ def test_cba(pbank_type, counterfactuals):
             rd.rovers[rov].get_weights(weights)
             rd.rovers[rov].get_nn_outputs()
 
-        rewards = []
+        rewards = np.zeros(p["n_poi"])
+        n_incursions = 0
         for step_id in range(rover_steps):
             # Rover takes an action in the world
             for rov in rd.rovers:
@@ -327,16 +329,15 @@ def test_cba(pbank_type, counterfactuals):
 
             # Calculate Global Reward
             poi_rewards = rd.calc_global()
-            if len(rewards) > 0:
-                for poi_id in range(p["n_poi"]):
-                    if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
-                        rewards[poi_id] = poi_rewards[poi_id]
-                    elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
-                        rewards[poi_id] = poi_rewards[poi_id]
-            else:
-                rewards = poi_rewards
+            for poi_id in range(p["n_poi"]):
+                if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
+                    n_incursions += 1
+                    rewards[poi_id] = -10.0 * n_incursions
+                elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
+                    rewards[poi_id] = poi_rewards[poi_id]
 
         reward_history.append(sum(rewards))
+        incursion_tracker.append(n_incursions)
         average_reward += sum(rewards)
         srun += 1
 
@@ -344,6 +345,7 @@ def test_cba(pbank_type, counterfactuals):
     print(average_reward)
     create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
+    create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
         run_visualizer()
 
