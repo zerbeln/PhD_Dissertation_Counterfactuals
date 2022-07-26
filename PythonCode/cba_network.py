@@ -5,9 +5,9 @@ import math
 
 class CBANetwork:
     def __init__(self):
-        self.n_inputs = p["s_inputs"]
-        self.n_outputs = p["s_outputs"]
-        self.n_hnodes = p["s_hidden"]
+        self.n_inputs = p["s_inp"]
+        self.n_outputs = p["s_out"]
+        self.n_hnodes = p["s_hid"]
         self.n_policies = p["n_skills"]
         self.weights = {}
         self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.float128)), [self.n_inputs, 1])

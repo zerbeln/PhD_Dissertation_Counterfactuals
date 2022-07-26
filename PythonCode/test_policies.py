@@ -73,11 +73,6 @@ def test_trained_policy():
     """
     Test rover policy trained using Global, Difference, or D++ rewards.
     """
-    # Parameters
-    stat_runs = p["stat_runs"]
-    n_rovers = p["n_rovers"]
-    rover_steps = p["steps"]
-
     # World Setup
     rd = RoverDomain()  # Create instance of the rover domain
     rd.load_world()
@@ -90,9 +85,9 @@ def test_trained_policy():
     reward_history = []  # Keep track of team performance throughout training
     incursion_tracker = []  # Keep track of the number of hazard area violations each stat run
     average_reward = 0
-    final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
+    final_rover_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"] + 1, 3))
     srun = p["starting_srun"]
-    while srun < stat_runs:
+    while srun < p["stat_runs"]:
 
         # Load Trained Rover Networks
         for rk in rd.rovers:
@@ -116,7 +111,7 @@ def test_trained_policy():
 
         rewards = np.zeros(p["n_poi"])
         n_incursions = 0
-        for step_id in range(rover_steps):
+        for step_id in range(p["steps"]):
             # Rover takes an action in the world
             for rk in rd.rovers:
                 rd.rovers[rk].step(rd.world_x, rd.world_y)
@@ -144,7 +139,7 @@ def test_trained_policy():
         average_reward += sum(rewards)
         srun += 1
 
-    print(average_reward/stat_runs)
+    print(average_reward/p["stat_runs"])
     create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
