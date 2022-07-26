@@ -63,7 +63,9 @@ def find_best_suggestions(pbank_type, srun, c_list):
             cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
             pol_id = int(cba_outputs)
             if p["custom_skills"]:
-                rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
+                rx = rd.rovers[rov].x_pos
+                ry = rd.rovers[rov].y_pos
+                rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rx, ry)
             else:
                 weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
                 rd.rovers[rov].get_weights(weights)
@@ -96,7 +98,9 @@ def find_best_suggestions(pbank_type, srun, c_list):
                 cba_outputs = pops["CBA{0}".format(rover_id)].get_outputs()
                 pol_id = int(cba_outputs)
                 if p["custom_skills"]:
-                    rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rd.rovers[rov].x_pos, rd.rovers[rov].y_pos)
+                    rx = rd.rovers[rov].x_pos
+                    ry = rd.rovers[rov].y_pos
+                    rd.rovers[rov].rover_actions = get_custom_action(pol_id, rd.pois, rx, ry)
                 else:
                     weights = rd.rovers[rov].policy_bank["Policy{0}".format(pol_id)]
                     rd.rovers[rov].get_weights(weights)
@@ -107,7 +111,7 @@ def find_best_suggestions(pbank_type, srun, c_list):
             for poi_id in range(p["n_poi"]):
                 if rd.pois["P{0}".format(poi_id)].hazardous and poi_rewards[poi_id] < 0:
                     n_incursions += 1
-                    poi_rewards[poi_id] = -10.0 * n_incursions
+                    rewards[poi_id] = -10.0 * n_incursions
                 elif poi_rewards[poi_id] > rewards[poi_id] and not rd.pois["P{0}".format(poi_id)].hazardous:
                     rewards[poi_id] = poi_rewards[poi_id]
 
@@ -123,11 +127,6 @@ def test_cba_custom_skills(counterfactuals):
     """
     Test suggestions using the hand created policy bank
     """
-    # Parameters
-    stat_runs = p["stat_runs"]
-    n_rovers = p["n_rovers"]
-    rover_steps = p["steps"]
-
     # World Setup
     rd = RoverDomain()
     rd.load_world()
@@ -139,19 +138,20 @@ def test_cba_custom_skills(counterfactuals):
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
-    for rover_id in range(n_rovers):
+    for rover_id in range(p["n_rovers"]):
         pops["CBA{0}".format(rover_id)] = CBANetwork()
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
-    incursion_tracker = []
-    final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
+    incursion_tracker = []  # Keep track of the number of hazard area violations each stat run
+    final_rover_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"] + 1, 3))
+
     srun = p["starting_srun"]
-    while srun < stat_runs:  # Perform statistical runs
+    while srun < p["stat_runs"]:  # Perform statistical runs
         sgst = counterfactuals["S{0}".format(srun)]
 
         # Load Trained Suggestion Interpreter Weights
-        for rover_id in range(n_rovers):
+        for rover_id in range(p["n_rovers"]):
             s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
             pops["CBA{0}".format(rover_id)].get_weights(s_weights)
 
@@ -183,7 +183,7 @@ def test_cba_custom_skills(counterfactuals):
 
         rewards = np.zeros(p["n_poi"])
         n_incursions = 0
-        for step_id in range(rover_steps):
+        for step_id in range(p["steps"]):
             # Rover takes an action in the world
             for rov in rd.rovers:
                 rd.rovers[rov].custom_step(rd.world_x, rd.world_y)
@@ -226,7 +226,7 @@ def test_cba_custom_skills(counterfactuals):
         average_reward += sum(rewards)
         srun += 1
 
-    print(average_reward/stat_runs)
+    print(average_reward/p["stat_runs"])
     create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
@@ -259,7 +259,7 @@ def test_cba(pbank_type, counterfactuals):
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
-    incursion_tracker = []
+    incursion_tracker = []  # Keep track of the number of hazard area violations each stat run
     final_rover_path = np.zeros((stat_runs, n_rovers, rover_steps + 1, 3))
     srun = p["starting_srun"]
     while srun < stat_runs:  # Perform statistical runs
