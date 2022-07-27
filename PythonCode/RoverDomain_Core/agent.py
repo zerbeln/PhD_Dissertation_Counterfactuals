@@ -2,7 +2,7 @@ import numpy as np
 import math
 import sys
 from parameters import parameters as p
-from global_functions import get_squared_dist, get_angle
+from global_functions import get_linear_dist, get_squared_dist, get_angle
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -25,8 +25,8 @@ class Poi:
 
     def update_observer_distances(self, rovers):
         for rov in rovers:
-            rover_id = rovers[rov].self_id
-            self.observer_distances[rover_id] = rovers[rov].poi_distances[self.poi_id]
+            dist = get_linear_dist(rovers[rov].loc[0], rovers[rov].loc[1], self.loc[0], self.loc[1])
+            self.observer_distances[rovers[rov].self_id] = dist
 
 
 class Rover:
@@ -46,7 +46,6 @@ class Rover:
         # Rover Data -----------------------------------------------------------------------------------------
         self.sensor_readings = np.zeros(p["n_inp"], dtype=np.float128)  # Number of sensor inputs for Neural Network
         self.rover_actions = np.zeros(p["n_out"], dtype=np.float128)  # Motor actions from neural network outputs
-        self.poi_distances = np.zeros(p["n_poi"])  # Records distances measured from sensors
 
         # Rover Motor Controller -----------------------------------------------------------------------------
         self.n_inputs = p["n_inp"]
@@ -66,7 +65,6 @@ class Rover:
         """
         self.loc = self.initial_pos.copy()
         self.sensor_readings = np.zeros(self.n_inputs, dtype=np.float128)
-        self.poi_distances = np.zeros(p["n_poi"])
 
     def step(self, world_x, world_y):
         """
@@ -125,7 +123,6 @@ class Rover:
             if dist < self.delta_min:
                 dist = self.delta_min
 
-            self.poi_distances[poi_id] = math.sqrt(dist)  # Record distance for sensor information
             bracket = int(angle / self.sensor_res)
             if bracket > n_brackets-1:
                 bracket -= n_brackets

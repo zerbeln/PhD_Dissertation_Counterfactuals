@@ -10,7 +10,7 @@ class RoverDomain:
         # World attributes
         self.world_x = p["x_dim"]
         self.world_y = p["y_dim"]
-        self.num_pois = p["n_poi"]
+        self.n_pois = p["n_poi"]
         self.n_rovers = p["n_rovers"]
         self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
         self.obs_radius = p["observation_radius"]  # Maximum distance rovers can make observations of POI at
@@ -35,7 +35,7 @@ class RoverDomain:
         """
         Calculate the global reward at the current time step
         """
-        global_reward = np.zeros(self.num_pois)
+        global_reward = np.zeros(self.n_pois)
 
         for pk in self.pois:
             observer_count = 0
@@ -51,8 +51,6 @@ class RoverDomain:
             if observer_count >= int(self.pois[pk].coupling):
                 summed_dist = sum(rover_distances[0:int(self.pois[pk].coupling)])
                 global_reward[self.pois[pk].poi_id] = self.pois[pk].value / (summed_dist/self.pois[pk].coupling)
-            elif observer_count > 0 and self.pois[pk].hazardous:  # User defined code for CBA
-                global_reward[self.pois[pk].poi_id] = -10.0
 
         return global_reward
 
@@ -67,7 +65,7 @@ class RoverDomain:
             for row in csv_reader:
                 config_input.append(row)
 
-        for poi_id in range(self.num_pois):
+        for poi_id in range(self.n_pois):
             poi_x = float(config_input[poi_id][0])
             poi_y = float(config_input[poi_id][1])
             poi_val = float(config_input[poi_id][2])
