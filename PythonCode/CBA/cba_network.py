@@ -1,6 +1,5 @@
 import numpy as np
 from parameters import parameters as p
-import math
 
 
 class CBANetwork:

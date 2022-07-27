@@ -12,7 +12,6 @@ class RoverDomain:
         self.world_y = p["y_dim"]
         self.n_pois = p["n_poi"]
         self.n_rovers = p["n_rovers"]
-        self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
         self.obs_radius = p["observation_radius"]  # Maximum distance rovers can make observations of POI at
 
         # Rover Instances

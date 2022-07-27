@@ -5,9 +5,9 @@ from parameters import parameters as p
 
 
 class Ccea:
-    def __init__(self, pop_size, n_inp=8, n_out=2, n_hid=10):
+    def __init__(self, n_inp=8, n_out=2, n_hid=10):
         self.population = {}
-        self.pop_size = pop_size
+        self.pop_size = p["pop_size"]
         self.mut_rate = p["mutation_rate"]
         self.mut_chance = p["mutation_chance"]
         self.eps = p["epsilon"]

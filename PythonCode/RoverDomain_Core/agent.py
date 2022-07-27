@@ -41,7 +41,6 @@ class Rover:
         self.sensor_type = p["sensor_model"]  # Type of sensors rover is equipped with
         self.sensor_range = None  # Distance rovers can perceive environment (default is infinite)
         self.sensor_res = p["angle_res"]  # Angular resolution of the sensors
-        self.delta_min = p["min_distance"]  # Lower bound for distance in sensor/utility calculations
 
         # Rover Data -----------------------------------------------------------------------------------------
         self.sensor_readings = np.zeros(p["n_inp"], dtype=np.float128)  # Number of sensor inputs for Neural Network
@@ -120,8 +119,6 @@ class Rover:
         for pk in pois:
             angle = get_angle(pois[pk].loc[0], pois[pk].loc[1], (p["x_dim"]/2), (p["y_dim"]/2))
             dist = get_squared_dist(pois[pk].loc[0], pois[pk].loc[1], self.loc[0], self.loc[1])
-            if dist < self.delta_min:
-                dist = self.delta_min
 
             bracket = int(angle / self.sensor_res)
             if bracket > n_brackets-1:
@@ -159,8 +156,6 @@ class Rover:
 
                 angle = get_angle(rov_x, rov_y, p["x_dim"]/2, p["y_dim"]/2)
                 dist = get_squared_dist(rov_x, rov_y, self.loc[0], self.loc[1])
-                if dist < self.delta_min:
-                    dist = self.delta_min
 
                 bracket = int(angle / self.sensor_res)
                 if bracket > n_brackets-1:

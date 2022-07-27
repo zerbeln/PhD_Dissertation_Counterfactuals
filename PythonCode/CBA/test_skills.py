@@ -3,7 +3,7 @@ from RewardFunctions.cba_rewards import *
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 from parameters import parameters as p
-from custom_rover_skills import travel_to_poi
+from CBA.custom_rover_skills import travel_to_poi
 from global_functions import create_csv_file, create_pickle_file, load_saved_policies
 
 

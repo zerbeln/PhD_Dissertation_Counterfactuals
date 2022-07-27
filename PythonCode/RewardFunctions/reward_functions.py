@@ -76,7 +76,7 @@ def calc_dpp(pois, global_reward, rov_poi_dist):
 
                     for step in range(p["steps"]):
                         rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id])
-                        counterfactual_rovers = np.ones(n_counters) * rover_distances[step][agent_id]
+                        counterfactual_rovers = np.ones(int(n_counters)) * rover_distances[step][agent_id]
                         rover_distances[step] = np.append(rover_distances[step], counterfactual_rovers)
                         sorted_distances = np.sort(rover_distances[step])
 

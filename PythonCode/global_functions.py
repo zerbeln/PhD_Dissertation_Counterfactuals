@@ -33,6 +33,9 @@ def get_squared_dist(target_x, target_y, xo, yo):
 
     dist = (dx ** 2) + (dy ** 2)
 
+    if dist < 1.0:
+        dist = 1.0
+
     return dist
 
 
@@ -45,6 +48,9 @@ def get_linear_dist(target_x, target_y, xo, yo):
     dy = target_y - yo
 
     dist = math.sqrt((dx ** 2) + (dy ** 2))
+
+    if dist < 1.0:
+        dist = 1.0
 
     return dist
 

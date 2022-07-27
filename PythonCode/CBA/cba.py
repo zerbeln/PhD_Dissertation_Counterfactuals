@@ -1,9 +1,9 @@
 from global_functions import *
 from ccea import Ccea
-from cba_network import CBANetwork
+from CBA.cba_network import CBANetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from RewardFunctions.cba_rewards import *
-from custom_rover_skills import get_custom_action
+from CBA.custom_rover_skills import get_custom_action
 from parameters import parameters as p
 import random
 import numpy as np
@@ -106,7 +106,7 @@ def train_cba_learned_skills():
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(p["pop_size"], n_inp=p["s_inp"], n_out=p["s_out"], n_hid=p["s_hid"])
+        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["s_inp"], n_out=p["s_out"], n_hid=p["s_hid"])
         pops["CBA{0}".format(rover_id)] = CBANetwork()
 
     # Perform statistical runs
@@ -228,7 +228,7 @@ def train_cba_custom_skills():
     # Create dictionary for each instance of rover and corresponding NN and EA population
     pops = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(p["pop_size"], n_inp=p["s_inp"], n_out=p["s_out"], n_hid=p["s_hid"])
+        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["s_inp"], n_out=p["s_out"], n_hid=p["s_hid"])
         pops["CBA{0}".format(rover_id)] = CBANetwork()
 
     # Perform statistical runs
