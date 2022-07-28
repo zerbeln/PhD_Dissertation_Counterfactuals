@@ -22,7 +22,7 @@ class RoverDomain:
 
     def load_world(self):
         """
-        Load a rover domain from a saved configuration file
+        Load a rover domain from a saved csv file.
         """
         # Initialize POI positions and values
         self.load_poi_configuration()
@@ -32,7 +32,8 @@ class RoverDomain:
 
     def calc_global(self):
         """
-        Calculate the global reward at the current time step
+        Calculate the global reward at the current time step.
+        :return: Array capturing reward given from each POI at current time step
         """
         global_reward = np.zeros(self.n_pois)
 
@@ -55,7 +56,7 @@ class RoverDomain:
 
     def load_poi_configuration(self):
         """
-        Load in a save POI configuation from a CSV file
+        Load POI configuration from a CSV file
         """
         config_input = []
         with open('World_Config/POI_Config.csv') as csvfile:
@@ -75,7 +76,7 @@ class RoverDomain:
 
     def load_rover_configuration(self):
         """
-        Load initial rover position from saved csvfile
+        Load Rover configuration from a saved csv file
         """
         config_input = []
         with open('World_Config/Rover_Config.csv') as csvfile:
