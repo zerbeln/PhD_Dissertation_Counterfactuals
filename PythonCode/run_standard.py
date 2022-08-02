@@ -12,6 +12,7 @@ def sample_best_team(rd, pops, networks):
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
     :param rd: Instance of the rover domain
     :param pops: CCEA populations
+    :param networks: Dictionary containing rover neural network instances
     :return: global reward for team of best individuals
     """
     # Reset rovers to initial conditions
@@ -73,7 +74,7 @@ def rover_global():
 
             # Test each team from CCEA
             for team_number in range(p["pop_size"]):
-                # Reset rovers to initial conditions and select network weights
+                # Reset environment to initial conditions and select network weights
                 rd.reset_world()
                 for rv in rd.rovers:
                     policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
@@ -140,7 +141,7 @@ def rover_difference():
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
-        # Create new population of policies for each rover
+        # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
 
@@ -151,7 +152,7 @@ def rover_difference():
 
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(p["pop_size"]):
-                # Reset rovers to initial conditions and select network weights
+                # Reset environment to initial conditions and select network weights
                 rd.reset_world()
                 for rv in rd.rovers:
                     policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
@@ -218,7 +219,7 @@ def rover_dpp():
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
-        # Create new population of policies for each rover
+        # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
 

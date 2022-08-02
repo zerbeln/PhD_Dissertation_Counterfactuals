@@ -12,6 +12,8 @@ class Poi:
         self.coupling = pc  # POI coupling requirement
         self.observer_distances = np.zeros(p["n_rovers"])  # Keeps track of rover distances
         self.observed = False  # Boolean that indicates if a POI is successfully observed
+        self.quadrant = None  # Tracks which quadrant (or sector) of the environment a POI exists in
+        self.hazardous = False
 
     def reset_poi(self):
         """

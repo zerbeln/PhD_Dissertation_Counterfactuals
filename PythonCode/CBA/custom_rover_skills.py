@@ -14,8 +14,8 @@ def get_custom_action(chosen_pol, pois, rover_x, rover_y):
 
 def travel_to_poi(target_poi, pois, rover_x, rover_y):
 
-    poi_x = pois["P{0}".format(target_poi)].x_position
-    poi_y = pois["P{0}".format(target_poi)].y_position
+    poi_x = pois["P{0}".format(target_poi)].loc[0]
+    poi_y = pois["P{0}".format(target_poi)].loc[1]
 
     delta_x = poi_x - rover_x
     delta_y = poi_y - rover_y

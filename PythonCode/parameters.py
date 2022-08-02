@@ -4,7 +4,7 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 1  # Total number of runs to perform
 parameters["generations"] = 100  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "Difference"  # Global, Difference, DPP (D++)
+parameters["algorithm"] = "Difference"  # Global, Difference, DPP (D++), or CBA
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Domain parameters
@@ -34,19 +34,18 @@ parameters["mutation_rate"] = 0.2  # How much a weight is allowed to change
 parameters["epsilon"] = 0.1  # For e-greedy selection in CCEA
 parameters["n_elites"] = 1  # How many elites to carry over during elite selection
 
-# Suggestion Parameters
+# CBA Parameters
 parameters["skill_type"] = "Target_POI"  # Target_Quadrant or Target_POI
-parameters["custom_skills"] = True
 parameters["randomize_skills"] = False  # Rovers are learning different skills at different times when True
 parameters["n_skills"] = parameters["n_poi"] + 1  # Number of pre-trained policies in the policy bank
 parameters["n_suggestions"] = parameters["n_poi"]
-parameters["s_inputs"] = int(2 * (360 / parameters["angle_res"]))
-parameters["s_hidden"] = 12
-parameters["s_outputs"] = parameters["n_skills"]
+parameters["s_inp"] = int(2 * (360 / parameters["angle_res"]))
+parameters["s_hid"] = 12
+parameters["s_out"] = parameters["n_skills"]
 
 # Post Training Test Parameters
-parameters["suggestion_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
+parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
 parameters["c_list_size"] = 1000
-parameters["vis_running"] = False  # True keeps visualizer from closing until you 'X' out of window
+parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
 parameters["active_hazards"] = False  # Determine if hazard zones are active (True) or inactive (False)
 parameters["hazardous_poi"] = [0]  # ID numbers of POI that will be hazardous
