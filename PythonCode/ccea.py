@@ -179,9 +179,12 @@ class Ccea:
         """
         Select parents create offspring population, and perform mutation operations
         """
-        # self.rank_population()
-        # self.epsilon_greedy_select()  # Select K successors using epsilon greedy
+        # self.rank_population()  # Sort populations in terms of fitness
+
+        # Select K successors using desired selection strategy
+        # self.epsilon_greedy_select()
         self.binary_tournament_selection()
-        # self.random_selection()  # Select k successors using fit prop selection
+        # self.random_selection()
+
         self.weight_mutate()  # Mutate successors
 

@@ -14,7 +14,7 @@ def save_poi_configuration(pois_info):
     """
     Saves POI configuration to a csv file in a folder called World_Config
     """
-    dir_name = 'World_Config'  # Intended directory for output files
+    dir_name = './World_Config'  # Intended directory for output files
 
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
@@ -33,7 +33,7 @@ def save_rover_configuration(initial_rover_positions):
     """
     Saves Rover configuration to a csv file in a folder called World_Config
     """
-    dir_name = 'World_Config'  # Intended directory for output files
+    dir_name = './World_Config'  # Intended directory for output files
 
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
@@ -125,112 +125,12 @@ def rover_pos_fixed_middle():  # Set rovers to fixed starting position
     return initial_rover_positions
 
 
-def rover_pos_quadrant_zero():
-    """
-    Initialize rover team in the center of Quadrant 0.
-    """
-    radius = 3.0
-    center_x = 3 * p["x_dim"] / 4.0
-    center_y = 3 * p["y_dim"] / 4.0
-    initial_rover_positions = np.zeros((p["n_rovers"], 3))
-
-    for rov_id in range(p["n_rovers"]):
-        x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        while x > (center_x + radius) or x < (center_x - radius):
-            x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        while y > (center_y + radius) or y < (center_y - radius):
-            y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
-        initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
-        initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
-
-    return initial_rover_positions
-
-
-def rover_pos_quadrant_one():
-    """
-    Initialize rover team in the center of Quadrant 1.
-    """
-    radius = 3.0
-    center_x = p["x_dim"] / 4.0
-    center_y = 3 * p["y_dim"] / 4.0
-    initial_rover_positions = np.zeros((p["n_rovers"], 3))
-
-    for rov_id in range(p["n_rovers"]):
-        x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        while x > (center_x + radius) or x < (center_x - radius):
-            x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        while y > (center_y + radius) or y < (center_y - radius):
-            y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
-        initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
-        initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
-
-    return initial_rover_positions
-
-
-def rover_pos_quadrant_two():
-    """
-    Initialize rover team in the center of Quadrant 2.
-    """
-    radius = 3.0
-    center_x = p["x_dim"] / 4.0
-    center_y = p["y_dim"] / 4.0
-    initial_rover_positions = np.zeros((p["n_rovers"], 3))
-
-    for rov_id in range(p["n_rovers"]):
-        x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        while x > (center_x + radius) or x < (center_x - radius):
-            x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        while y > (center_y + radius) or y < (center_y - radius):
-            y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
-        initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
-        initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
-
-    return initial_rover_positions
-
-
-def rover_pos_quadrant_three():
-    """
-    Initialize rover team in the center of Quadrant 3.
-    """
-    radius = 3.0
-    center_x = 3 * p["x_dim"] / 4.0
-    center_y = p["y_dim"] / 4.0
-    initial_rover_positions = np.zeros((p["n_rovers"], 3))
-
-    for rov_id in range(p["n_rovers"]):
-        x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        while x > (center_x + radius) or x < (center_x - radius):
-            x = random.uniform(0.0, p["x_dim"] - 1.0)  # Rover X-Coordinate
-        while y > (center_y + radius) or y < (center_y - radius):
-            y = random.uniform(0.0, p["y_dim"] - 1.0)  # Rover Y-Coordinate
-
-        initial_rover_positions[rov_id, 0] = x  # Rover X-Coordinate
-        initial_rover_positions[rov_id, 1] = y  # Rover Y-Coordinate
-        initial_rover_positions[rov_id, 2] = random.uniform(0.0, 360.0)  # Rover orientation
-
-    return initial_rover_positions
-
-
 # POI POSITION FUNCTIONS ------------------------------------------------------------------------------------------
 def poi_pos_random(coupling):  # Randomly set POI on the map
     """
     POI positions set randomly across the map (but not too close to other POI).
     """
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
 
     for poi_id in range(p["n_poi"]):
         x = random.uniform(0, p["x_dim"]-1.0)
@@ -259,9 +159,6 @@ def poi_pos_random(coupling):  # Randomly set POI on the map
         pois_info[poi_id, 1] = y
         pois_info[poi_id, 3] = coupling
 
-        angle = get_angle(pois_info[poi_id, 0], pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
-        pois_info[poi_id, 4] = int(angle/p["angle_res"])
-
     return pois_info
 
 
@@ -269,7 +166,7 @@ def poi_pos_circle(coupling):
     """
     POI positions are set in a circle around the center of the map at a specified radius.
     """
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
     radius = 15.0
     interval = float(360/p["n_poi"])
 
@@ -281,9 +178,6 @@ def poi_pos_circle(coupling):
         pois_info[poi_id, 0] = x + radius*math.cos(theta*math.pi/180)
         pois_info[poi_id, 1] = y + radius*math.sin(theta*math.pi/180)
         pois_info[poi_id, 3] = coupling
-        angle = get_angle(pois_info[poi_id, 0], pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
-        q = int(angle / p["angle_res"])
-        pois_info[poi_id, 4] = q
         theta += interval
 
     return pois_info
@@ -297,7 +191,7 @@ def poi_pos_concentric_circles(coupling):
     inner_radius = 6.5
     outter_radius = 15.0
     interval = float(360 / (p["n_poi"]/2))
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
 
     x = p["x_dim"]/2.0
     y = p["y_dim"]/2.0
@@ -309,17 +203,11 @@ def poi_pos_concentric_circles(coupling):
             pois_info[poi_id, 0] = x + inner_radius * math.cos(inner_theta * math.pi / 180)
             pois_info[poi_id, 1] = y + inner_radius * math.sin(inner_theta * math.pi / 180)
             pois_info[poi_id, 3] = coupling
-            angle = get_angle(pois_info[poi_id, 0], pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
-            q = int(angle / p["angle_res"])
-            pois_info[poi_id, 4] = q
             inner_theta += interval
         else:
             pois_info[poi_id, 0] = x + outter_radius * math.cos(outter_theta * math.pi / 180)
             pois_info[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
             pois_info[poi_id, 3] = coupling
-            angle = get_angle(pois_info[poi_id, 0], pois_info[poi_id, 1], p["x_dim"]/2, p["y_dim"]/2)
-            q = int(angle / p["angle_res"])
-            pois_info[poi_id, 4] = q
             outter_theta += interval
 
     return pois_info
@@ -330,21 +218,17 @@ def poi_pos_two_poi(coupling):
     Sets two POI on the map, one on the left, one on the right in line with global X-axis.
     """
     assert(p["n_poi"] == 2)
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
 
     # Left POI
     pois_info[0, 0] = 1.0
     pois_info[0, 1] = (p["y_dim"]/2.0) - 1
     pois_info[0, 3] = coupling
-    angle = get_angle(pois_info[0, 0], pois_info[0, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[0, 4] = int(angle / p["angle_res"])
 
     # Right POI
     pois_info[1, 0] = p["x_dim"] - 2.0
     pois_info[1, 1] = (p["y_dim"]/2.0) + 1
     pois_info[1, 3] = coupling
-    angle = get_angle(pois_info[1, 0], pois_info[1, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[1, 4] = int(angle / p["angle_res"])
 
     return pois_info
 
@@ -354,88 +238,27 @@ def poi_pos_four_corners(coupling):  # Statically set 4 POI (one in each corner)
     Sets 4 POI on the map in a box formation around the center
     """
     assert(p["n_poi"] == 4)  # There must only be 4 POI for this initialization
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
 
     # Bottom left
     pois_info[0, 0] = 2.0
     pois_info[0, 1] = 2.0
     pois_info[0, 3] = coupling
-    angle = get_angle(pois_info[0, 0], pois_info[0, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[0, 4] = int(angle / p["angle_res"])
 
     # Top left
     pois_info[1, 0] = 2.0
     pois_info[1, 1] = (p["y_dim"] - 2.0)
     pois_info[1, 3] = coupling
-    angle = get_angle(pois_info[1, 0], pois_info[1, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[1, 4] = int(angle / p["angle_res"])
 
     # Bottom right
     pois_info[2, 0] = (p["x_dim"] - 2.0)
     pois_info[2, 1] = 2.0
     pois_info[2, 3] = coupling
-    angle = get_angle(pois_info[2, 0], pois_info[2, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[2, 4] = int(angle / p["angle_res"])
 
     # Top right
     pois_info[3, 0] = (p["x_dim"] - 2.0)
     pois_info[3, 1] = (p["y_dim"] - 2.0)
     pois_info[3, 3] = coupling
-    angle = get_angle(pois_info[3, 0], pois_info[3, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[3, 4] = int(angle / p["angle_res"])
-
-    return pois_info
-
-
-def poi_pos_columns(coupling):
-    """
-    Sets 6 POI in two columns on opposite sides of the map
-    """
-
-    assert (p["n_poi"] == 6)  # There must only be 4 POI for this initialization
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
-
-    # Bottom left
-    pois_info[0, 0] = 2.0
-    pois_info[0, 1] = 2.0
-    pois_info[0, 3] = coupling
-    angle = get_angle(pois_info[0, 0], pois_info[0, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[0, 4] = int(angle / p["angle_res"])
-
-    # Middle Left
-    pois_info[1, 0] = 2.0
-    pois_info[1, 1] = p["y_dim"]/2
-    pois_info[1, 3] = coupling
-    angle = get_angle(pois_info[1, 0], pois_info[1, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[1, 4] = int(angle / p["angle_res"])
-
-    # Top left
-    pois_info[2, 0] = 2.0
-    pois_info[2, 1] = (p["y_dim"] - 2.0)
-    pois_info[2, 3] = coupling
-    angle = get_angle(pois_info[2, 0], pois_info[2, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[2, 4] = int(angle / p["angle_res"])
-
-    # Bottom right
-    pois_info[3, 0] = (p["x_dim"] - 2.0)
-    pois_info[3, 1] = 2.0
-    pois_info[3, 3] = coupling
-    angle = get_angle(pois_info[3, 0], pois_info[3, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[3, 4] = int(angle / p["angle_res"])
-
-    # Middle Right
-    pois_info[4, 0] = (p["x_dim"] - 2.0)
-    pois_info[4, 1] = p["y_dim"]/2
-    pois_info[4, 3] = coupling
-    angle = get_angle(pois_info[4, 0], pois_info[4, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[4, 4] = int(angle / p["angle_res"])
-
-    # Top right
-    pois_info[5, 0] = (p["x_dim"] - 2.0)
-    pois_info[5, 1] = (p["y_dim"] - 2.0)
-    pois_info[5, 3] = coupling
-    angle = get_angle(pois_info[5, 0], pois_info[5, 1], p["x_dim"]/2, p["y_dim"]/2)
-    pois_info[5, 4] = int(angle / p["angle_res"])
 
     return pois_info
 
@@ -463,7 +286,7 @@ def create_world_setup(coupling):
     """
 
     # Initialize POI positions and values
-    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Sector]
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
 
     if p["poi_config_type"] == "Random":
         pois_info = poi_pos_random(coupling)
@@ -473,9 +296,6 @@ def create_world_setup(coupling):
         poi_vals_identical(pois_info, 10.0)
     elif p["poi_config_type"] == "Four_Corners":
         pois_info = poi_pos_four_corners(coupling)
-        poi_vals_random(pois_info, 3.0, 10.0)
-    elif p["poi_config_type"] == "Columns":
-        pois_info = poi_pos_columns(coupling)
         poi_vals_random(pois_info, 3.0, 10.0)
     elif p["poi_config_type"] == "Circle":
         pois_info = poi_pos_circle(coupling)
@@ -494,8 +314,6 @@ def create_world_setup(coupling):
         initial_rover_positions = rover_pos_random(pois_info)
     elif p["rover_config_type"] == "Concentrated":
         initial_rover_positions = rover_pos_center_concentrated()
-    elif p["rover_config_type"] == "Four_Quadrants":
-        initial_rover_positions = rover_pos_quadrant_zero()
     elif p["rover_config_type"] == "Fixed":
         initial_rover_positions = rover_pos_fixed_middle()
 
@@ -520,5 +338,5 @@ if __name__ == '__main__':
             rover_path[0:p["stat_runs"], rover_id, step, 1] = rd.rovers["R{0}".format(rover_id)].loc[1]
             rover_path[0:p["stat_runs"], rover_id, step, 2] = rd.rovers["R{0}".format(rover_id)].loc[2]
 
-    create_pickle_file(rover_path, "Output_Data/", "Rover_Paths")
+    create_pickle_file(rover_path, "./Output_Data/", "Rover_Paths")
     run_visualizer()
