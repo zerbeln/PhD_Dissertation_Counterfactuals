@@ -71,8 +71,8 @@ def find_best_suggestions(srun, c_list):
 
         # Calculate episodic global reward
         g_reward = 0
-        for poi_id in range(p["n_poi"]):
-            g_reward += max(poi_rewards[poi_id])
+        for p_reward in poi_rewards:
+            g_reward += max(p_reward)
         if best_reward is None or g_reward > best_reward:
             best_reward = g_reward
             best_rover_suggestion = sgst
@@ -152,8 +152,8 @@ def test_cba(counterfactuals):
 
         # Calculate episodic global reward
         g_reward = 0
-        for poi_id in range(p["n_poi"]):
-            g_reward += max(poi_rewards[poi_id])
+        for p_reward in poi_rewards:
+            g_reward += max(p_reward)
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward

@@ -39,8 +39,8 @@ def sample_best_team(rd, pops, networks):
             poi_rewards[poi_id, step_id] = step_rewards[poi_id]
 
     g_reward = 0
-    for poi_id in range(p["n_poi"]):
-        g_reward += max(poi_rewards[poi_id])
+    for p_reward in poi_rewards:
+        g_reward += max(p_reward)
 
     return g_reward
 
@@ -97,8 +97,8 @@ def rover_global():
 
                 # Update fitness of policies using reward information
                 g_reward = 0
-                for poi_id in range(p["n_poi"]):
-                     g_reward += max(poi_rewards[poi_id])
+                for p_reward in poi_rewards:
+                     g_reward += max(p_reward)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = g_reward
@@ -175,8 +175,8 @@ def rover_difference():
 
                 # Update fitness of policies using reward information
                 g_reward = 0
-                for poi_id in range(p["n_poi"]):
-                    g_reward += max(poi_rewards[poi_id])
+                for p_reward in poi_rewards:
+                    g_reward += max(p_reward)
                 d_rewards = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
@@ -252,8 +252,8 @@ def rover_dpp():
 
                 # Update fitness of policies using reward information
                 g_reward = 0
-                for poi_id in range(p["n_poi"]):
-                    g_reward += max(poi_rewards[poi_id])
+                for p_reward in poi_rewards:
+                    g_reward += max(p_reward)
                 dpp_rewards = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])

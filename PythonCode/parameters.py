@@ -4,7 +4,7 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 1  # Total number of runs to perform
 parameters["generations"] = 100  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "Difference"  # Global, Difference, DPP (D++), or CBA
+parameters["algorithm"] = "Global"  # Global, Difference, DPP (D++), or CBA
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Domain parameters
@@ -46,6 +46,6 @@ parameters["s_out"] = parameters["n_skills"]
 # Post Training Test Parameters
 parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
 parameters["c_list_size"] = 1000
-parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
+parameters["vis_running"] = False  # True keeps visualizer from closing until you 'X' out of window
 parameters["active_hazards"] = False  # Determine if hazard zones are active (True) or inactive (False)
 parameters["hazardous_poi"] = [0]  # ID numbers of POI that will be hazardous
