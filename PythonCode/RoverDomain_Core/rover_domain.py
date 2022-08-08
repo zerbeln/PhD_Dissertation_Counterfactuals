@@ -53,8 +53,8 @@ class RoverDomain:
             rover_distances = copy.deepcopy(self.pois[poi].observer_distances)
             rover_distances = np.sort(rover_distances)  # Arranges distances from least to greatest
 
-            for rv in range(self.n_rovers):
-                if rover_distances[rv] < self.obs_radius:
+            for i in range(int(self.pois[poi].coupling)):
+                if rover_distances[i] < self.obs_radius:
                     observer_count += 1
 
             # Update global reward if POI is observed
