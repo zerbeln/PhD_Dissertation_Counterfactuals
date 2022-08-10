@@ -73,16 +73,17 @@ def test_trained_policy():
             # Environment takes in rover actions and returns next state and global reward
             step_rewards = rd.step(rover_actions)
             for poi_id in range(p["n_poi"]):
-                if rd.pois["P{0}".format(poi_id)].hazardous and step_rewards[poi_id] < 0:
-                    n_incursions += 1
-                    poi_rewards[poi_id, step_id] = -10 * n_incursions
-                else:
-                    poi_rewards[poi_id, step_id] = step_rewards[poi_id]
+                poi_rewards[poi_id, step_id] = step_rewards[poi_id]
+                if rd.pois["P{0}".format(poi_id)].hazardous:
+                    for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                        if dist < p["observation_radius"]:
+                            n_incursions += 1
 
         # Calculate episodic global reward
         g_reward = 0
         for p_reward in poi_rewards:
             g_reward += max(p_reward)
+        g_reward -= (n_incursions * 10)
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward
