@@ -1,10 +1,21 @@
 import math
+from parameters import parameters as p
+import numpy as np
+
+
+def sigmoid(inp):  # Sigmoid function as activation function
+    """
+    sigmoid neural network activation function
+    """
+
+    sig = 1 / (1 + np.exp(-inp))
+
+    return sig
 
 
 def get_custom_action(chosen_pol, pois, rover_x, rover_y):
-    n_poi = len(pois)
 
-    if chosen_pol < n_poi:
+    if chosen_pol < p["n_poi"]:
         action = travel_to_poi(chosen_pol, pois, rover_x, rover_y)
     else:
         action = remain_stationary()
@@ -24,35 +35,35 @@ def travel_to_poi(target_poi, pois, rover_x, rover_y):
 
     if vector_mag >= 1:
         theta = math.atan2(delta_y, delta_x)
-        dx = math.cos(theta)
-        dy = math.sin(theta)
+        dx = sigmoid(math.cos(theta))
+        dy = sigmoid(math.sin(theta))
     else:
-        dx = 0.0
-        dy = 0.0
+        dx = 0.5
+        dy = 0.5
 
     return [dx, dy]
 
 
 def travel_north():
 
-    return [0, 1]
+    return [0.5, 1]
 
 
 def travel_south():
 
-    return [0, -1]
+    return [0.5, 0]
 
 
 def travel_east():
 
-    return [1, 0]
+    return [1, 0.5]
 
 
 def travel_west():
 
-    return [-1, 0]
+    return [0, 0.5]
 
 
 def remain_stationary():
 
-    return [0, 0]
+    return [0.5, 0.5]
