@@ -22,7 +22,7 @@ parameters["angle_res"] = 360 / 4  # Resolution of sensors (determines number of
 parameters["observation_radius"] = 4.0  # Maximum range at which rovers can observe a POI
 parameters["dmax"] = 1.5  # Maximum distance a rover can move in a single time step
 if parameters["algorithm"] == "CBA":
-    parameters["dmax"] = 3.5  # Maximum distance a rover can move in a single time step
+    parameters["dmax"] = 3.5  # Max distance here needs to be larger to accommodate custom action output
 
 # Neural network parameters for rover motor control
 parameters["n_inp"] = int(2 * (360 / parameters["angle_res"]))
@@ -48,6 +48,6 @@ parameters["s_out"] = parameters["n_skills"]
 # Post Training Test Parameters
 parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
 parameters["c_list_size"] = 1000
-parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
+parameters["vis_running"] = False  # True keeps visualizer from closing until you 'X' out of window
 parameters["active_hazards"] = False  # Determine if hazard zones are active (True) or inactive (False)
 parameters["hazardous_poi"] = [0]  # ID numbers of POI that will be hazardous
