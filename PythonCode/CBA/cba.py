@@ -2,7 +2,7 @@ from global_functions import *
 from ccea import Ccea
 from rover_neural_network import NeuralNetwork
 from RoverDomain_Core.rover_domain import RoverDomain
-from RewardFunctions.cba_rewards import *
+from CBA.cba_rewards import *
 from CBA.custom_rover_skills import get_custom_action
 from parameters import parameters as p
 import numpy as np

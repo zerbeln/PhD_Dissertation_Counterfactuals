@@ -13,8 +13,8 @@ parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
 parameters["n_rovers"] = 3  # Number of rovers on map
 parameters["n_poi"] = 2  # Number of POIs on map
 parameters["steps"] = 30  # Number of time steps rovers take each episode
-parameters["poi_config_type"] = "Random"  # Random, Two_POI, Four_Corners, Circle, Con_Circle
-parameters["rover_config_type"] = "Random"  # Random, Concentrated, Four_Quadrants
+parameters["poi_config_type"] = "Two_POI"  # Random, Two_POI, Four_Corners, Circle, Con_Circle
+parameters["rover_config_type"] = "Concentrated"  # Random, Concentrated, Four_Quadrants
 
 # Rover Parameters
 parameters["sensor_model"] = "summed"  # Should either be "density" or "summed"
@@ -24,8 +24,8 @@ parameters["dmax"] = 3.5  # Maximum distance a rover can move in a single time s
 
 # Neural network parameters for rover motor control
 parameters["n_inp"] = int(2 * (360 / parameters["angle_res"]))
-parameters["n_hid"] = 12
-parameters["n_out"] = parameters["n_poi"] + 1
+parameters["n_hid"] = 10
+parameters["n_out"] = 2
 
 # CCEA parameters
 parameters["pop_size"] = 40

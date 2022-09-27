@@ -1,7 +1,18 @@
 import numpy as np
 import copy
-from RewardFunctions.reward_functions import calc_difference
+from RoverDomain_Core.reward_functions import calc_difference
 from parameters import parameters as p
+
+
+def generate_counterfactual_partners(n_counterfactuals, poi_val, suggestion):
+    counterfactual_partners = np.ones(n_counterfactuals)
+    if suggestion == 0 and poi_val > 5:  # Go after high value POIs (constructive counterfactual)
+        return counterfactual_partners
+    elif suggestion == 1 and poi_val <= 5:  # Go after low value POIs (constructive counerfactual)
+        return counterfactual_partners
+    else:
+        counterfactual_partners *= 100.00  # Null counterfactual
+        return counterfactual_partners
 
 
 # S-Difference REWARD -------------------------------------------------------------------------------------------------
@@ -45,84 +56,92 @@ def calc_sd_reward(observer_distances, poi, global_reward, sgst):
 
 
 # S-D++ REWARD -------------------------------------------------------------------------------------------------------
-def calc_sdpp(pois, poi_rewards, sgst):
+def calc_sdpp(pois, global_reward, rov_poi_dist, suggestions):
     """
-    Calculate D++ rewards with counterfactual suggestions for each rover at the current time step
-    :return: dpp_rewards (np array of size (n_rovers))
+    Calculate D++ rewards for each rover
+    :param pois: Dictionary containing POI class instances
+    :param global_reward: Episodic global reward
+    :param rov_poi_dist: Array containing distances between POI and rovers for entire episode
+    :return dpp_rewards: Numpy array containing each rover's D++ reward
     """
-    n_poi = p["n_poi"]
-    n_rovers = p["n_rovers"]
-    obs_rad = p["observation_radius"]
-    global_reward = sum(poi_rewards)  # Current global reward at current time step
-    d_rewards = calc_difference(pois, poi_rewards)
-    rewards = np.zeros((n_rovers, n_poi))
-    sdpp_rewards = np.zeros(n_rovers)
+    d_rewards = calc_difference(pois, global_reward, rov_poi_dist)
+    rewards = np.zeros(p["n_rovers"])  # This is just a temporary reward tracker for iterations of counterfactuals
+    dpp_rewards = np.zeros(p["n_rovers"])
 
-    # Calculate S-D++ Reward with (TotalAgents - 1) Counterfactuals
-    for agent_id in range(n_rovers):
-        s_id = sgst[agent_id]
+    # Calculate D++ Reward with (TotalAgents - 1) Counterfactuals
+    for agent_id in range(p["n_rovers"]):
+        counterfactual_global_reward = 0.0
+        n_counters = p["n_rovers"]-1
         for pk in pois:
-            observer_count = 0
-            counterfactual_global_reward = 0.0
-            n_counters = pois[pk].coupling - 1
-            rover_distances = copy.deepcopy(pois[pk].observer_distances)
-            counterfactual_rovers = np.ones(int(n_counters))
-            if pois[pk].poi_id == s_id:
-                counterfactual_rovers *= pois[pk].observer_distances[agent_id]
-            else:
-                counterfactual_rovers *= 1000.00
-            rover_distances = np.append(rover_distances, counterfactual_rovers)
-            rover_distances = np.sort(rover_distances)
+            poi_reward = 0.0  # Track best POI reward over all time steps for given POI
+            for step in range(p["steps"]):
+                observer_count = 0
+                # print(rov_poi_dist[pois[pk].poi_id][step])
+                rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
+                counterfactuals = generate_counterfactual_partners(n_counters, pois[pk].poi_val, suggestions[agent_id])
+                rover_distances = np.append(rover_distances, counterfactuals)
+                sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 
-            for i in range(int(pois[pk].coupling)):
-                if rover_distances[i] < obs_rad:
-                    observer_count += 1
+                # Check if required observers within range of POI
+                for i in range(int(pois[pk].coupling)):
+                    if sorted_distances[i] < p["observation_radius"]:
+                        observer_count += 1
 
-            # Update POI observers
-            if observer_count >= pois[pk].coupling:
-                summed_observer_distances = sum(rover_distances[0:int(pois[pk].coupling)])
-                counterfactual_global_reward += pois[pk].value/(summed_observer_distances / pois[pk].coupling)
+                # Calculate reward for given POI at current time step
+                if observer_count >= pois[pk].coupling:
+                    summed_observer_distances = sum(sorted_distances[0:int(pois[pk].coupling)])
+                    reward = pois[pk].value/(summed_observer_distances/pois[pk].coupling)
+                    if reward > poi_reward:
+                        poi_reward = reward
 
-            rewards[agent_id, pois[pk].poi_id] = (counterfactual_global_reward - global_reward)/n_counters
+            # Update Counterfactual G
+            counterfactual_global_reward += poi_reward
 
-    for agent_id in range(n_rovers):
-        if sum(rewards[agent_id, :]) > d_rewards[agent_id]:
-            s_id = sgst[agent_id]
-            for pk in pois:
-                n_counters = 1
-                while n_counters < pois[pk].coupling - 1:
+        rewards[agent_id] = (counterfactual_global_reward - global_reward)/n_counters
+
+    for agent_id in range(p["n_rovers"]):
+        # Compare D++ to D, and iterate through n counterfactuals if D++ > D
+        if rewards[agent_id] > d_rewards[agent_id]:
+            n_counters = 1
+            while n_counters < p["n_rovers"]:
+                counterfactual_global_reward = 0.0
+                for pk in pois:
                     observer_count = 0
-                    counterfactual_global_reward = 0.0
-                    rover_distances = copy.deepcopy(pois[pk].observer_distances)
-                    counterfactual_rovers = np.ones(int(n_counters))
-                    if pois[pk].poi_id == s_id:
-                        counterfactual_rovers *= pois[pk].observer_distances[agent_id]
-                    else:
-                        counterfactual_rovers *= 1000.00
-                    rover_distances = np.append(rover_distances, counterfactual_rovers)
-                    rover_distances = np.sort(rover_distances)
+                    poi_reward = 0.0  # Track best POI reward over all time steps for given POI
+                    for step in range(p["steps"]):
+                        rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
+                        counterfactuals = generate_counterfactual_partners(n_counters, pois[pk].poi_val, suggestions[agent_id])
+                        rover_distances = np.append(rover_distances, counterfactuals)
+                        sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 
-                    for i in range(int(pois[pk].coupling)):
-                        if rover_distances[i] < obs_rad:
-                            observer_count += 1
+                        # Check if required observers within range of POI
+                        for i in range(int(pois[pk].coupling)):
+                            if sorted_distances[i] < p["observation_radius"]:
+                                observer_count += 1
 
-                    # Update POI observers
-                    if observer_count >= pois[pk].coupling:
-                        summed_observer_distances = sum(rover_distances[0:int(pois[pk].coupling)])
-                        counterfactual_global_reward += pois[pk].value/(summed_observer_distances/pois[pk].coupling)
+                        # Calculate reward for given POI at current time step
+                        if observer_count >= pois[pk].coupling:
+                            summed_observer_distances = sum(sorted_distances[0:int(pois[pk].coupling)])
+                            reward = pois[pk].value/(summed_observer_distances/pois[pk].coupling)
+                            if reward > poi_reward:
+                                poi_reward = reward
 
-                    # Calculate S-D++ reward with n counterfactuals added
-                    temp_dpp = (counterfactual_global_reward - global_reward)/n_counters
-                    if temp_dpp > rewards[agent_id, pois[pk].poi_id]:
-                        rewards[agent_id, pois[pk].poi_id] = temp_dpp
-                        n_counters = pois[pk].coupling + 1  # Stop iterrating
-                    else:
-                        n_counters += 1
-            sdpp_rewards[agent_id] = sum(rewards[agent_id, :])
+                    # Update Counterfactual G
+                    counterfactual_global_reward += poi_reward
+
+                # Calculate D++ reward with n counterfactuals added
+                temp_dpp = (counterfactual_global_reward - global_reward)/n_counters
+                if temp_dpp > rewards[agent_id]:
+                    rewards[agent_id] = temp_dpp
+                    n_counters = p["n_rovers"] + 1  # Stop iterating
+                else:
+                    n_counters += 1
+
+            dpp_rewards[agent_id] = rewards[agent_id]  # Returns D++ reward for this agent
         else:
-            sdpp_rewards[agent_id] = d_rewards[agent_id]  # Returns difference reward
+            dpp_rewards[agent_id] = d_rewards[agent_id]  # Returns difference reward for this agent
 
-    return sdpp_rewards
+    return dpp_rewards
 
 
 def sdpp_and_sd(observer_distances, poi, global_reward, sgst):

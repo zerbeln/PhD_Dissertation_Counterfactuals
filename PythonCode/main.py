@@ -1,6 +1,7 @@
 from parameters import parameters as p
 from run_standard_skills import rover_global, rover_difference, rover_dpp
 from CBA.cba import train_cba
+from CFL.cfl import rover_sdpp
 
 
 if __name__ == '__main__':
@@ -20,5 +21,8 @@ if __name__ == '__main__':
     elif p["algorithm"] == "CBA":
         print("Rover Domain: CBA with custom skills")
         train_cba()
+    elif p["algorithm"] == "CFL":
+        suggestions = [1, 1, 1]
+        rover_sdpp(suggestions)
     else:
         print("ALGORITHM TYPE ERROR")
