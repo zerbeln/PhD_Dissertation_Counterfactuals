@@ -2,16 +2,16 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 15  # Total number of runs to perform
-parameters["generations"] = 3000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "DPP"  # Global, Difference, DPP (D++), or CBA
+parameters["stat_runs"] = 1  # Total number of runs to perform
+parameters["generations"] = 100  # Number of generations for CCEA in each stat run
+parameters["algorithm"] = "CFL"  # Global, Difference, DPP (D++), CBA, or CFL
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Domain parameters
 parameters["x_dim"] = 50.0  # X-Dimension of the rover map
 parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
-parameters["n_rovers"] = 6  # Number of rovers on map
-parameters["n_poi"] = 5  # Number of POIs on map
+parameters["n_rovers"] = 3  # Number of rovers on map
+parameters["n_poi"] = 2  # Number of POIs on map
 parameters["steps"] = 30  # Number of time steps rovers take each episode
 parameters["poi_config_type"] = "Random"  # Random, Two_POI, Four_Corners, Circle, Con_Circle
 parameters["rover_config_type"] = "Random"  # Random, Concentrated, Four_Quadrants

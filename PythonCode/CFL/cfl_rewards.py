@@ -78,7 +78,7 @@ def calc_sdpp(pois, global_reward, rov_poi_dist, suggestions):
                 observer_count = 0
                 # print(rov_poi_dist[pois[pk].poi_id][step])
                 rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
-                counterfactuals = generate_counterfactual_partners(n_counters, pois[pk].poi_val, suggestions[agent_id])
+                counterfactuals = generate_counterfactual_partners(n_counters, pois[pk].value, suggestions[agent_id])
                 rover_distances = np.append(rover_distances, counterfactuals)
                 sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 
@@ -110,7 +110,7 @@ def calc_sdpp(pois, global_reward, rov_poi_dist, suggestions):
                     poi_reward = 0.0  # Track best POI reward over all time steps for given POI
                     for step in range(p["steps"]):
                         rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
-                        counterfactuals = generate_counterfactual_partners(n_counters, pois[pk].poi_val, suggestions[agent_id])
+                        counterfactuals = generate_counterfactual_partners(n_counters, pois[pk].value, suggestions[agent_id])
                         rover_distances = np.append(rover_distances, counterfactuals)
                         sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 

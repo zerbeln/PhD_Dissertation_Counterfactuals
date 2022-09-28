@@ -23,7 +23,7 @@ if __name__ == '__main__':
         print("Rover Domain: CBA with custom skills")
         train_cba()
     elif p["algorithm"] == "CFL":
-        suggestions = [1, 1, 1]
+        suggestions = [0, 0, 0]
         rover_sdpp(suggestions)
     else:
         print("ALGORITHM TYPE ERROR")

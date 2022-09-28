@@ -98,7 +98,7 @@ def rover_sdpp(counterfactual):
                 g_reward = 0
                 for p_reward in poi_rewards:
                     g_reward += max(p_reward)
-                sdpp_rewards = calc_sdpp(rd.pois, g_reward, rd.rover_poi_distances)
+                sdpp_rewards = calc_sdpp(rd.pois, g_reward, rd.rover_poi_distances, counterfactual)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = sdpp_rewards[rover_id]
