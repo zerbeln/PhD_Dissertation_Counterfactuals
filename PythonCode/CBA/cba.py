@@ -6,6 +6,7 @@ from CBA.cba_rewards import *
 from CBA.custom_rover_skills import get_custom_action
 from parameters import parameters as p
 import numpy as np
+import random
 
 
 def calculate_poi_sectors(pois):
@@ -55,50 +56,49 @@ def get_counterfactual_state(pois, rovers, rover_id, suggestion, sensor_data):
             counterfactual_state[i] = cfact_poi[i]
             counterfactual_state[n_brackets + i] = cfact_rover[i]
 
-    # Possible idea: make counterfactual_state counteract actual state if suggestion is to stop
-
     return counterfactual_state
 
 
-def create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion, sensor_data):
+def create_counterfactual_poi_state(pois, rx, ry, n_brackets, ctrfactual, sensor_data):
     """
     Construct a counterfactual state based on POI sensors
     """
     c_poi_state = np.zeros(n_brackets)
-    poi_quadrant = pois["P{0}".format(suggestion)].quadrant
-    dist = get_squared_dist(pois["P{0}".format(suggestion)].loc[0], pois["P{0}".format(suggestion)].loc[1], rx, ry)
+    poi_quadrant = pois["P{0}".format(ctrfactual)].quadrant
+    dist = get_squared_dist(pois["P{0}".format(ctrfactual)].loc[0], pois["P{0}".format(ctrfactual)].loc[1], rx, ry)
 
     for bracket in range(n_brackets):
         if bracket == poi_quadrant:
-            c_poi_state[bracket] = (pois["P{0}".format(suggestion)].value/dist) - sensor_data[bracket]
+            c_poi_state[bracket] = 2*pois["P{0}".format(ctrfactual)].value/dist  # Adding in two counterfactual POI
         else:
-            c_poi_state[bracket] = -(1 + sensor_data[bracket])
+            c_poi_state[bracket] = -(1 + sensor_data[bracket])  # No POI in other quadrants
 
     return c_poi_state
 
 
-def create_counterfactual_rover_state(pois, rx, ry, n_brackets, suggestion, sensor_data):
+def create_counterfactual_rover_state(pois, rx, ry, n_brackets, ctrfactual, sensor_data):
     """
     Construct a counterfactual state input based on Rover sensors
     """
     rover_state = np.zeros(n_brackets)
-    poi_quadrant = pois["P{0}".format(suggestion)].quadrant
+    poi_quadrant = pois["P{0}".format(ctrfactual)].quadrant
     for bracket in range(n_brackets):
         if bracket == poi_quadrant:
-            rover_state[bracket] = -(1 + sensor_data[bracket+4])
+            rover_state[bracket] = -(1 + sensor_data[bracket+4])  # No rovers in target quadrant
         else:
+            # Add some slight "noise" to counterfactual rover positions
             if bracket == 1:
-                crx = (1/4)*p["x_dim"]
-                cry = (1/4)*p["y_dim"]
+                crx = (1/4)*p["x_dim"] + random.uniform(-2, 2)
+                cry = (1/4)*p["y_dim"] + random.uniform(-2, 2)
             elif bracket == 0:
-                crx = (3/4)*p["x_dim"]
-                cry = (1/4)*p["y_dim"]
+                crx = (3/4)*p["x_dim"] + random.uniform(-2, 2)
+                cry = (1/4)*p["y_dim"] + random.uniform(-2, 2)
             elif bracket == 2:
-                crx = (1/4)*p["x_dim"]
-                cry = (3/4)*p["y_dim"]
+                crx = (1/4)*p["x_dim"] + random.uniform(-2, 2)
+                cry = (3/4)*p["y_dim"] + random.uniform(-2, 2)
             elif bracket == 3:
-                crx = (3/4)*p["x_dim"]
-                cry = (3/4)*p["y_dim"]
+                crx = (3/4)*p["x_dim"] + random.uniform(-2, 2)
+                cry = (3/4)*p["y_dim"] + random.uniform(-2, 2)
 
             dist = get_squared_dist(crx, cry, rx, ry)
             rover_state[bracket] = (2/dist) - sensor_data[bracket+4]
