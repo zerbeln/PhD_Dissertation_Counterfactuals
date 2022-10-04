@@ -6,7 +6,6 @@ import os
 import numpy as np
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file
-from CBA.custom_rover_skills import get_custom_action
 
 
 def load_saved_policies_python(file_name, rover_id, srun):
@@ -68,10 +67,8 @@ def test_trained_policy():
 
                 # Get actions from rover neural networks
                 rover_id = rd.rovers[rv].rover_id
-                nn_output = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
-                chosen_pol = int(np.argmax(nn_output))
-                action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
-                rover_actions.append(action)
+                nn_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
+                rover_actions.append(nn_outputs)
 
             # Environment takes in rover actions and returns next state and global reward
             step_rewards = rd.step(rover_actions)
