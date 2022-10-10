@@ -176,7 +176,7 @@ def train_cba():
                 rover_rewards = np.zeros((p["n_rovers"], p["steps"]))  # Keep track of rover rewards at each t
 
                 # For each skill a rover possesses, test counterfactuals targeting that skill
-                for skill in range(p["n_suggestions"]):
+                for skill in range(p["n_skills"]):
                     # Reset environment to initial conditions and select network weights
                     rd.reset_world()
                     for rover_id in range(p["n_rovers"]):

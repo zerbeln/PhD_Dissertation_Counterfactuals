@@ -25,8 +25,10 @@ def find_best_suggestions(srun, c_list):
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     networks = {}
+    rover_skill_selections = {}
     for rover_id in range(p["n_rovers"]):
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        rover_skill_selections["RV{0}".format(rover_id)] = [[0 for i in range(p["n_skills"])] for j in range(p["n_skills"])]
 
     # Load Trained Suggestion Interpreter Weights
     for rover_id in range(p["n_rovers"]):
@@ -35,6 +37,7 @@ def find_best_suggestions(srun, c_list):
 
     best_rover_suggestion = None
     best_reward = None
+
     for c in c_list:
         sgst = [i for i in c]
 
@@ -55,6 +58,7 @@ def find_best_suggestions(srun, c_list):
                 cba_input = np.sum((c_sensor_data, sensor_data), axis=0)  # Shaped agent perception
                 cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CBA picks skill
                 chosen_pol = int(np.argmax(cba_outputs))
+                rover_skill_selections["RV{0}".format(rover_id)][sgst[rover_id]][chosen_pol] += 1
 
                 # Determine action based on sensor inputs and suggestion
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
@@ -79,7 +83,8 @@ def find_best_suggestions(srun, c_list):
             best_rover_suggestion = sgst
 
     create_csv_file(best_rover_suggestion, "Output_Data/", "BestRoverCounterfactuals.csv")
-    return best_rover_suggestion
+
+    return best_rover_suggestion, rover_skill_selections
 
 
 def test_cba(counterfactuals):
@@ -173,18 +178,32 @@ if __name__ == '__main__':
     # Test Performance of CBA
     counterfactuals = {}
     if p["c_type"] == "Best_Total":
-        choices = range(p["n_suggestions"])
+        choices = range(p["n_skills"])
         n = p["n_rovers"]
         t_list = [choices] * n
+        rover_skill_selections = np.zeros((p["n_skills"], p["n_skills"]))
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
             c_list = (product(*t_list))
-            counterfactuals["S{0}".format(srun)] = find_best_suggestions(srun, c_list)
+            counterfactuals["S{0}".format(srun)], r_skills = find_best_suggestions(srun, c_list)
+            for rover_id in range(p["n_rovers"]):
+                for c in range(p["n_skills"]):
+                    rover_skill_selections[c][c] += r_skills["RV{0}".format(rover_id)][c][c]
+        for rover_id in range(p["n_rovers"]):
+            for c in range(p["n_skills"]):
+                create_csv_file(rover_skill_selections[c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
     elif p["c_type"] == "Best_Random":
         c_list = np.random.randint(0, p["n_skills"], (p["c_list_size"], p["n_rovers"]))
+        rover_skill_selections = np.zeros((p["n_skills"], p["n_skills"]))
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
-            counterfactuals["S{0}".format(srun)] = find_best_suggestions(srun, c_list)
+            counterfactuals["S{0}".format(srun)], r_skills = find_best_suggestions(srun, c_list)
+            for rover_id in range(p["n_rovers"]):
+                for c in range(p["n_skills"]):
+                    rover_skill_selections[c][c] += r_skills["RV{0}".format(rover_id)][c][c]
+        for rover_id in range(p["n_rovers"]):
+            for c in range(p["n_skills"]):
+                create_csv_file(rover_skill_selections[c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
     else:  # Custom
         rover_suggestions = [0, 0, 0]
         for srun in range(p["stat_runs"]):
