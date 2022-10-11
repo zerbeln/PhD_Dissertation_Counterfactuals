@@ -4,7 +4,7 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 15  # Total number of runs to perform
 parameters["generations"] = 2000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "DPP"  # Global, Difference, DPP (D++), CBA, or CFL
+parameters["algorithm"] = "CBA"  # Global, Difference, DPP (D++), CBA, or CFL
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
 # Domain parameters
@@ -20,7 +20,7 @@ parameters["rover_config_type"] = "Random"  # Random, Concentrated, Four_Quadran
 parameters["sensor_model"] = "summed"  # Should either be "density" or "summed"
 parameters["angle_res"] = 360 / 4  # Resolution of sensors (determines number of sectors)
 parameters["observation_radius"] = 4.0  # Maximum range at which rovers can observe a POI
-parameters["dmax"] = 3.5  # Maximum distance a rover can move in a single time step
+parameters["dmax"] = 5.5  # Maximum distance a rover can move in a single time step
 
 # Neural network parameters for rover motor control
 parameters["n_inp"] = int(2 * (360 / parameters["angle_res"]))
@@ -38,7 +38,6 @@ parameters["n_elites"] = 1  # How many elites to carry over during elite selecti
 parameters["skill_type"] = "Target_POI"  # Target_Quadrant or Target_POI
 parameters["randomize_skills"] = False  # Rovers are learning different skills at different times when True
 parameters["n_skills"] = parameters["n_poi"] + 1  # Number of pre-trained policies in the policy bank
-# parameters["n_suggestions"] = parameters["n_poi"]
 parameters["s_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["s_hid"] = 12
 parameters["s_out"] = parameters["n_skills"]

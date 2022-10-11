@@ -38,50 +38,52 @@ def create_policy_bank(playbook_type, rover_id, srun):
     return policy_bank
 
 
-def get_counterfactual_state(pois, rovers, rover_id, suggestion, sensor_data):
+def get_counterfactual_state(pois, rovers, rover_id, c_state, sensor_data):
     """
-    Create a counteractual state input to represent agent suggestions
+    Create a counteractual state input to shape agent perceptions
     """
     n_brackets = int(360.0 / p["angle_res"])
     counterfactual_state = np.zeros(int(n_brackets * 2))
 
-    # If suggestion is to go towards a POI -> create a counterfactual otherwise, use no counterfactual
-    if suggestion < p["n_poi"]:
+    # If c_state is to go towards a POI -> create a counterfactual otherwise, use negative counterfactual state
+    if c_state < p["n_poi"]:
         rx = rovers["R{0}".format(rover_id)].loc[0]
         ry = rovers["R{0}".format(rover_id)].loc[1]
-        cfact_poi = create_counterfactual_poi_state(pois, rx, ry, n_brackets, suggestion, sensor_data)
-        cfact_rover = create_counterfactual_rover_state(pois, rx, ry, n_brackets, suggestion, sensor_data)
+        cfact_poi = create_counterfactual_poi_state(pois, rx, ry, n_brackets, c_state, sensor_data)
+        cfact_rover = create_counterfactual_rover_state(pois, rx, ry, n_brackets, c_state, sensor_data)
 
         for i in range(n_brackets):
             counterfactual_state[i] = cfact_poi[i]
             counterfactual_state[n_brackets + i] = cfact_rover[i]
+    else:
+        counterfactual_state = np.ones(int(n_brackets * 2)) * -1
 
     return counterfactual_state
 
 
-def create_counterfactual_poi_state(pois, rx, ry, n_brackets, ctrfactual, sensor_data):
+def create_counterfactual_poi_state(pois, rx, ry, n_brackets, c_state, sensor_data):
     """
     Construct a counterfactual state based on POI sensors
     """
     c_poi_state = np.zeros(n_brackets)
-    poi_quadrant = pois["P{0}".format(ctrfactual)].quadrant
-    dist = get_squared_dist(pois["P{0}".format(ctrfactual)].loc[0], pois["P{0}".format(ctrfactual)].loc[1], rx, ry)
+    poi_quadrant = pois["P{0}".format(c_state)].quadrant
+    dist = get_squared_dist(pois["P{0}".format(c_state)].loc[0], pois["P{0}".format(c_state)].loc[1], rx, ry)
 
     for bracket in range(n_brackets):
         if bracket == poi_quadrant:
-            c_poi_state[bracket] = 2*pois["P{0}".format(ctrfactual)].value/dist  # Adding in two counterfactual POI
+            c_poi_state[bracket] = 2*pois["P{0}".format(c_state)].value/dist  # Adding in two counterfactual POI
         else:
             c_poi_state[bracket] = -(1 + sensor_data[bracket])  # No POI in other quadrants
 
     return c_poi_state
 
 
-def create_counterfactual_rover_state(pois, rx, ry, n_brackets, ctrfactual, sensor_data):
+def create_counterfactual_rover_state(pois, rx, ry, n_brackets, c_state, sensor_data):
     """
     Construct a counterfactual state input based on Rover sensors
     """
     rover_state = np.zeros(n_brackets)
-    poi_quadrant = pois["P{0}".format(ctrfactual)].quadrant
+    poi_quadrant = pois["P{0}".format(c_state)].quadrant
     for bracket in range(n_brackets):
         if bracket == poi_quadrant:
             rover_state[bracket] = -(1 + sensor_data[bracket+4])  # No rovers in target quadrant
@@ -166,7 +168,7 @@ def train_cba():
 
         policy_rewards = [[] for i in range(p["n_rovers"])]
         for gen in range(p["generations"]):
-            # Create list of suggestions for rovers to use during training and reset rovers to initial positions
+            # Reset fitness vector and select CCEA teams
             for rover_id in range(p["n_rovers"]):
                 pops["EA{0}".format(rover_id)].select_policy_teams()
                 pops["EA{0}".format(rover_id)].reset_fitness()
@@ -175,14 +177,14 @@ def train_cba():
             for team_number in range(p["pop_size"]):
                 rover_rewards = np.zeros((p["n_rovers"], p["steps"]))  # Keep track of rover rewards at each t
 
-                # For each skill a rover possesses, test counterfactuals targeting that skill
+                # For each skill a rover possesses, test counterfactual states targeting that skill
                 for skill in range(p["n_skills"]):
                     # Reset environment to initial conditions and select network weights
                     rd.reset_world()
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                         weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-                        networks["NN{0}".format(rover_id)].get_weights(weights)  # Suggestion Network Gets Weights
+                        networks["NN{0}".format(rover_id)].get_weights(weights)  # CBA Network Gets Weights
 
                     for step_id in range(p["steps"]):
                         # Rover scans environment and processes counterfactually shaped perceptions
@@ -206,7 +208,7 @@ def train_cba():
 
                         # Calculate Rewards
                         for rover_id in range(p["n_rovers"]):
-                            reward = target_poi_reward(rover_id, rd.pois, skill)
+                            reward = target_poi_reward(rover_id, rd.pois, skill, rover_actions)
                             rover_rewards[rover_id, step_id] = reward
 
                     # Update policy fitnesses
