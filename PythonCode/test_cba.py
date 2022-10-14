@@ -195,7 +195,7 @@ if __name__ == '__main__':
                 create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
     elif p["c_type"] == "Best_Random":
         c_list = np.random.randint(0, p["n_skills"], (p["c_list_size"], p["n_rovers"]))
-        rover_skill_selections = np.zeros((p["n_skills"], p["n_skills"]))
+        rover_skill_selections = np.zeros((p["n_rovers"], p["n_skills"], p["n_skills"]))
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
             counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list)
