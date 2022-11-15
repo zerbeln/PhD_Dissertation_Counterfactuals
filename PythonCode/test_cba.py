@@ -177,7 +177,11 @@ def test_cba(counterfactuals):
 if __name__ == '__main__':
     # Test Performance of CBA
     counterfactuals = {}
-    if p["c_type"] == "Best_Total":
+    if p["c_type"] == 'Custom':
+        rover_c_states = [0 for i in range(p["n_skills"])]
+        for srun in range(p["stat_runs"]):
+            counterfactuals["S{0}".format(srun)] = rover_c_states
+    elif p["c_type"] == "Best_Total":
         choices = range(p["n_skills"])
         n = p["n_rovers"]
         t_list = [choices] * n
@@ -193,7 +197,7 @@ if __name__ == '__main__':
         for rover_id in range(p["n_rovers"]):
             for c in range(p["n_skills"]):
                 create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
-    elif p["c_type"] == "Best_Random":
+    else:
         c_list = np.random.randint(0, p["n_skills"], (p["c_list_size"], p["n_rovers"]))
         rover_skill_selections = np.zeros((p["n_rovers"], p["n_skills"], p["n_skills"]))
         for srun in range(p["stat_runs"]):
@@ -206,10 +210,6 @@ if __name__ == '__main__':
         for rover_id in range(p["n_rovers"]):
             for c in range(p["n_skills"]):
                 create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
-    else:  # Custom
-        rover_c_states = [0, 0, 0]
-        for srun in range(p["stat_runs"]):
-            counterfactuals["S{0}".format(srun)] = rover_c_states
 
     # Testing CBA using the selected set of counterfactual states
     test_cba(counterfactuals)

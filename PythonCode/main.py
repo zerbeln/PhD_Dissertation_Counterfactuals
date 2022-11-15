@@ -20,7 +20,7 @@ if __name__ == '__main__':
         print("Rover Domain: D++ Rewards")
         rover_dpp()
     elif p["algorithm"] == "CFL":
-        suggestions = [0, 0, 0]
-        rover_sdpp(suggestions)
+        counterfactuals = [0, 0, 0]
+        rover_sdpp(counterfactuals)
     else:
         print("ALGORITHM TYPE ERROR")
