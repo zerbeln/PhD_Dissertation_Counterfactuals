@@ -22,5 +22,7 @@ if __name__ == '__main__':
     elif p["algorithm"] == "CFL":
         counterfactuals = [0, 0, 0]
         rover_sdpp(counterfactuals)
+    elif p["algorithm"] == "ACG":
+
     else:
         print("ALGORITHM TYPE ERROR")
