@@ -47,7 +47,10 @@ class Supervisor:
             bracket = int(angle / self.sensor_res)
             if bracket > n_brackets-1:
                 bracket -= n_brackets
-            temp_poi_dist_list[bracket].append(pois[poi].value / (pois[poi].coupling*dist))
+            if pois[poi].hazardous:
+                temp_poi_dist_list[bracket].append(-pois[poi].value / (pois[poi].coupling * dist))
+            else:
+                temp_poi_dist_list[bracket].append(pois[poi].value / (pois[poi].coupling*dist))
             poi_id += 1
 
         # Encode POI information into the state vector

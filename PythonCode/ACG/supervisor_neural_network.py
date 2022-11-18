@@ -6,6 +6,7 @@ class SupervisorNetwork:
         self.n_inputs = n_inp  # Number of nodes in input layer
         self.n_outputs = n_inp * n_agents  # Number of nodes in output layer
         self.n_hnodes = n_hid  # Number of nodes in hidden layer
+        self.n_agents = n_agents
         self.weights = {}
         self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.longdouble)), [self.n_inputs, 1])
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.longdouble)), [self.n_hnodes, 1])
@@ -49,9 +50,14 @@ class SupervisorNetwork:
         self.get_nn_inputs(sensor_data)
         self.get_nn_outputs()
 
-        rover_counterfactuals = np.zeros(self.n_outputs)
-        for i in range(self.n_outputs):
-            rover_counterfactuals[i] = self.output_layer[i, 0]
+
+        rover_counterfactuals = {}
+        for rover_id in range(self.n_agents):
+            counterfactual = np.zeros(self.n_inputs)
+            for i in range(self.n_inputs):
+                counterfactual[i] = self.output_layer[rover_id*self.n_inputs + i, 0]
+
+            rover_counterfactuals["RV{0}".format(rover_id)] = counterfactual.copy()
 
         return rover_counterfactuals
 

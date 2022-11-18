@@ -1,6 +1,7 @@
 from parameters import parameters as p
 from standard_rover_domain import rover_global, rover_difference, rover_dpp
 from CFL.cfl import rover_sdpp
+from ACG.acg import train_supervisor
 
 
 if __name__ == '__main__':
@@ -23,6 +24,9 @@ if __name__ == '__main__':
         counterfactuals = [0, 0, 0]
         rover_sdpp(counterfactuals)
     elif p["algorithm"] == "ACG":
-
+        print("Training Rovers")
+        rover_global()
+        print("Training Supervisor")
+        train_supervisor()
     else:
         print("ALGORITHM TYPE ERROR")

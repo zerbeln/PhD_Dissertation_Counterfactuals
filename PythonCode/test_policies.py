@@ -1,25 +1,11 @@
 from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 from rover_neural_network import NeuralNetwork
-import pickle
-import os
+from global_functions import load_saved_policies
 import numpy as np
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file
 
-
-def load_saved_policies_python(file_name, rover_id, srun):
-    """
-    Load saved Neural Network policies from pickle file
-    """
-
-    dir_name = 'Policy_Bank/Rover{0}/SRUN{1}'.format(rover_id, srun)
-    fpath_name = os.path.join(dir_name, file_name)
-    weight_file = open(fpath_name, 'rb')
-    weights = pickle.load(weight_file)
-    weight_file.close()
-
-    return weights
 
 
 def test_trained_policy():
@@ -51,7 +37,7 @@ def test_trained_policy():
         # Load Trained Rover Networks
         for rv in rd.rovers:
             rover_id = rd.rovers[rv].rover_id
-            weights = load_saved_policies_python('RoverWeights{0}'.format(rover_id), rover_id, srun)
+            weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
             networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
         n_incursions = 0
