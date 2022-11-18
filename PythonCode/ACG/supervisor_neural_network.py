@@ -2,9 +2,9 @@ import numpy as np
 
 
 class SupervisorNetwork:
-    def __init__(self, n_inp=8, n_hid=10, n_agents=1):
+    def __init__(self, n_inp=8, n_hid=10, n_out=8, n_agents=1):
         self.n_inputs = n_inp  # Number of nodes in input layer
-        self.n_outputs = n_inp * n_agents  # Number of nodes in output layer
+        self.n_outputs = n_out  # Number of nodes in output layer
         self.n_hnodes = n_hid  # Number of nodes in hidden layer
         self.n_agents = n_agents
         self.weights = {}

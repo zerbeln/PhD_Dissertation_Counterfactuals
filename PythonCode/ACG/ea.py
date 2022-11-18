@@ -5,7 +5,7 @@ from parameters import parameters as p
 
 
 class EA:
-    def __init__(self, n_inp=8, n_hid=10, n_agents=1):
+    def __init__(self, n_inp=8, n_hid=10, n_out=8):
         self.population = {}
         self.pop_size = p["pop_size"]
         self.mut_rate = p["mutation_rate"]
@@ -16,7 +16,7 @@ class EA:
 
         # Network Parameters that determine the number of weights to evolve
         self.n_inputs = n_inp
-        self.n_outputs = n_inp*n_agents
+        self.n_outputs = n_out
         self.n_hidden = n_hid
         self.n_weights = ((n_inp+1) * n_hid) + ((n_hid + 1) * self.n_outputs)
 

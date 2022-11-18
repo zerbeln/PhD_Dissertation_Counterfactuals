@@ -16,14 +16,15 @@ def train_supervisor():
     rd = RoverDomain()
     rd.load_world()
 
+    # Hazardous POI Setup
     if p["active_hazards"]:
         for poi_id in p["hazardous_poi"]:
             rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Supervisor Setup
     sup = Supervisor()
-    sup_nn = SupervisorNetwork(n_agents=p["n_rovers"])
-    sup_ea = EA(n_agents=p["n_rovers"])
+    sup_nn = SupervisorNetwork(n_inp=p["acg_inp"], n_hid=p["acg_hid"], n_out=p["acg_out"], n_agents=p["n_rovers"])
+    sup_ea = EA(n_inp=p["acg_inp"], n_hid=p["acg_hid"], n_out=p["acg_out"])
 
     # Create rover instances
     rovers_nn = {}
@@ -47,12 +48,12 @@ def train_supervisor():
         for gen in range(p["generations"]):
             for pol_id in range(p["pop_size"]):
                 # Each policy in EA is tested
-                sup_rewards = np.zeros(p["steps"])  # Keep track of rover rewards at each t
                 sup_nn.get_weights(sup_ea.population["pol{0}".format(pol_id)])
 
                 # Reset environment to initial conditions and select network weights
                 rd.reset_world()
                 n_incursions = 0  # Number of times rovers violate a hazardous area
+                poi_rewards = np.zeros((p["n_poi"], p["steps"]))
                 for step_id in range(p["steps"]):
                     # Supervisor observes environment and creates counterfactuals
                     sup.scan_environment(rd.rovers, rd.pois)
@@ -74,17 +75,19 @@ def train_supervisor():
                     rd.step(rover_actions)
 
                     # Calculate Rewards
-                    poi_rewards = rd.calc_global()
-                    sup_rewards[step_id] = np.sum(poi_rewards)
-                    for poi in rd.pois:
-                        if rd.pois[poi].hazardous:
-                            for dist in rd.pois[poi].observer_distances:
+                    step_rewards = rd.calc_global()
+                    for poi_id in range(p["n_poi"]):
+                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
+                        if rd.pois["P{0}".format(poi_id)].hazardous:
+                            for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
                                 if dist < p["observation_radius"]:
                                     n_incursions += 1
 
                 # Update policy fitness
-                g_reward = np.max(sup_rewards)
-                g_reward -= (n_incursions * 100)
+                g_reward = 0
+                for p_reward in poi_rewards:
+                    g_reward += max(p_reward)
+                g_reward -= (n_incursions * 10)
                 sup_ea.fitness[pol_id] = g_reward
 
             # Record training data
@@ -98,6 +101,6 @@ def train_supervisor():
         policy_id = np.argmax(sup_ea.fitness)
         weights = sup_ea.population["pol{0}".format(policy_id)]
         save_best_policies(weights, srun, "SupervisorWeights", p["n_rovers"]+1)
-        create_csv_file(training_rewards, 'Output_Data/Rover{0}'.format(p["n_rovers"]+1), "ACG_Rewards.csv")
+        create_csv_file(training_rewards, 'Output_Data/', "ACG_Rewards.csv")
 
         srun += 1

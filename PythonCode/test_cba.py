@@ -168,7 +168,7 @@ def test_cba(counterfactuals):
 
     print(average_reward/p["stat_runs"])
     create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
-    create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
+    create_csv_file(reward_history, "Output_Data/", "TeamPerformance_CBA.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
         run_visualizer()

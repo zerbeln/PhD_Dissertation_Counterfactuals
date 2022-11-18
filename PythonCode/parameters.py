@@ -2,8 +2,8 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 15  # Total number of runs to perform
-parameters["generations"] = 1000  # Number of generations for CCEA in each stat run
+parameters["stat_runs"] = 1  # Total number of runs to perform
+parameters["generations"] = 200  # Number of generations for CCEA in each stat run
 parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, or ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 
@@ -41,6 +41,12 @@ parameters["n_skills"] = parameters["n_poi"] + 1  # Number of pre-trained polici
 parameters["s_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["s_hid"] = 12
 parameters["s_out"] = parameters["n_skills"]
+
+# ACG Parameters
+parameters["acg_inp"] = int(2 * (360 / parameters["angle_res"]))
+parameters["acg_hid"] = 10
+parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
+parameters["acg_alg"] = "Global"
 
 # Post Training Test Parameters
 parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom

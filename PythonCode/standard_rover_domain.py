@@ -63,6 +63,8 @@ def rover_global():
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
+        print("Run: %i" % srun)
+
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -141,6 +143,8 @@ def rover_difference():
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
+        print("Run: %i" % srun)
+
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -219,6 +223,8 @@ def rover_dpp():
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
+        print("Run: %i" % srun)
+
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
