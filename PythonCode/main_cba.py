@@ -1,5 +1,5 @@
 from parameters import parameters as p
-from standard_rover_skills import rover_global, rover_difference, rover_dpp
+from standard_rover_cba import rover_global, rover_difference, rover_dpp
 from CBA.cba import train_cba
 
 

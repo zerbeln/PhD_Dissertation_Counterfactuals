@@ -19,7 +19,7 @@ def test_acg():
 
     # Supervisor Setup
     sup = Supervisor()
-    sup_nn = SupervisorNetwork(n_agents=p["n_rovers"])
+    sup_nn = SupervisorNetwork(n_inp=p["acg_inp"], n_hid=p["acg_hid"], n_out=p["acg_out"], n_agents=p["n_rovers"])
 
     rover_networks = {}
     for rover_id in range(p["n_rovers"]):

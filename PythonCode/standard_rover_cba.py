@@ -60,12 +60,13 @@ def rover_global():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
+        print("Run: %i" % srun)
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -140,12 +141,13 @@ def rover_difference():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
+        print("Run: %i" % srun)
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -220,12 +222,13 @@ def rover_dpp():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
+        print("Run: %i" % srun)
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()

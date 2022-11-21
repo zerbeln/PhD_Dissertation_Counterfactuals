@@ -65,7 +65,7 @@ def test_trained_policy():
 
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Data tracking
     reward_history = []  # Keep track of team performance throughout training

@@ -27,7 +27,7 @@ def find_best_counterfactuals(srun, c_list):
     networks = {}
     rover_skill_selections = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
         rover_skill_selections["RV{0}".format(rover_id)] = [[0 for i in range(p["n_skills"])] for j in range(p["n_skills"])]
 
     # Load Trained Suggestion Interpreter Weights
@@ -104,7 +104,7 @@ def test_cba(counterfactuals):
     # Create dictionary for each instance of rover and corresponding NN and EA population
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["s_inp"], n_hid=p["s_hid"], n_out=p["s_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training

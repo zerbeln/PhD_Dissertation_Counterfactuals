@@ -6,6 +6,7 @@ from ACG.supervisor_neural_network import SupervisorNetwork
 from parameters import parameters as p
 import numpy as np
 from global_functions import *
+from CBA.custom_rover_skills import get_custom_action
 
 
 def train_supervisor():
@@ -29,7 +30,7 @@ def train_supervisor():
     # Create rover instances
     rovers_nn = {}
     for rover_id in range(p["n_rovers"]):
-        rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Perform statistical runs
     srun = p["starting_srun"]
@@ -45,7 +46,7 @@ def train_supervisor():
             rovers_nn["RV{0}".format(rover_id)].get_weights(weights)  # CBA Network Gets Weights
 
         training_rewards = []
-        for gen in range(p["generations"]):
+        for gen in range(p["acg_generations"]):
             for pol_id in range(p["pop_size"]):
                 # Each policy in EA is tested
                 sup_nn.get_weights(sup_ea.population["pol{0}".format(pol_id)])
@@ -69,7 +70,9 @@ def train_supervisor():
                         rover_input = np.sum((sensor_data, c_data), axis=0)
 
                         # Run rover neural network with counterfactual information
-                        action = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
+                        nn_output = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
+                        chosen_pol = int(np.argmax(nn_output))
+                        action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                         rover_actions.append(action)
 
                     rd.step(rover_actions)

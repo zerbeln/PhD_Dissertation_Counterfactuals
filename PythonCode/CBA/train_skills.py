@@ -1,5 +1,5 @@
 from ccea import Ccea
-from RewardFunctions.cba_rewards import *
+from CBA.cba_rewards import *
 from RoverDomain_Core.rover_domain import RoverDomain
 import os
 import numpy as np
