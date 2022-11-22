@@ -6,6 +6,7 @@ from parameters import parameters as p
 from ACG.supervisor import Supervisor
 from ACG.supervisor_neural_network import SupervisorNetwork
 from global_functions import *
+from CBA.custom_rover_skills import get_custom_action
 
 
 def test_acg():
@@ -23,7 +24,7 @@ def test_acg():
 
     rover_networks = {}
     for rover_id in range(p["n_rovers"]):
-        rover_networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        rover_networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -64,7 +65,9 @@ def test_acg():
                 # Rover acts based on perception + supervisor counterfactual
                 c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
                 rover_input = np.sum((sensor_data, c_data), axis=0)
-                action = rover_networks["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                nn_output = rover_networks["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                chosen_pol = int(np.argmax(nn_output))
+                action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 rover_actions.append(action)
 
             # Environment takes in rover actions and returns next state and global reward
