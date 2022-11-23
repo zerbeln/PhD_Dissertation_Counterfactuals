@@ -58,7 +58,7 @@ def train_towards_teammates():
 
     # World Setup
     rd = RoverDomain()
-    rd.load_world()
+    rd.load_world(0)
 
     # Create dictionary of rover instances
     pops = {}

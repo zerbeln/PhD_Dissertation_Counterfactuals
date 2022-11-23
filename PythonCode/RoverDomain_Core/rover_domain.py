@@ -21,15 +21,15 @@ class RoverDomain:
         # POI Instances
         self.pois = {}  # Dictionary containing instances of PoI objects
 
-    def reset_world(self):
+    def reset_world(self, cf_id):
         """
         Reset world to initial conditions.
         """
         self.rover_poi_distances = [[] for i in range(self.n_pois)]
         for rv in self.rovers:
-            self.rovers[rv].reset_rover()
+            self.rovers[rv].reset_rover(cf_id)
         for poi in self.pois:
-            self.pois[poi].reset_poi()
+            self.pois[poi].reset_poi(cf_id)
 
     def load_world(self):
         """
@@ -68,38 +68,53 @@ class RoverDomain:
         """
         Load POI configuration from a CSV file
         """
-        config_input = []
-        with open('./World_Config/POI_Config.csv') as csvfile:
-            csv_reader = csv.reader(csvfile, delimiter=',')
 
-            for row in csv_reader:
-                config_input.append(row)
+        for cf_id in range(p["n_configurations"]):
+            config_input = []
+            with open('./World_Config/POI_Config{0}.csv'.format(cf_id)) as csvfile:
+                csv_reader = csv.reader(csvfile, delimiter=',')
 
-        for poi_id in range(self.n_pois):
-            poi_x = float(config_input[poi_id][0])
-            poi_y = float(config_input[poi_id][1])
-            poi_val = float(config_input[poi_id][2])
-            poi_coupling = float(config_input[poi_id][3])
+                for row in csv_reader:
+                    config_input.append(row)
 
-            self.pois["P{0}".format(poi_id)] = Poi(poi_x, poi_y, poi_val, poi_coupling, poi_id)
+            for poi_id in range(self.n_pois):
+                poi_x = float(config_input[poi_id][0])
+                poi_y = float(config_input[poi_id][1])
+                poi_val = float(config_input[poi_id][2])
+                poi_coupling = float(config_input[poi_id][3])
+
+                if cf_id == 0:
+                    self.pois["P{0}".format(poi_id)] = Poi(poi_x, poi_y, poi_val, poi_coupling, poi_id)
+
+                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 0] = poi_x
+                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 1] = poi_y
+                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 2] = poi_val
+                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 3] = poi_coupling
 
     def load_rover_configuration(self):
         """
         Load Rover configuration from a saved csv file
         """
-        config_input = []
-        with open('./World_Config/Rover_Config.csv') as csvfile:
-            csv_reader = csv.reader(csvfile, delimiter=',')
 
-            for row in csv_reader:
-                config_input.append(row)
+        for cf_id in range(p["n_configurations"]):
+            config_input = []
+            with open('./World_Config/Rover_Config{0}.csv'.format(cf_id)) as csvfile:
+                csv_reader = csv.reader(csvfile, delimiter=',')
 
-        for rover_id in range(self.n_rovers):
-            rov_x = float(config_input[rover_id][0])
-            rov_y = float(config_input[rover_id][1])
-            rov_theta = float(config_input[rover_id][2])
+                for row in csv_reader:
+                    config_input.append(row)
 
-            self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
+            for rover_id in range(self.n_rovers):
+                rov_x = float(config_input[rover_id][0])
+                rov_y = float(config_input[rover_id][1])
+                rov_theta = float(config_input[rover_id][2])
+
+                if cf_id == 0:
+                    self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
+
+                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_x
+                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_y
+                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_theta
 
     def step(self, rover_actions):
         """

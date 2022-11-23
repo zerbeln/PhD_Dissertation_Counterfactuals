@@ -8,7 +8,7 @@ from global_functions import create_csv_file, create_pickle_file, load_saved_pol
 from CBA.custom_rover_skills import get_custom_action
 
 
-def test_custom_skills(skill_id):
+def test_custom_skills(skill_id, config_id):
     """
     Test suggestions using the pre-trained policy bank
     """
@@ -22,7 +22,7 @@ def test_custom_skills(skill_id):
     skill_performance = []  # Keep track of team performance throughout training
     while srun < p["stat_runs"]:
         # Reset rover and record initial position
-        rd.reset_world()
+        rd.reset_world(config_id)
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
         for step_id in range(p["steps"]):
             # Rover takes an action in the world
@@ -46,11 +46,11 @@ def test_custom_skills(skill_id):
         skill_performance.append(g_reward)
         srun += 1
 
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
+    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
     create_csv_file(skill_performance, "Output_Data/", "Skill{0}_Performance.csv".format(skill_id))
 
 
-def test_trained_policy():
+def test_trained_policy(config_id):
     """
     Test rover policy trained using Global, Difference, or D++ rewards.
     """
@@ -84,7 +84,7 @@ def test_trained_policy():
 
         n_incursions = 0
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
-        rd.reset_world()
+        rd.reset_world(config_id)
         for step_id in range(p["steps"]):
             # Get rover actions from neural network
             rover_actions = []
@@ -120,13 +120,13 @@ def test_trained_policy():
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
+    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer()
+        run_visualizer(config_id)
 
 
 if __name__ == '__main__':
     # Test Performance of Skills in Agent Skill Set
-    test_trained_policy()
+    test_trained_policy(3)

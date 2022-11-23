@@ -9,7 +9,7 @@ from global_functions import *
 from CBA.cba import get_counterfactual_state, calculate_poi_sectors
 
 
-def find_best_counterfactuals(srun, c_list):
+def find_best_counterfactuals(srun, c_list, config_id):
     """
     Find the best counterfactual states to use for the given environment
     """
@@ -42,7 +42,7 @@ def find_best_counterfactuals(srun, c_list):
         c_state = [i for i in c]
 
         # Reset environment to initial conditions
-        rd.reset_world()
+        rd.reset_world(config_id)
 
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
         n_incursions = 0  # Number of times rovers violate a hazardous area
@@ -87,7 +87,7 @@ def find_best_counterfactuals(srun, c_list):
     return best_rover_suggestion, rover_skill_selections
 
 
-def test_cba(counterfactuals):
+def test_cba(counterfactuals, config_id):
     """
     Test CBA using the hand created rover policies
     """
@@ -121,7 +121,7 @@ def test_cba(counterfactuals):
             networks["NN{0}".format(rover_id)].get_weights(s_weights)
 
         # Reset environment to initial conditions
-        rd.reset_world()
+        rd.reset_world(config_id)
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
         n_incursions = 0
         for step_id in range(p["steps"]):
@@ -167,14 +167,16 @@ def test_cba(counterfactuals):
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
+    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_CBA.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer()
+        run_visualizer(config_id)
 
 
 if __name__ == '__main__':
+    config_id = 0
+
     # Test Performance of CBA
     counterfactuals = {}
     if p["c_type"] == 'Custom':
@@ -189,7 +191,7 @@ if __name__ == '__main__':
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
             c_list = (product(*t_list))
-            counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list)
+            counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list, config_id)
             for rover_id in range(p["n_rovers"]):
                 for c in range(p["n_skills"]):
                     for ci in range(p["n_skills"]):
@@ -202,7 +204,7 @@ if __name__ == '__main__':
         rover_skill_selections = np.zeros((p["n_rovers"], p["n_skills"], p["n_skills"]))
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
-            counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list)
+            counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list, config_id)
             for rover_id in range(p["n_rovers"]):
                 for c in range(p["n_skills"]):
                     for ci in range(p["n_skills"]):
@@ -212,5 +214,5 @@ if __name__ == '__main__':
                 create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
 
     # Testing CBA using the selected set of counterfactual states
-    test_cba(counterfactuals)
+    test_cba(counterfactuals, config_id)
 

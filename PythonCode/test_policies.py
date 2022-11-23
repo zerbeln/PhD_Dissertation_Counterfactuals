@@ -7,8 +7,7 @@ from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file
 
 
-
-def test_trained_policy():
+def test_trained_policy(config_id):
     """
     Test rover policy trained using Global, Difference, or D++ rewards.
     """
@@ -42,7 +41,7 @@ def test_trained_policy():
 
         n_incursions = 0
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
-        rd.reset_world()
+        rd.reset_world(config_id)
         for step_id in range(p["steps"]):
             # Get rover actions from neural network
             rover_actions = []
@@ -76,12 +75,12 @@ def test_trained_policy():
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
+    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_Standard.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer()
+        run_visualizer(config_id)
 
 
 if __name__ == '__main__':
-    test_trained_policy()
+    test_trained_policy(3)

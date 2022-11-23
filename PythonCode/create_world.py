@@ -10,7 +10,7 @@ import os
 from global_functions import get_linear_dist, get_angle
 
 
-def save_poi_configuration(pois_info):
+def save_poi_configuration(pois_info, config_id):
     """
     Saves POI configuration to a csv file in a folder called World_Config
     """
@@ -19,7 +19,7 @@ def save_poi_configuration(pois_info):
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
 
-    pfile_name = os.path.join(dir_name, 'POI_Config.csv')
+    pfile_name = os.path.join(dir_name, 'POI_Config{0}.csv'.format(config_id))
 
     with open(pfile_name, 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -29,7 +29,7 @@ def save_poi_configuration(pois_info):
     csvfile.close()
 
 
-def save_rover_configuration(initial_rover_positions):
+def save_rover_configuration(initial_rover_positions, config_id):
     """
     Saves Rover configuration to a csv file in a folder called World_Config
     """
@@ -38,7 +38,7 @@ def save_rover_configuration(initial_rover_positions):
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
 
-    pfile_name = os.path.join(dir_name, 'Rover_Config.csv')
+    pfile_name = os.path.join(dir_name, 'Rover_Config{0}.csv'.format(config_id))
 
     row = np.zeros(3)
     with open(pfile_name, 'a+', newline='') as csvfile:
@@ -285,39 +285,40 @@ def create_world_setup(coupling):
     Create a new rover configuration file
     """
 
-    # Initialize POI positions and values
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+    for config_id in range(p["n_configurations"]):
+        # Initialize POI positions and values
+        pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
 
-    if p["poi_config_type"] == "Random":
-        pois_info = poi_pos_random(coupling)
-        poi_vals_random(pois_info, 3, 10)
-    elif p["poi_config_type"] == "Two_POI":
-        pois_info = poi_pos_two_poi(coupling)
-        poi_vals_identical(pois_info, 10.0)
-    elif p["poi_config_type"] == "Four_Corners":
-        pois_info = poi_pos_four_corners(coupling)
-        poi_vals_random(pois_info, 3.0, 10.0)
-    elif p["poi_config_type"] == "Circle":
-        pois_info = poi_pos_circle(coupling)
-        poi_vals_random(pois_info, 3.0, 10.0)
-    elif p["poi_config_type"] == "Con_Circle":
-        pois_info = poi_pos_concentric_circles(coupling)
-        poi_vals_random(pois_info, 3.0, 10.0)
-    else:
-        print("ERROR, WRONG POI CONFIG KEY")
-    save_poi_configuration(pois_info)
+        if p["poi_config_type"] == "Random":
+            pois_info = poi_pos_random(coupling)
+            poi_vals_random(pois_info, 3, 10)
+        elif p["poi_config_type"] == "Two_POI":
+            pois_info = poi_pos_two_poi(coupling)
+            poi_vals_identical(pois_info, 10.0)
+        elif p["poi_config_type"] == "Four_Corners":
+            pois_info = poi_pos_four_corners(coupling)
+            poi_vals_random(pois_info, 3.0, 10.0)
+        elif p["poi_config_type"] == "Circle":
+            pois_info = poi_pos_circle(coupling)
+            poi_vals_random(pois_info, 3.0, 10.0)
+        elif p["poi_config_type"] == "Con_Circle":
+            pois_info = poi_pos_concentric_circles(coupling)
+            poi_vals_random(pois_info, 3.0, 10.0)
+        else:
+            print("ERROR, WRONG POI CONFIG KEY")
+        save_poi_configuration(pois_info, config_id)
 
-    # Initialize Rover Positions
-    initial_rover_positions = np.zeros((p["n_rovers"], 3))  # [X, Y, Theta]
+        # Initialize Rover Positions
+        initial_rover_positions = np.zeros((p["n_rovers"], 3))  # [X, Y, Theta]
 
-    if p["rover_config_type"] == "Random":
-        initial_rover_positions = rover_pos_random(pois_info)
-    elif p["rover_config_type"] == "Concentrated":
-        initial_rover_positions = rover_pos_center_concentrated()
-    elif p["rover_config_type"] == "Fixed":
-        initial_rover_positions = rover_pos_fixed_middle()
+        if p["rover_config_type"] == "Random":
+            initial_rover_positions = rover_pos_random(pois_info)
+        elif p["rover_config_type"] == "Concentrated":
+            initial_rover_positions = rover_pos_center_concentrated()
+        elif p["rover_config_type"] == "Fixed":
+            initial_rover_positions = rover_pos_fixed_middle()
 
-    save_rover_configuration(initial_rover_positions)
+        save_rover_configuration(initial_rover_positions, config_id)
 
 
 if __name__ == '__main__':
@@ -326,17 +327,18 @@ if __name__ == '__main__':
     """
 
     coupling = 1  # Default coupling requirement for POI
-    rover_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"], 3))
+    create_world_setup(coupling)
 
     rd = RoverDomain()  # Number of POI, Number of Rovers
-    create_world_setup(coupling)
     rd.load_world()
+    for config_id in range(p["n_configurations"]):
+        rd.reset_world(config_id)
+        rover_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"], 3))
+        for rover_id in range(p["n_rovers"]):
+            for step in range(p["steps"]):
+                rover_path[0:p["stat_runs"], rover_id, step, 0] = rd.rovers["R{0}".format(rover_id)].rover_configurations[config_id, 0]
+                rover_path[0:p["stat_runs"], rover_id, step, 1] = rd.rovers["R{0}".format(rover_id)].rover_configurations[config_id, 1]
+                rover_path[0:p["stat_runs"], rover_id, step, 2] = rd.rovers["R{0}".format(rover_id)].rover_configurations[config_id, 2]
 
-    for rover_id in range(p["n_rovers"]):
-        for step in range(p["steps"]):
-            rover_path[0:p["stat_runs"], rover_id, step, 0] = rd.rovers["R{0}".format(rover_id)].loc[0]
-            rover_path[0:p["stat_runs"], rover_id, step, 1] = rd.rovers["R{0}".format(rover_id)].loc[1]
-            rover_path[0:p["stat_runs"], rover_id, step, 2] = rd.rovers["R{0}".format(rover_id)].loc[2]
-
-    create_pickle_file(rover_path, "./Output_Data/", "Rover_Paths")
-    run_visualizer()
+        create_pickle_file(rover_path, "./Output_Data/", "Rover_Paths{0}".format(config_id))
+        run_visualizer(cf_id=config_id)

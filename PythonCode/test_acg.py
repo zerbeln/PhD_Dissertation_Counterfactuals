@@ -9,7 +9,7 @@ from global_functions import *
 from CBA.custom_rover_skills import get_custom_action
 
 
-def test_acg():
+def test_acg(config_id):
     # World Setup
     rd = RoverDomain()
     rd.load_world()
@@ -42,7 +42,7 @@ def test_acg():
             rover_networks["NN{0}".format(rover_id)].get_weights(weights)
 
         # Reset environment to initial conditions
-        rd.reset_world()
+        rd.reset_world(config_id)
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
         n_incursions = 0
         for step_id in range(p["steps"]):
@@ -90,13 +90,13 @@ def test_acg():
         srun += 1
 
     print(average_reward / p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths")
+    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_ACG.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer()
+        run_visualizer(config_id)
 
 
 if __name__ == '__main__':
     # Test Performance of Supervisor in ACG
-    test_acg()
+    test_acg(3)

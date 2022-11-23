@@ -180,7 +180,7 @@ def train_cba():
                 # For each skill a rover possesses, test counterfactual states targeting that skill
                 for skill in range(p["n_skills"]):
                     # Reset environment to initial conditions and select network weights
-                    rd.reset_world()
+                    rd.reset_world(0)
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                         weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]

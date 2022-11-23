@@ -15,10 +15,16 @@ class Poi:
         self.quadrant = None  # Tracks which quadrant (or sector) of the environment a POI exists in
         self.hazardous = False
 
-    def reset_poi(self):
+        self.poi_configurations = np.zeros((p["n_configurations"], 4))
+
+    def reset_poi(self, config_id):
         """
         Clears the observer distances array and sets POI observed boolean back to False
         """
+        self.loc[0] = self.poi_configurations[config_id, 0]
+        self.loc[1] = self.poi_configurations[config_id, 1]
+        self.value = self.poi_configurations[config_id, 2]
+        self.coupling = self.poi_configurations[config_id, 3]
         self.observer_distances = np.zeros(p["n_rovers"])
         self.observed = False
 
@@ -50,11 +56,16 @@ class Rover:
         self.observations = np.zeros(p["n_inp"], dtype=np.longdouble)  # Number of sensor inputs for Neural Network
         self.rover_actions = np.zeros(p["n_out"], dtype=np.longdouble)  # Motor actions from neural network outputs
 
-    def reset_rover(self):
+        # Other ----------------------------------------------------------------------------------------------
+        self.rover_configurations = np.zeros((p["n_configurations"], 3))
+
+    def reset_rover(self, config_id):
         """
         Resets the rover to its initial position in the world and clears observation array of state information
         """
-        self.loc = self.initial_pos.copy()
+        self.loc[0] = self.rover_configurations[config_id, 0]
+        self.loc[1] = self.rover_configurations[config_id, 1]
+        self.loc[2] = self.rover_configurations[config_id, 2]
         self.observations = np.zeros(self.n_inputs, dtype=np.longdouble)
 
     def scan_environment(self, rovers, pois):
