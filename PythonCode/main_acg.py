@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     assert (p["algorithm"] == "ACG_Skills" or p["algorithm"] == "ACG_Nav")
 
-    if p["algorrithm"] == "ACG_Nav":
+    if p["algorithm"] == "ACG_Nav":
         if p["acg_alg"] == "Global":
             print("Training Rovers: Global Rewards")
             global_nav()

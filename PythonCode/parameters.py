@@ -4,7 +4,7 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 15  # Total number of runs to perform
 parameters["generations"] = 4000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "ACG_Skills"  # Global, Difference, DPP (D++), CBA, CFL, ACG_Nav, or ACG_Skills
+parameters["algorithm"] = "ACG_Nav"  # Global, Difference, DPP (D++), CBA, CFL, ACG_Nav, or ACG_Skills
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 5  # The number of environmental configurations used for training
 
