@@ -124,7 +124,7 @@ def test_trained_policy(config_id):
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer(config_id)
+        run_visualizer(cf_id=config_id)
 
 
 if __name__ == '__main__':

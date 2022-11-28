@@ -30,7 +30,10 @@ def train_supervisor():
     # Create rover instances
     rovers_nn = {}
     for rover_id in range(p["n_rovers"]):
-        rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        if p["algorithm"] == "ACG_Nav":
+            rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        elif p["algorithm"] == "ACG_Skills":
+            rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Perform statistical runs
     srun = p["starting_srun"]
@@ -73,10 +76,12 @@ def train_supervisor():
                             rover_input = np.sum((sensor_data, c_data), axis=0)
 
                             # Run rover neural network with counterfactual information
-                            action = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
-                            # nn_output = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
-                            # chsn_pol = int(np.argmax(nn_output))
-                            # action = get_custom_action(chsn_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
+                            if p["algorithm"] == "ACG_Nav":
+                                action = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
+                            else:
+                                nn_output = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
+                                chsn_pol = int(np.argmax(nn_output))
+                                action = get_custom_action(chsn_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                             rover_actions.append(action)
 
                         rd.step(rover_actions)

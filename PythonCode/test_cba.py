@@ -171,7 +171,7 @@ def test_cba(counterfactuals, config_id):
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_CBA.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer(config_id)
+        run_visualizer(cf_id=config_id)
 
 
 if __name__ == '__main__':

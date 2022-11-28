@@ -4,7 +4,7 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 15  # Total number of runs to perform
 parameters["generations"] = 4000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, or ACG
+parameters["algorithm"] = "ACG_Skills"  # Global, Difference, DPP (D++), CBA, CFL, ACG_Nav, or ACG_Skills
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 5  # The number of environmental configurations used for training
 
@@ -47,13 +47,13 @@ parameters["cba_out"] = parameters["n_skills"]
 parameters["acg_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["acg_hid"] = 12
 parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
-parameters["acg_alg"] = "DPP"
+parameters["acg_alg"] = "Global"
 parameters["acg_generations"] = 5000
 parameters["acg_configurations"] = 5  # The number of configurations used for training supervisors
 
 # Post Training Test Parameters
 parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
 parameters["c_list_size"] = 10000
-parameters["vis_running"] = False  # True keeps visualizer from closing until you 'X' out of window
+parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
 parameters["active_hazards"] = True  # Determine if hazard zones are active (True) or inactive (False)
 parameters["hazardous_poi"] = [0]  # ID numbers of POI that will be hazardous

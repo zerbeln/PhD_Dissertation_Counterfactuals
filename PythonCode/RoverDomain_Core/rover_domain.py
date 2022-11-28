@@ -113,8 +113,8 @@ class RoverDomain:
                     self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
 
                 self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_x
-                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_y
-                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_theta
+                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 1] = rov_y
+                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 2] = rov_theta
 
     def step(self, rover_actions):
         """

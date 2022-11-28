@@ -22,9 +22,12 @@ def test_acg(config_id):
     sup = Supervisor()
     sup_nn = SupervisorNetwork(n_inp=p["acg_inp"], n_hid=p["acg_hid"], n_out=p["acg_out"], n_agents=p["n_rovers"])
 
-    rover_networks = {}
+    rover_nns = {}
     for rover_id in range(p["n_rovers"]):
-        rover_networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        if p["algorithm"] == "ACG_Nav":
+            rover_nns["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        elif p["algorithm"] == "ACG_Skills":
+            rover_nns["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -39,7 +42,7 @@ def test_acg(config_id):
         sup_nn.get_weights(s_weights)
         for rover_id in range(p["n_rovers"]):
             weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            rover_networks["NN{0}".format(rover_id)].get_weights(weights)
+            rover_nns["NN{0}".format(rover_id)].get_weights(weights)
 
         # Reset environment to initial conditions
         rd.reset_world(config_id)
@@ -65,9 +68,12 @@ def test_acg(config_id):
                 # Rover acts based on perception + supervisor counterfactual
                 c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
                 rover_input = np.sum((sensor_data, c_data), axis=0)
-                nn_output = rover_networks["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
-                chosen_pol = int(np.argmax(nn_output))
-                action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
+                if p["algorithm"] == "ACG_Skills":
+                    nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                    chosen_pol = int(np.argmax(nn_output))
+                    action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
+                else:
+                    action = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)
                 rover_actions.append(action)
 
             # Environment takes in rover actions and returns next state and global reward
@@ -94,7 +100,7 @@ def test_acg(config_id):
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_ACG.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
-        run_visualizer(config_id)
+        run_visualizer(cf_id=config_id)
 
 
 if __name__ == '__main__':
