@@ -20,7 +20,13 @@ if __name__ == '__main__':
         print("Rover Domain: D++ Rewards")
         rover_dpp()
     elif p["algorithm"] == "CFL":
-        counterfactuals = [0, 0, 0]
+        print("Rover Domain: CFL")
+        if p["counterfactual_type"] == "High":
+            counterfactuals = [0 for i in range(p["n_rovers"])]
+        elif p["counterfactual_type"] == "Low":
+            counterfactuals = [1 for i in range(p["n_rovers"])]
+        else:
+            print("COUNTERFACTUAL TYPE ERROR")
         rover_sdpp(counterfactuals)
     else:
         print("ALGORITHM TYPE ERROR")

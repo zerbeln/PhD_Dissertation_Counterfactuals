@@ -25,7 +25,7 @@ def sample_best_team(rd, pops, networks):
     g_reward = 0
     for cf_id in range(p["n_configurations"]):
         # Reset rovers to configuration initial conditions
-        rd.reset_world()
+        rd.reset_world(cf_id)
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
         for step_id in range(p["steps"]):
             # Get rover actions from neural network
@@ -64,6 +64,7 @@ def rover_sdpp(counterfactual):
     # Perform runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
+        print("Run: %i" % srun)
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -116,7 +117,7 @@ def rover_sdpp(counterfactual):
                 pops[pkey].down_select()
 
         # Record Output Files
-        create_csv_file(reward_history, "Output_Data/", "DPP_Reward.csv")
+        create_csv_file(reward_history, "Output_Data/", "SDPP_Reward.csv")
         for rover_id in range(p["n_rovers"]):
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
