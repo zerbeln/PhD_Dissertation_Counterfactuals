@@ -39,7 +39,7 @@ class SupervisorNetwork:
         self.hidden_layer = self.sigmoid(self.hidden_layer)
 
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
-        self.output_layer = self.sigmoid(self.output_layer)
+        # self.output_layer = self.sigmoid(self.output_layer)
 
     def run_supervisor_nn(self, sensor_data):
         """

@@ -103,7 +103,7 @@ def train_supervisor():
                     sup_ea.fitness[pol_id] += g_reward
 
             # Record training data
-            if gen % p["sample_rate"] == 0:
+            if gen % p["sample_rate"] == 0 or gen == p["acg_generations-1"]:
                 training_rewards.append(max(sup_ea.fitness))
 
             # Choose parents and create new offspring population
