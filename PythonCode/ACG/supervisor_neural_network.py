@@ -56,6 +56,7 @@ class SupervisorNetwork:
             counterfactual = np.zeros(self.n_inputs)
             for i in range(self.n_inputs):
                 counterfactual[i] = self.output_layer[rover_id*self.n_inputs + i, 0]
+                # counterfactual[i] = self.output_layer[i, 0]
 
             rover_counterfactuals["RV{0}".format(rover_id)] = counterfactual.copy()
 

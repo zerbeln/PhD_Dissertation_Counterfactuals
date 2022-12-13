@@ -17,11 +17,6 @@ def train_supervisor():
     rd = RoverDomain()
     rd.load_world()
 
-    # Hazardous POI Setup
-    if p["active_hazards"]:
-        for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)].hazardous = True
-
     # Supervisor Setup
     sup = Supervisor()
     sup_nn = SupervisorNetwork(n_inp=p["acg_inp"], n_hid=p["acg_hid"], n_out=p["acg_out"], n_agents=p["n_rovers"])
@@ -30,10 +25,16 @@ def train_supervisor():
     # Create rover instances
     rovers_nn = {}
     for rover_id in range(p["n_rovers"]):
-        if p["algorithm"] == "ACG_Nav":
-            rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
-        elif p["algorithm"] == "ACG_Skills":
-            rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+
+    # Create Hazardous POI Configuration
+    hazardous_poi = []
+    for cf_if in range(p["acg_configurations"]):
+        h_poi = np.random.randint(0, 1, p["n_poi"])
+        while 0 not in h_poi or 1 not in h_poi:
+            h_poi = np.random.randint(0, 2, 2)
+        hazardous_poi.append(h_poi)
+    create_csv_file(hazardous_poi, 'Output_Data/', "Hazard_Configuration.csv")
 
     # Perform statistical runs
     srun = p["starting_srun"]
@@ -61,6 +62,14 @@ def train_supervisor():
                     rd.reset_world(cf_id)
                     poi_rewards = np.zeros((p["n_poi"], p["steps"]))
                     n_incursions = 0  # Number of times rovers violate a hazardous area
+                    # Hazardous POI Setup
+                    if p["active_hazards"]:
+                        for poi_id in range(p["n_poi"]):
+                            if hazardous_poi[cf_id][poi_id] == 1:
+                                rd.pois["P{0}".format(poi_id)].hazardous = True
+                            else:
+                                rd.pois["P{0}".format(poi_id)].hazardous = False
+
                     for step_id in range(p["steps"]):
                         # Supervisor observes environment and creates counterfactuals
                         sup.scan_environment(rd.rovers, rd.pois)
@@ -76,12 +85,9 @@ def train_supervisor():
                             rover_input = np.sum((sensor_data, c_data), axis=0)
 
                             # Run rover neural network with counterfactual information
-                            if p["algorithm"] == "ACG_Nav":
-                                action = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
-                            else:
-                                nn_output = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
-                                chsn_pol = int(np.argmax(nn_output))
-                                action = get_custom_action(chsn_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
+                            nn_output = rovers_nn["RV{0}".format(rover_id)].run_rover_nn(rover_input)
+                            chsn_pol = int(np.argmax(nn_output))
+                            action = get_custom_action(chsn_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                             rover_actions.append(action)
 
                         rd.step(rover_actions)
@@ -103,7 +109,7 @@ def train_supervisor():
                     sup_ea.fitness[pol_id] += g_reward
 
             # Record training data
-            if gen % p["sample_rate"] == 0 or gen == p["acg_generations-1"]:
+            if gen % p["sample_rate"] == 0 or gen == p["acg_generations"]-1:
                 training_rewards.append(max(sup_ea.fitness))
 
             # Choose parents and create new offspring population

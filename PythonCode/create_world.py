@@ -146,7 +146,7 @@ def poi_pos_random(coupling):  # Randomly set POI on the map
                     y_dist = y - pois_info[p_id, 1]
 
                     dist = math.sqrt((x_dist**2) + (y_dist**2))
-                    if dist < (p["observation_radius"] - 1.5):
+                    if dist < (p["observation_radius"] + 2.0):
                         count += 1
 
             if count == 0:
@@ -183,37 +183,7 @@ def poi_pos_circle(coupling):
     return pois_info
 
 
-def poi_pos_concentric_circles(coupling):
-    """
-    POI positions are set in a circle around the center of the map at a specified radius.
-    """
-    assert(p["n_poi"] == 12)
-    inner_radius = 6.5
-    outter_radius = 15.0
-    interval = float(360 / (p["n_poi"]/2))
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
-
-    x = p["x_dim"]/2.0
-    y = p["y_dim"]/2.0
-    inner_theta = 0.0
-    outter_theta = 0.0
-
-    for poi_id in range(p["n_poi"]):
-        if poi_id < 6:
-            pois_info[poi_id, 0] = x + inner_radius * math.cos(inner_theta * math.pi / 180)
-            pois_info[poi_id, 1] = y + inner_radius * math.sin(inner_theta * math.pi / 180)
-            pois_info[poi_id, 3] = coupling
-            inner_theta += interval
-        else:
-            pois_info[poi_id, 0] = x + outter_radius * math.cos(outter_theta * math.pi / 180)
-            pois_info[poi_id, 1] = y + outter_radius * math.sin(outter_theta * math.pi / 180)
-            pois_info[poi_id, 3] = coupling
-            outter_theta += interval
-
-    return pois_info
-
-
-def poi_pos_two_poi(coupling):
+def poi_pos_two_poi_LR(coupling):
     """
     Sets two POI on the map, one on the left, one on the right in line with global X-axis.
     """
@@ -228,6 +198,26 @@ def poi_pos_two_poi(coupling):
     # Right POI
     pois_info[1, 0] = p["x_dim"] - 2.0
     pois_info[1, 1] = (p["y_dim"]/2.0) + 1
+    pois_info[1, 3] = coupling
+
+    return pois_info
+
+
+def poi_pos_two_poi_TB(coupling):
+    """
+    Sets two POI on the map, one on the left, one on the right in line with global X-axis.
+    """
+    assert(p["n_poi"] == 2)
+    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+
+    # Top POI
+    pois_info[0, 0] = p["x_dim"]/2.0
+    pois_info[0, 1] = 1
+    pois_info[0, 3] = coupling
+
+    # Bottom POI
+    pois_info[1, 0] = p["x_dim"]/2.0
+    pois_info[1, 1] = p["y_dim"] - 1
     pois_info[1, 3] = coupling
 
     return pois_info
@@ -292,17 +282,17 @@ def create_world_setup(coupling):
         if p["poi_config_type"] == "Random":
             pois_info = poi_pos_random(coupling)
             poi_vals_random(pois_info, 3, 10)
-        elif p["poi_config_type"] == "Two_POI":
-            pois_info = poi_pos_two_poi(coupling)
+        elif p["poi_config_type"] == "Two_POI_LR":
+            pois_info = poi_pos_two_poi_LR(coupling)
+            poi_vals_identical(pois_info, 10.0)
+        elif p["poi_config_type"] == "Two_POI_TB":
+            pois_info = poi_pos_two_poi_TB(coupling)
             poi_vals_identical(pois_info, 10.0)
         elif p["poi_config_type"] == "Four_Corners":
             pois_info = poi_pos_four_corners(coupling)
             poi_vals_random(pois_info, 3.0, 10.0)
         elif p["poi_config_type"] == "Circle":
             pois_info = poi_pos_circle(coupling)
-            poi_vals_random(pois_info, 3.0, 10.0)
-        elif p["poi_config_type"] == "Con_Circle":
-            pois_info = poi_pos_concentric_circles(coupling)
             poi_vals_random(pois_info, 3.0, 10.0)
         else:
             print("ERROR, WRONG POI CONFIG KEY")
