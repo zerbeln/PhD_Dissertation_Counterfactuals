@@ -44,7 +44,7 @@ class RoverDomain:
     def calc_global(self):
         """
         Calculate the global reward for the current state as the reward given by each POI.
-        :return: Array capturing reward given from each POI at current time step
+        :return: Array capturing reward given from each POI at current time step (sum is the global reward)
         """
         global_reward = np.zeros(self.n_pois)
 

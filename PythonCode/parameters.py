@@ -2,18 +2,18 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 15  # Total number of runs to perform
-parameters["generations"] = 4000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, ACG
+parameters["stat_runs"] = 1  # Total number of runs to perform
+parameters["generations"] = 100  # Number of generations for CCEA in each stat run
+parameters["algorithm"] = "DPP"  # Global, Difference, DPP (D++), CBA, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
-parameters["n_configurations"] = 5  # The number of environmental configurations used for training
+parameters["n_configurations"] = 1  # The number of environmental configurations used for training
 
 # Domain parameters
 parameters["x_dim"] = 50.0  # X-Dimension of the rover map
 parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
-parameters["n_rovers"] = 3  # Number of rovers on map
-parameters["n_poi"] = 2  # Number of POIs on map
-parameters["steps"] = 20  # Number of time steps rovers take each episode
+parameters["n_rovers"] = 6  # Number of rovers on map
+parameters["n_poi"] = 4  # Number of POIs on map
+parameters["steps"] = 25  # Number of time steps rovers take each episode
 parameters["poi_config_type"] = "Random"  # Random, Two_POI_LR, Twp_POI_TB, Four_Corners, Circle
 parameters["rover_config_type"] = "Random"  # Random, Concentrated, Four_Quadrants
 
@@ -36,8 +36,9 @@ parameters["epsilon"] = 0.1  # For e-greedy selection in CCEA
 parameters["n_elites"] = 1  # How many elites to carry over during elite selection
 
 # CFL Parameters
-parameters["poi_val_threshold"] = 4.5  # Threshold for distinguishing counterfactuals in CFL
-parameters["counterfactual_type"] = "Low"  # High or Low (used for targeting different POI values)
+# parameters["poi_val_threshold"] = 4.5  # Threshold for distinguishing counterfactuals in CFL
+# parameters["ctype"] = "HighLow"
+# parameters["n_counterfacutlas"] = 2  # The number of specific counterfactuals being tested
 
 # CBA Parameters
 parameters["skill_type"] = "Target_POI"  # Target_Quadrant or Target_POI
@@ -53,11 +54,11 @@ parameters["acg_hid"] = 12
 parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
 parameters["acg_alg"] = "DPP"
 parameters["acg_generations"] = 8000
-parameters["acg_configurations"] = 5  # The number of configurations used for training supervisors
+parameters["acg_configurations"] = 1  # The number of configurations used for training supervisors
 
 # Post Training Test Parameters
 parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
 parameters["c_list_size"] = 10000
 parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
-parameters["active_hazards"] = True  # Determine if hazard zones are active (True) or inactive (False)
+parameters["active_hazards"] = False  # Determine if hazard zones are active (True) or inactive (False)
 parameters["hazardous_poi"] = [0]  # ID numbers of POI that will be hazardous

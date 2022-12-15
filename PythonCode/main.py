@@ -1,6 +1,6 @@
 from parameters import parameters as p
 from standard_rover_domain import rover_global, rover_difference, rover_dpp
-from CFL.cfl import rover_sdpp
+from CFL.cfl import rover_cdpp, rover_cdif
 
 
 if __name__ == '__main__':
@@ -21,12 +21,20 @@ if __name__ == '__main__':
         rover_dpp()
     elif p["algorithm"] == "CFL":
         print("Rover Domain: CFL")
-        if p["counterfactual_type"] == "High":
-            counterfactuals = [0 for i in range(p["n_rovers"])]
-        elif p["counterfactual_type"] == "Low":
-            counterfactuals = [1 for i in range(p["n_rovers"])]
-        else:
-            print("COUNTERFACTUAL TYPE ERROR")
-        rover_sdpp(counterfactuals)
+
+        # Define Expert Counterfactuals
+        counterfacutals = []
+        cp1 = [1, 1, 1, 1, 1, 1]
+        cp2 = [1, 1, 1, 1, 1, 1]
+        cp3 = [0, 0, 0, 0, 0, 0]
+        cp4 = [0, 0, 0, 0, 0, 0]
+        counterfactuals = [cp1, cp2, cp3, cp4]
+
+        # Check that this parameter was manually tuned for the specific experiment
+        assert(len(counterfactuals) == p["n_poi"])
+        for cfact in counterfactuals:
+            assert(len(cfact) == p["n_rovers"])
+
+        rover_cdpp(counterfactuals)
     else:
         print("ALGORITHM TYPE ERROR")
