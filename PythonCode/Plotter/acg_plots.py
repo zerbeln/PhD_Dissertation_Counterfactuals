@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import csv
+import sys
 from plots_common_functions import import_reward_data, get_standard_deviations
 
 
@@ -41,9 +42,7 @@ def generate_acg_learning_curves(generations, sample_rate, sruns):
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
     plt.savefig("Plots/ACG_Learning_Curve.pdf")
-
-    # Show the plot
-    # plt.show()
+    plt.close()
 
 
 def generate_policy_learning_curves(generations, sample_rate, sruns, reward_type):
@@ -105,9 +104,7 @@ def generate_policy_learning_curves(generations, sample_rate, sruns, reward_type
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
     plt.savefig("Plots/Rover_Policy_Learning_Curve.pdf")
-
-    # Show the plot
-    plt.show()
+    plt.close()
 
 
 def generate_incursion_plot(sruns):
@@ -138,26 +135,25 @@ def generate_incursion_plot(sruns):
 
     global_incursions = np.mean(average_incursions[0, :])
     acg_incursions = np.mean(average_incursions[1, :])
-    ydata = [global_incursions, acg_incursions]
+    ydata = [acg_incursions, global_incursions]
 
     plt.bar(x_axis, ydata, color=colors)
     plt.ylabel("Number of Rover Incursions")
 
-
-    plt.show()
+    # Save the plot
+    if not os.path.exists('Plots'):  # If Data directory does not exist, create it
+        os.makedirs('Plots')
+    plt.savefig("Plots/ACG_Incursions.pdf")
+    plt.close()
 
 
 if __name__ == '__main__':
-    # generations = int(sys.argv[1])
-    # sample_rate = int(sys.argv[2])
-    # sruns = int(sys.argv[3])
+    generations = int(sys.argv[1])
+    sample_rate = int(sys.argv[2])
+    sruns = int(sys.argv[3])
     reward_type = "Global"
 
-    generations = 5000
-    sample_rate = 20
-    sruns = 10
 
-    # generate_policy_learning_curves(generations-1000, sample_rate, sruns, reward_type)
-    # generate_acg_learning_curves(generations, sample_rate, sruns)
-
+    generate_policy_learning_curves(generations-1000, sample_rate, sruns, reward_type)
+    generate_acg_learning_curves(generations, sample_rate, sruns)
     generate_incursion_plot(sruns)

@@ -22,7 +22,9 @@ class RoverDomain:
         self.pois = {}  # Dictionary containing instances of PoI objects
 
     def reset_world(self, cf_id):
-        """
+        """nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                    chosen_pol = int(np.argmax(nn_output))
+                    action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
         Reset world to initial conditions.
         """
         self.rover_poi_distances = [[] for i in range(self.n_pois)]

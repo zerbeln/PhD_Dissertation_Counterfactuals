@@ -83,4 +83,4 @@ def test_trained_policy(config_id):
 
 
 if __name__ == '__main__':
-    test_trained_policy(3)
+    test_trained_policy(0)

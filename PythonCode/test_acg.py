@@ -9,7 +9,7 @@ from global_functions import *
 from CBA.custom_rover_skills import get_custom_action
 
 
-def test_acg(config_id):
+def test_acg(config_id=0):
     # World Setup
     rd = RoverDomain()
     rd.load_world()
@@ -24,10 +24,7 @@ def test_acg(config_id):
 
     rover_nns = {}
     for rover_id in range(p["n_rovers"]):
-        if p["algorithm"] == "ACG_Nav":
-            rover_nns["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
-        elif p["algorithm"] == "ACG_Skills":
-            rover_nns["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        rover_nns["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -68,12 +65,10 @@ def test_acg(config_id):
                 # Rover acts based on perception + supervisor counterfactual
                 c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
                 rover_input = np.sum((sensor_data, c_data), axis=0)
-                if p["algorithm"] == "ACG_Skills":
-                    nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
-                    chosen_pol = int(np.argmax(nn_output))
-                    action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
-                else:
-                    action = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)
+                nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                chosen_pol = int(np.argmax(nn_output))
+                action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
+
                 rover_actions.append(action)
 
             # Environment takes in rover actions and returns next state and global reward
@@ -105,4 +100,4 @@ def test_acg(config_id):
 
 if __name__ == '__main__':
     # Test Performance of Supervisor in ACG
-    test_acg(3)
+    test_acg(config_id=3)
