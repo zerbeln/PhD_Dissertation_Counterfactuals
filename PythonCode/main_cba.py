@@ -9,6 +9,7 @@ if __name__ == '__main__':
     """
 
     assert(p["algorithm"] != "CFL")  # This main file is for use with pre-defined rover skills only
+    assert (p["algorithm"] != "ACG")
 
     if p["algorithm"] == "Global":
         print("Rover Domain: Global Rewards")

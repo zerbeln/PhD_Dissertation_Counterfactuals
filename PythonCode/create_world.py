@@ -277,7 +277,7 @@ def create_world_setup(coupling):
 
     for config_id in range(p["n_configurations"]):
         # Initialize POI positions and values
-        pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+        pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazardous]
 
         if p["poi_config_type"] == "Random":
             pois_info = poi_pos_random(coupling)

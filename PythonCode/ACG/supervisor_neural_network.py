@@ -37,9 +37,7 @@ class SupervisorNetwork:
         """
         self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
         self.hidden_layer = self.sigmoid(self.hidden_layer)
-
         self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
-        # self.output_layer = self.sigmoid(self.output_layer)
 
     def run_supervisor_nn(self, sensor_data):
         """
@@ -56,7 +54,7 @@ class SupervisorNetwork:
             counterfactual = np.zeros(self.n_inputs)
             for i in range(self.n_inputs):
                 counterfactual[i] = self.output_layer[rover_id*self.n_inputs + i, 0]
-                # counterfactual[i] = self.output_layer[i, 0]
+                # counterfactual[i] = self.output_layer[i, 0]  # Identical counterfactual used for each agent
 
             rover_counterfactuals["RV{0}".format(rover_id)] = counterfactual.copy()
 

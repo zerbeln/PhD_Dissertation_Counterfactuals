@@ -15,7 +15,7 @@ class Poi:
         self.quadrant = None  # Tracks which quadrant (or sector) of the environment a POI exists in
         self.hazardous = False
 
-        self.poi_configurations = np.zeros((p["n_configurations"], 4))
+        self.poi_configurations = np.zeros((p["n_configurations"], 5))
 
     def reset_poi(self, config_id):
         """
@@ -27,6 +27,10 @@ class Poi:
         self.coupling = self.poi_configurations[config_id, 3]
         self.observer_distances = np.zeros(p["n_rovers"])
         self.observed = False
+        if p["active_hazards"] and self.poi_configurations[config_id, 4] == 1:
+            self.hazardous = True
+        else:
+            self.hazardous = False
 
     def update_observer_distances(self, rovers):
         """

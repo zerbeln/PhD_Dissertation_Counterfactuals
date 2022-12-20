@@ -48,9 +48,9 @@ class Supervisor:
             if bracket > n_brackets-1:
                 bracket -= n_brackets
             if pois[poi].hazardous:
-                temp_poi_dist_list[bracket].append(-pois[poi].value / (pois[poi].coupling * dist))
+                temp_poi_dist_list[bracket].append(-pois[poi].value/dist)
             else:
-                temp_poi_dist_list[bracket].append(pois[poi].value / (pois[poi].coupling*dist))
+                temp_poi_dist_list[bracket].append(pois[poi].value/dist)
             poi_id += 1
 
         # Encode POI information into the state vector
@@ -58,7 +58,7 @@ class Supervisor:
             num_poi_bracket = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
             if num_poi_bracket > 0:
                 if self.sensor_type == 'density':
-                    poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_bracket  # Density Sensor
+                    poi_state[bracket] = sum(temp_poi_dist_list[bracket])/num_poi_bracket  # Density Sensor
                 elif self.sensor_type == 'summed':
                     poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
                 else:
@@ -89,7 +89,7 @@ class Supervisor:
             bracket = int(angle / self.sensor_res)
             if bracket > n_brackets-1:
                 bracket -= n_brackets
-            temp_rover_dist_list[bracket].append(1 / dist)
+            temp_rover_dist_list[bracket].append(1/dist)
 
         # Encode Rover information into the state vector
         for bracket in range(n_brackets):

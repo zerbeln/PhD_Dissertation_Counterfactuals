@@ -22,9 +22,7 @@ class RoverDomain:
         self.pois = {}  # Dictionary containing instances of PoI objects
 
     def reset_world(self, cf_id):
-        """nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
-                    chosen_pol = int(np.argmax(nn_output))
-                    action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
+        """
         Reset world to initial conditions.
         """
         self.rover_poi_distances = [[] for i in range(self.n_pois)]
@@ -84,6 +82,7 @@ class RoverDomain:
                 poi_y = float(config_input[poi_id][1])
                 poi_val = float(config_input[poi_id][2])
                 poi_coupling = float(config_input[poi_id][3])
+                poi_hazard = float(config_input[poi_id][4])
 
                 if cf_id == 0:
                     self.pois["P{0}".format(poi_id)] = Poi(poi_x, poi_y, poi_val, poi_coupling, poi_id)
@@ -92,6 +91,7 @@ class RoverDomain:
                 self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 1] = poi_y
                 self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 2] = poi_val
                 self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 3] = poi_coupling
+                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 4] = poi_hazard
 
     def load_rover_configuration(self):
         """

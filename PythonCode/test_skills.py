@@ -3,6 +3,7 @@ from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 from rover_neural_network import NeuralNetwork
 import numpy as np
+import sys
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file, load_saved_policies
 from CBA.custom_rover_skills import get_custom_action
@@ -57,11 +58,6 @@ def test_trained_policy(config_id):
     # World Setup
     rd = RoverDomain()  # Create instance of the rover domain
     rd.load_world()
-
-    # Generate Hazard Areas (If Testing For Hazards)
-    if p["active_hazards"]:
-        for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     networks = {}
     for rover_id in range(p["n_rovers"]):
@@ -129,4 +125,6 @@ def test_trained_policy(config_id):
 
 if __name__ == '__main__':
     # Test Performance of Skills in Agent Skill Set
-    test_trained_policy(3)
+    cf_id = int(sys.argv[1])
+    print("Testing Trained Skills on Configuration: ", cf_id)
+    test_trained_policy(cf_id)

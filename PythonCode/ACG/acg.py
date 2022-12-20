@@ -27,15 +27,6 @@ def train_supervisor():
     for rover_id in range(p["n_rovers"]):
         rovers_nn["RV{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
-    # Create Hazardous POI Configuration
-    hazardous_poi = []
-    for cf_if in range(p["acg_configurations"]):
-        h_poi = np.random.randint(0, 1, p["n_poi"])
-        while 0 not in h_poi or 1 not in h_poi:
-            h_poi = np.random.randint(0, 2, 2)
-        hazardous_poi.append(h_poi)
-    create_csv_file(hazardous_poi, 'Output_Data/', "Hazard_Configuration.csv")
-
     # Perform statistical runs
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
@@ -62,13 +53,6 @@ def train_supervisor():
                     rd.reset_world(cf_id)
                     poi_rewards = np.zeros((p["n_poi"], p["steps"]))
                     n_incursions = 0  # Number of times rovers violate a hazardous area
-                    # Hazardous POI Setup
-                    if p["active_hazards"]:
-                        for poi_id in range(p["n_poi"]):
-                            if hazardous_poi[cf_id][poi_id] == 1:
-                                rd.pois["P{0}".format(poi_id)].hazardous = True
-                            else:
-                                rd.pois["P{0}".format(poi_id)].hazardous = False
 
                     for step_id in range(p["steps"]):
                         # Supervisor observes environment and creates counterfactuals
@@ -105,8 +89,10 @@ def train_supervisor():
                     g_reward = 0
                     for p_reward in poi_rewards:
                         g_reward += max(p_reward)
-                    g_reward -= (n_incursions * 10)
+                    g_reward -= (n_incursions * 10)  # Penalty for rovers entering hazards
                     sup_ea.fitness[pol_id] += g_reward
+
+                sup_ea.fitness[pol_id] /= p["acg_configurations"]  # Average reward across configurations
 
             # Record training data
             if gen % p["sample_rate"] == 0 or gen == p["acg_generations"]-1:
@@ -118,7 +104,7 @@ def train_supervisor():
         # Record trial data and supervisor network information
         policy_id = np.argmax(sup_ea.fitness)
         weights = sup_ea.population["pol{0}".format(policy_id)]
-        save_best_policies(weights, srun, "SupervisorWeights", p["n_rovers"]+1)
+        save_best_policies(weights, srun, "SupervisorWeights", p["n_rovers"])
         create_csv_file(training_rewards, 'Output_Data/', "ACG_Rewards.csv")
 
         srun += 1

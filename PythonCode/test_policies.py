@@ -3,6 +3,7 @@ from Visualizer.visualizer import run_visualizer
 from rover_neural_network import NeuralNetwork
 from global_functions import load_saved_policies
 import numpy as np
+import sys
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file
 
@@ -14,11 +15,6 @@ def test_trained_policy(config_id):
     # World Setup
     rd = RoverDomain()  # Create instance of the rover domain
     rd.load_world()
-
-    # Generate Hazard Areas (If Testing For Hazards)
-    if p["active_hazards"]:
-        for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     networks = {}
     for rover_id in range(p["n_rovers"]):
@@ -83,4 +79,6 @@ def test_trained_policy(config_id):
 
 
 if __name__ == '__main__':
-    test_trained_policy(0)
+    cf_id = int(sys.argv[1])
+    print("Testing Trained Policies on Configuration: ", cf_id)
+    test_trained_policy(cf_id)

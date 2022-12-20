@@ -2,6 +2,7 @@ from rover_neural_network import NeuralNetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
+import sys
 from parameters import parameters as p
 from itertools import product
 from CBA.custom_rover_skills import get_custom_action
@@ -17,11 +18,6 @@ def find_best_counterfactuals(srun, c_list, config_id):
     rd = RoverDomain()
     rd.load_world()
     calculate_poi_sectors(rd.pois)
-
-    # Generate Hazard Areas (If Testing For Hazards)
-    if p["active_hazards"]:
-        for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     networks = {}
@@ -95,11 +91,6 @@ def test_cba(counterfactuals, config_id):
     rd = RoverDomain()
     rd.load_world()
     calculate_poi_sectors(rd.pois)
-
-    # Generate Hazard Areas (If Testing For Hazards)
-    if p["active_hazards"]:
-        for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Create dictionary for each instance of rover and corresponding NN and EA population
     networks = {}
@@ -175,7 +166,8 @@ def test_cba(counterfactuals, config_id):
 
 
 if __name__ == '__main__':
-    config_id = 0
+    config_id = int(sys.argv[1])
+    print("Testing CBA on Configuration: ", config_id)
 
     # Test Performance of CBA
     counterfactuals = {}

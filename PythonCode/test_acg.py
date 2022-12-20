@@ -2,6 +2,7 @@ from rover_neural_network import NeuralNetwork
 from RoverDomain_Core.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
+import sys
 from parameters import parameters as p
 from ACG.supervisor import Supervisor
 from ACG.supervisor_neural_network import SupervisorNetwork
@@ -9,14 +10,10 @@ from global_functions import *
 from CBA.custom_rover_skills import get_custom_action
 
 
-def test_acg(config_id=0):
+def test_acg(config_id):
     # World Setup
     rd = RoverDomain()
     rd.load_world()
-
-    if p["active_hazards"]:
-        for poi_id in p["hazardous_poi"]:
-            rd.pois["P{0}".format(poi_id)].hazardous = True
 
     # Supervisor Setup
     sup = Supervisor()
@@ -35,7 +32,7 @@ def test_acg(config_id=0):
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
         # Load Trained Networks for Rovers and Supervisor
-        s_weights = load_saved_policies('SupervisorWeights', p["n_rovers"]+1, srun)
+        s_weights = load_saved_policies('SupervisorWeights', p["n_rovers"], srun)
         sup_nn.get_weights(s_weights)
         for rover_id in range(p["n_rovers"]):
             weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
@@ -100,4 +97,6 @@ def test_acg(config_id=0):
 
 if __name__ == '__main__':
     # Test Performance of Supervisor in ACG
-    test_acg(config_id=3)
+    cf_id = int(sys.argv[1])
+    print("Testing ACG on Configuration: ", cf_id)
+    test_acg(cf_id)

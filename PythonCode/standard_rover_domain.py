@@ -43,6 +43,8 @@ def sample_best_team(rd, pops, networks):
         for p_reward in poi_rewards:
             g_reward += max(p_reward)
 
+    g_reward /= p["n_configurations"]  # Average across configurations
+
     return g_reward
 
 
@@ -108,6 +110,11 @@ def rover_global():
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                         pops["EA{0}".format(rover_id)].fitness[policy_id] += g_reward
+
+                # Average reward across number of configurations
+                for rover_id in range(p["n_rovers"]):
+                    policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
+                    pops["EA{0}".format(rover_id)].fitness[policy_id] /= p["n_configurations"]
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
@@ -193,6 +200,11 @@ def rover_difference():
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                         pops["EA{0}".format(rover_id)].fitness[policy_id] += d_rewards[rover_id]
 
+                # Average reward across number of configurations
+                for rover_id in range(p["n_rovers"]):
+                    policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
+                    pops["EA{0}".format(rover_id)].fitness[policy_id] /= p["n_configurations"]
+
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
@@ -275,6 +287,11 @@ def rover_dpp():
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                         pops["EA{0}".format(rover_id)].fitness[policy_id] += dpp_rewards[rover_id]
+
+                # Average reward across number of configurations
+                for rover_id in range(p["n_rovers"]):
+                    policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
+                    pops["EA{0}".format(rover_id)].fitness[policy_id] /= p["n_configurations"]
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
