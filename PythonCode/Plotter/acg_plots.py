@@ -114,8 +114,8 @@ def generate_incursion_plot(sruns):
     color3 = np.array([230, 97, 0]) / 255  # Orange
     color4 = np.array([93, 58, 155]) / 255  # Purple
     color5 = np.array([211, 95, 183]) / 255  # Fuschia
-    colors = [color1, color4]
-    x_axis = ["Global", "ACG"]
+    colors = [color3, color4]
+    x_axis = ["DPP", "ACG"]
 
     acg_file_path = '../Output_Data/HazardIncursions.csv'
     config_input = []
@@ -135,7 +135,7 @@ def generate_incursion_plot(sruns):
 
     global_incursions = np.mean(average_incursions[0, :])
     acg_incursions = np.mean(average_incursions[1, :])
-    ydata = [acg_incursions, global_incursions]
+    ydata = [global_incursions, acg_incursions]
 
     plt.bar(x_axis, ydata, color=colors)
     plt.ylabel("Number of Rover Incursions")
@@ -151,9 +151,9 @@ if __name__ == '__main__':
     generations = int(sys.argv[1])
     sample_rate = int(sys.argv[2])
     sruns = int(sys.argv[3])
-    reward_type = "Global"
+    reward_type = "DPP"
 
 
-    generate_policy_learning_curves(generations-1000, sample_rate, sruns, reward_type)
+    generate_policy_learning_curves(generations, sample_rate, sruns, reward_type)
     generate_acg_learning_curves(generations, sample_rate, sruns)
     generate_incursion_plot(sruns)

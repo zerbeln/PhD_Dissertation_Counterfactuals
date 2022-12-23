@@ -2,6 +2,7 @@ import csv
 import numpy as np
 import math
 
+
 def import_reward_data(csv_name, generations, sample_rate, sruns):
 
     config_input = []

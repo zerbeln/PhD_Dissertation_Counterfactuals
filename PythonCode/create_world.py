@@ -21,7 +21,7 @@ def save_poi_configuration(pois_info, config_id):
 
     pfile_name = os.path.join(dir_name, 'POI_Config{0}.csv'.format(config_id))
 
-    with open(pfile_name, 'a+', newline='') as csvfile:
+    with open(pfile_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         for poi_id in range(p["n_poi"]):
             writer.writerow(pois_info[poi_id, :])
@@ -41,7 +41,7 @@ def save_rover_configuration(initial_rover_positions, config_id):
     pfile_name = os.path.join(dir_name, 'Rover_Config{0}.csv'.format(config_id))
 
     row = np.zeros(3)
-    with open(pfile_name, 'a+', newline='') as csvfile:
+    with open(pfile_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         for rov_id in range(p["n_rovers"]):
             row[0] = initial_rover_positions[rov_id, 0]
@@ -130,7 +130,7 @@ def poi_pos_random(coupling):  # Randomly set POI on the map
     """
     POI positions set randomly across the map (but not too close to other POI).
     """
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazard]
 
     for poi_id in range(p["n_poi"]):
         x = random.uniform(0, p["x_dim"]-1.0)
@@ -146,7 +146,7 @@ def poi_pos_random(coupling):  # Randomly set POI on the map
                     y_dist = y - pois_info[p_id, 1]
 
                     dist = math.sqrt((x_dist**2) + (y_dist**2))
-                    if dist < (p["observation_radius"] + 2.0):
+                    if dist < (p["observation_radius"] + 3.5):
                         count += 1
 
             if count == 0:
@@ -166,7 +166,7 @@ def poi_pos_circle(coupling):
     """
     POI positions are set in a circle around the center of the map at a specified radius.
     """
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazard]
     radius = 15.0
     interval = float(360/p["n_poi"])
 
@@ -188,7 +188,7 @@ def poi_pos_two_poi_LR(coupling):
     Sets two POI on the map, one on the left, one on the right in line with global X-axis.
     """
     assert(p["n_poi"] == 2)
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazard]
 
     # Left POI
     pois_info[0, 0] = 1.0
@@ -208,7 +208,7 @@ def poi_pos_two_poi_TB(coupling):
     Sets two POI on the map, one on the left, one on the right in line with global X-axis.
     """
     assert(p["n_poi"] == 2)
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazard]
 
     # Top POI
     pois_info[0, 0] = p["x_dim"]/2.0
@@ -228,7 +228,7 @@ def poi_pos_four_corners(coupling):  # Statically set 4 POI (one in each corner)
     Sets 4 POI on the map in a box formation around the center
     """
     assert(p["n_poi"] == 4)  # There must only be 4 POI for this initialization
-    pois_info = np.zeros((p["n_poi"], 4))  # [X, Y, Val, Coupling]
+    pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazard]
 
     # Bottom left
     pois_info[0, 0] = 2.0
@@ -274,7 +274,6 @@ def create_world_setup(coupling):
     """
     Create a new rover configuration file
     """
-
     for config_id in range(p["n_configurations"]):
         # Initialize POI positions and values
         pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazardous]
@@ -311,24 +310,67 @@ def create_world_setup(coupling):
         save_rover_configuration(initial_rover_positions, config_id)
 
 
+def create_rover_setup_only():
+    """
+    Create new rover configurations while preserving the current POI configurations
+    """
+    for cf_id in range(p["n_configurations"]):
+        # Initialize POI positions and values
+        pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazardous]
+
+        config_input = []
+        with open('./World_Config/POI_Config{0}.csv'.format(cf_id)) as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+
+            for row in csv_reader:
+                config_input.append(row)
+
+        for poi_id in range(p["n_poi"]):
+            poi_x = float(config_input[poi_id][0])
+            poi_y = float(config_input[poi_id][1])
+            poi_val = float(config_input[poi_id][2])
+            poi_coupling = float(config_input[poi_id][3])
+            poi_hazard = float(config_input[poi_id][4])
+
+            pois_info[poi_id, 0] = poi_x
+            pois_info[poi_id, 1] = poi_y
+            pois_info[poi_id, 2] = poi_val
+            pois_info[poi_id, 3] = poi_coupling
+            pois_info[poi_id, 4] = poi_hazard
+
+        # Initialize Rover Positions
+        initial_rover_positions = np.zeros((p["n_rovers"], 3))  # [X, Y, Theta]
+
+        if p["rover_config_type"] == "Random":
+            initial_rover_positions = rover_pos_random(pois_info)
+        elif p["rover_config_type"] == "Concentrated":
+            initial_rover_positions = rover_pos_center_concentrated()
+        elif p["rover_config_type"] == "Fixed":
+            initial_rover_positions = rover_pos_fixed_middle()
+
+        save_rover_configuration(initial_rover_positions, cf_id)
+
+
 if __name__ == '__main__':
     """
     Create new world configuration files for POI and rovers
     """
-
-    coupling = 1  # Default coupling requirement for POI
-    create_world_setup(coupling)
+    if p["world_setup"] == "Rover_Only":
+        create_rover_setup_only()
+    else:
+        coupling = 1  # Default coupling requirement for POI
+        create_world_setup(coupling)
 
     rd = RoverDomain()  # Number of POI, Number of Rovers
     rd.load_world()
-    for config_id in range(p["n_configurations"]):
-        rd.reset_world(config_id)
-        rover_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"], 3))
-        for rover_id in range(p["n_rovers"]):
-            for step in range(p["steps"]):
-                rover_path[0:p["stat_runs"], rover_id, step, 0] = rd.rovers["R{0}".format(rover_id)].rover_configurations[config_id, 0]
-                rover_path[0:p["stat_runs"], rover_id, step, 1] = rd.rovers["R{0}".format(rover_id)].rover_configurations[config_id, 1]
-                rover_path[0:p["stat_runs"], rover_id, step, 2] = rd.rovers["R{0}".format(rover_id)].rover_configurations[config_id, 2]
+    for cf_id in range(p["n_configurations"]):
+        rd.reset_world(cf_id)
+        rv_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"], 3))
+        for rv_id in range(p["n_rovers"]):
+            for t in range(p["steps"]):
+                rv_path[0:p["stat_runs"], rv_id, t, 0] = rd.rovers["R{0}".format(rv_id)].rover_configurations[cf_id, 0]
+                rv_path[0:p["stat_runs"], rv_id, t, 1] = rd.rovers["R{0}".format(rv_id)].rover_configurations[cf_id, 1]
+                rv_path[0:p["stat_runs"], rv_id, t, 2] = rd.rovers["R{0}".format(rv_id)].rover_configurations[cf_id, 2]
 
-        create_pickle_file(rover_path, "./Output_Data/", "Rover_Paths{0}".format(config_id))
-        run_visualizer(cf_id=config_id)
+        create_pickle_file(rv_path, "./Output_Data/", "Rover_Paths{0}".format(cf_id))
+        run_visualizer(cf_id=cf_id)
