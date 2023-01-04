@@ -154,7 +154,7 @@ def train_supervisor_rover_loss():
                     lost_rovers = np.random.randint(0, n_lost, n_lost)
 
                     # Reset environment to configuration initial conditions
-                    rd.reset_world(cf_id)
+                    rd.reset_world(0)
                     poi_rewards = np.zeros((p["n_poi"], p["steps"]))
 
                     for step_id in range(p["steps"]):

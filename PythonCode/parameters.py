@@ -2,8 +2,8 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 10  # Total number of runs to perform
-parameters["generations"] = 3000  # Number of generations for CCEA in each stat run
+parameters["stat_runs"] = 5  # Total number of runs to perform
+parameters["generations"] = 5  # Number of generations for CCEA in each stat run
 parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 1  # The number of environmental configurations used for training
@@ -50,12 +50,12 @@ parameters["acg_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["acg_hid"] = 12
 parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
 parameters["acg_alg"] = "Difference"
-parameters["acg_generations"] = 4000
-parameters["rover_loss"] = [0, 1, 2]  # Number of rovers that will become nonfunctional in each configuration
-parameters["acg_configurations"] = len(parameters["rover_loss"])  # Configurations used for training supervisors
+parameters["acg_generations"] = 5
+parameters["rover_loss"] = [0, 1]  # Number of rovers that will become nonfunctional in each configuration
+parameters["acg_configurations"] = parameters["n_configurations"]  # Configurations used for training supervisors
 
 # Post Training Test Parameters
 parameters["c_type"] = "Best_Total"  # Best_Total, Best_Random, or Custom
 parameters["c_list_size"] = 10000
 parameters["vis_running"] = True  # True keeps visualizer from closing until you 'X' out of window
-parameters["active_hazards"] = False  # Determine if hazard zones are active (True) or inactive (False)
+parameters["active_hazards"] = True  # Determine if hazard zones are active (True) or inactive (False)

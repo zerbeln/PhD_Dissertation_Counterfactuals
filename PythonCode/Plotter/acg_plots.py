@@ -107,15 +107,21 @@ def generate_policy_learning_curves(generations, sample_rate, sruns, reward_type
     plt.close()
 
 
-def generate_incursion_plot(sruns):
+def generate_incursion_plot(sruns, reward_type):
     # Plot Color Palette
     color1 = np.array([26, 133, 255]) / 255  # Blue
     color2 = np.array([255, 194, 10]) / 255  # Yellow
     color3 = np.array([230, 97, 0]) / 255  # Orange
     color4 = np.array([93, 58, 155]) / 255  # Purple
     color5 = np.array([211, 95, 183]) / 255  # Fuschia
-    colors = [color3, color4]
-    x_axis = ["DPP", "ACG"]
+
+    if reward_type == "Global":
+        colors = [color1, color4]
+    elif reward_type == "Difference":
+        colors = [color2, color4]
+    else:
+        colors = [color3, color4]
+    x_axis = [reward_type, "ACG"]
 
     acg_file_path = '../Output_Data/HazardIncursions.csv'
     config_input = []
@@ -147,13 +153,72 @@ def generate_incursion_plot(sruns):
     plt.close()
 
 
+def generate_performance_graphs(sruns, reward_type):
+    # Plot Color Palette
+    color1 = np.array([26, 133, 255]) / 255  # Blue
+    color2 = np.array([255, 194, 10]) / 255  # Yellow
+    color3 = np.array([230, 97, 0]) / 255  # Orange
+    color4 = np.array([93, 58, 155]) / 255  # Purple
+    color5 = np.array([211, 95, 183]) / 255  # Fuschia
+
+    if reward_type == "Global":
+        colors = [color1, color4]
+    elif reward_type == "Difference":
+        colors = [color2, color4]
+    else:
+        colors = [color3, color4]
+    x_axis = [reward_type, "ACG"]
+
+    acg_file_path = '../Output_Data/TeamPerformance_ACG.csv'
+    config_input = []
+    with open(acg_file_path) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+
+        for row in csv_reader:
+            config_input.append(row)
+
+    n_data_points = int(sruns)
+    acg_rewards = np.zeros(n_data_points)
+    for row in config_input:
+        for i in range(n_data_points):
+            acg_rewards[i] += float(row[i])
+
+    standard_file_path = '../Output_Data/Final_GlobalRewards.csv'
+    config_input = []
+    with open(standard_file_path) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+
+        for row in csv_reader:
+            config_input.append(row)
+
+    n_data_points = int(sruns)
+    standard_rewards = np.zeros(n_data_points)
+    for row in config_input:
+        for i in range(n_data_points):
+            standard_rewards[i] += float(row[i])
+
+    standard_perf = np.mean(standard_rewards[:])
+    acg_perf = np.mean(acg_rewards[:])
+    ydata = [standard_perf, acg_perf]
+
+    plt.bar(x_axis, ydata, color=colors)
+    plt.ylabel("Average Global Reward")
+
+    # Save the plot
+    if not os.path.exists('Plots'):  # If Data directory does not exist, create it
+        os.makedirs('Plots')
+    plt.savefig("Plots/ACG_Performance.pdf")
+    plt.close()
+
+
 if __name__ == '__main__':
     generations = int(sys.argv[1])
-    sample_rate = int(sys.argv[2])
-    sruns = int(sys.argv[3])
-    reward_type = "DPP"
+    sruns = int(sys.argv[2])
+    reward_type = sys.argv[3]
+    sample_rate = 20
 
 
     generate_policy_learning_curves(generations, sample_rate, sruns, reward_type)
     generate_acg_learning_curves(generations, sample_rate, sruns)
-    generate_incursion_plot(sruns)
+    generate_performance_graphs(sruns, reward_type)
+    generate_incursion_plot(sruns, reward_type)
