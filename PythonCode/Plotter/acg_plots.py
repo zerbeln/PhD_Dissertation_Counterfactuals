@@ -217,7 +217,6 @@ if __name__ == '__main__':
     reward_type = sys.argv[3]
     sample_rate = 20
 
-
     generate_policy_learning_curves(generations, sample_rate, sruns, reward_type)
     generate_acg_learning_curves(generations, sample_rate, sruns)
     generate_performance_graphs(sruns, reward_type)
