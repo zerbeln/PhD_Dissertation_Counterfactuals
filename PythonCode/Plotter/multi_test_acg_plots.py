@@ -102,17 +102,14 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-
     with open(acg_fpath2) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-
     with open(acg_fpath3) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-
     with open(acg_fpath4) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
@@ -131,17 +128,14 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-
     with open(global_fpath2) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-
     with open(global_fpath3) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-
     with open(global_fpath4) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
