@@ -2,20 +2,20 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 5  # Total number of runs to perform
-parameters["generations"] = 5  # Number of generations for CCEA in each stat run
+parameters["stat_runs"] = 15  # Total number of runs to perform
+parameters["generations"] = 500  # Number of generations for CCEA in each stat run
 parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
-parameters["n_configurations"] = 1  # The number of environmental configurations used for training
+parameters["n_configurations"] = 2  # The number of environmental configurations used for training
 
 # Domain parameters
 parameters["x_dim"] = 50.0  # X-Dimension of the rover map
 parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
-parameters["n_rovers"] = 3  # Number of rovers on map
-parameters["n_poi"] = 2  # Number of POIs on map
-parameters["steps"] = 20  # Number of time steps rovers take each episode
-parameters["world_setup"] = "Rover_Only"  # Rover_Only, All
-parameters["poi_config_type"] = "Random"  # Random, Two_POI_LR, Twp_POI_TB, Four_Corners, Circle
+parameters["n_rovers"] = 4  # Number of rovers on map
+parameters["n_poi"] = 4  # Number of POIs on map
+parameters["steps"] = 25  # Number of time steps rovers take each episode
+parameters["world_setup"] = "All"  # Rover_Only, All
+parameters["poi_config_type"] = "Two_POI_TB"  # Random, Two_POI_LR, Twp_POI_TB, Four_Corners, Circle
 parameters["rover_config_type"] = "Random"  # Random, Concentrated, Fixed
 
 # Rover Parameters
@@ -25,7 +25,7 @@ parameters["observation_radius"] = 4.0  # Maximum range at which rovers can obse
 parameters["dmax"] = 3.5  # Maximum distance a rover can move in a single time step
 
 # Neural network parameters for rover motor control
-parameters["n_inp"] = int(2 * (360 / parameters["angle_res"]))
+parameters["n_inp"] = int(2 * (360/parameters["angle_res"]))
 parameters["n_hid"] = 12
 parameters["n_out"] = 2
 
@@ -45,13 +45,13 @@ parameters["cba_hid"] = 12
 parameters["cba_out"] = parameters["n_skills"]
 
 # ACG Parameters
-parameters["sup_train"] = "Rover_Loss"  # Hazards or Rover_Loss
+parameters["sup_train"] = "Hazards"  # Hazards or Rover_Loss
 parameters["acg_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["acg_hid"] = 12
 parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
 parameters["acg_alg"] = "Difference"
-parameters["acg_generations"] = 5
-parameters["rover_loss"] = [0, 1]  # Number of rovers that will become nonfunctional in each configuration
+parameters["acg_generations"] = 1000
+parameters["rover_loss"] = [0]  # Number of rovers that will become nonfunctional in each configuration
 parameters["acg_configurations"] = parameters["n_configurations"]  # Configurations used for training supervisors
 
 # Post Training Test Parameters
