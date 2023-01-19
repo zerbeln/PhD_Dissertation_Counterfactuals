@@ -107,10 +107,11 @@ def generate_policy_learning_curves(generations, sample_rate, sruns, reward_type
 
 
 if __name__ == '__main__':
-    generations = int(sys.argv[1])
-    sruns = int(sys.argv[2])
-    reward_type = sys.argv[3]
+    generations = 500
+    acg_generations = 1000
+    sruns = 15
+    reward_type = sys.argv[1]
     sample_rate = 20
 
     generate_policy_learning_curves(generations, sample_rate, sruns, reward_type)
-    generate_acg_learning_curves(generations, sample_rate, sruns)
+    generate_acg_learning_curves(acg_generations, sample_rate, sruns)
