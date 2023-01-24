@@ -14,9 +14,9 @@ def generate_incursion_plots(sruns, reward_type, n_tests):
     color5 = np.array([211, 95, 183]) / 255  # Fuschia
 
     # File Paths
-    fpath1 = '../TwoConfigs/Output_Data/HazardIncursions.csv'
-    fpath2 = '../FourConfigs/Output_Data/HazardIncursions.csv'
-    fpath3 = '../C3/Output_Data/HazardIncursions.csv'
+    fpath1 = '../OneConfig/Output_Data/HazardIncursions.csv'
+    fpath2 = '../TwoConfigs/Output_Data/HazardIncursions.csv'
+    fpath3 = '../FourConfigs/Output_Data/HazardIncursions.csv'
     fpath4 = '../C4/Output_Data/HazardIncursions.csv'
     fpath5 = '../5Rovers/Output_Data/HazardIncursions.csv'
 
@@ -33,10 +33,10 @@ def generate_incursion_plots(sruns, reward_type, n_tests):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    # with open(fpath3) as csvfile:
-    #     csv_reader = csv.reader(csvfile, delimiter=',')
-    #     for row in csv_reader:
-    #         config_input.append(row)
+    with open(fpath3) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        for row in csv_reader:
+            config_input.append(row)
     # with open(fpath4) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -63,7 +63,7 @@ def generate_incursion_plots(sruns, reward_type, n_tests):
 
     # Plot The Data
     x_axis = np.arange(n_tests)
-    labels = [2, 4]
+    labels = [1, 2, 4]
     width = 0.35
     fig, ax = plt.subplots()
     p1 = plt.bar(x_axis - width/2, rover_incursions, width, color=color1, label=reward_type)
@@ -92,14 +92,14 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
     color5 = np.array([211, 95, 183]) / 255  # Fuschia
 
     # File Paths
-    acg_fpath1 = '../TwoConfigs/Output_Data/TeamPerformance_ACG.csv'
-    acg_fpath2 = '../FourConfigs/Output_Data/TeamPerformance_ACG.csv'
-    acg_fpath3 = '../C3/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath1 = '../OneConfig/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath2 = '../TwoConfigs/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath3 = '../FourConfigs/Output_Data/TeamPerformance_ACG.csv'
     acg_fpath4 = '../C4/Output_Data/TeamPerformance_ACG.csv'
     acg_fpath5 = '../5Rovers/Output_Data/TeamPerformance_ACG.csv'
-    global_fpath1 = '../TwoConfigs/Output_Data/Final_GlobalRewards.csv'
-    global_fpath2 = '../FourConfigs/Output_Data/Final_GlobalRewards.csv'
-    global_fpath3 = '../C3/Output_Data/Final_GlobalRewards.csv'
+    global_fpath1 = '../OneConfig/Output_Data/Final_GlobalRewards.csv'
+    global_fpath2 = '../TwoConfigs/Output_Data/Final_GlobalRewards.csv'
+    global_fpath3 = '../FourConfigs/Output_Data/Final_GlobalRewards.csv'
     global_fpath4 = '../C4/Output_Data/Final_GlobalRewards.csv'
     global_fpath5 = '../5Rovers/Output_Data/Final_GlobalRewards.csv'
 
@@ -115,10 +115,10 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    # with open(acg_fpath3) as csvfile:
-    #     csv_reader = csv.reader(csvfile, delimiter=',')
-    #     for row in csv_reader:
-    #         config_input.append(row)
+    with open(acg_fpath3) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        for row in csv_reader:
+            config_input.append(row)
     # with open(acg_fpath4) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -145,10 +145,10 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    # with open(global_fpath3) as csvfile:
-    #     csv_reader = csv.reader(csvfile, delimiter=',')
-    #     for row in csv_reader:
-    #         config_input.append(row)
+    with open(global_fpath3) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        for row in csv_reader:
+            config_input.append(row)
     # with open(global_fpath4) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -168,7 +168,7 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
 
     # Plot The Data
     x_axis = np.arange(n_tests)
-    labels = [2, 4]
+    labels = [1, 2, 4]
     width = 0.35
     fig, ax = plt.subplots()
     p1 = plt.bar(x_axis - width / 2, rover_performance, width, color=color1, label=reward_type)
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     sruns = int(sys.argv[1])
     reward_type = sys.argv[2]
     sample_rate = 20
-    n_tests = 2
+    n_tests = 3
 
     generate_performance_graphs(sruns, reward_type, n_tests)
     generate_incursion_plots(sruns, reward_type, n_tests)

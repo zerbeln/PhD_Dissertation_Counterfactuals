@@ -2,18 +2,18 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 15  # Total number of runs to perform
+parameters["stat_runs"] = 30  # Total number of runs to perform
 parameters["generations"] = 500  # Number of generations for CCEA in each stat run
 parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
-parameters["n_configurations"] = 2  # The number of environmental configurations used for training
+parameters["n_configurations"] = 4  # The number of environmental configurations used for training
 
 # Domain parameters
-parameters["x_dim"] = 50.0  # X-Dimension of the rover map
-parameters["y_dim"] = 50.0  # Y-Dimension of the rover map
-parameters["n_rovers"] = 4  # Number of rovers on map
-parameters["n_poi"] = 4  # Number of POIs on map
-parameters["steps"] = 25  # Number of time steps rovers take each episode
+parameters["x_dim"] = 80.0  # X-Dimension of the rover map
+parameters["y_dim"] = 80.0  # Y-Dimension of the rover map
+parameters["n_rovers"] = 5  # Number of rovers on map
+parameters["n_poi"] = 5  # Number of POIs on map
+parameters["steps"] = 30  # Number of time steps rovers take each episode
 parameters["world_setup"] = "All"  # Rover_Only, All
 parameters["poi_config_type"] = "Two_POI_TB"  # Random, Two_POI_LR, Twp_POI_TB, Four_Corners, Circle
 parameters["rover_config_type"] = "Random"  # Random, Concentrated, Fixed
@@ -50,7 +50,7 @@ parameters["acg_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["acg_hid"] = 12
 parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
 parameters["acg_alg"] = "Difference"
-parameters["acg_generations"] = 1000
+parameters["acg_generations"] = 2000
 parameters["rover_loss"] = [0]  # Number of rovers that will become nonfunctional in each configuration
 parameters["acg_configurations"] = parameters["n_configurations"]  # Configurations used for training supervisors
 
