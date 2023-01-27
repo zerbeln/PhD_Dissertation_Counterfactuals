@@ -73,7 +73,7 @@ def find_best_counterfactuals(srun, c_list, config_id):
         g_reward = 0
         for p_reward in poi_rewards:
             g_reward += max(p_reward)
-        g_reward -= (n_incursions*10)
+        g_reward -= (n_incursions * p["h_penalty"])
         if best_reward is None or g_reward > best_reward:
             best_reward = g_reward
             best_rover_suggestion = c_state
@@ -151,7 +151,7 @@ def test_cba(counterfactuals, config_id):
         g_reward = 0
         for p_reward in poi_rewards:
             g_reward += max(p_reward)
-        g_reward -= (n_incursions*10)
+        g_reward -= (n_incursions * p["h_penalty"])
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward

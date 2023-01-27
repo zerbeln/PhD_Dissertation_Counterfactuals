@@ -89,7 +89,7 @@ def train_supervisor_poi_hazards():
                     g_reward = 0
                     for p_reward in poi_rewards:
                         g_reward += max(p_reward)
-                    g_reward -= (n_incursions * 5)  # Penalty for rovers entering hazards
+                    g_reward -= (n_incursions * p["h_penalty"])  # Penalty for rovers entering hazards
                     sup_ea.fitness[pol_id] += g_reward
 
                 sup_ea.fitness[pol_id] /= p["acg_configurations"]  # Average reward across configurations

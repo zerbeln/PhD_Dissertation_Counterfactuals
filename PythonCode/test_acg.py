@@ -81,7 +81,7 @@ def test_acg_hazards(config_id):
         g_reward = 0
         for p_reward in poi_rewards:
             g_reward += max(p_reward)
-        g_reward -= (n_incursions * 5)
+        g_reward -= (n_incursions * p["h_penalty"])
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward

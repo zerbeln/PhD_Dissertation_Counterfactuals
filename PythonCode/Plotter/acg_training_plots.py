@@ -93,7 +93,6 @@ def generate_policy_learning_curves(generations, sample_rate, sruns, reward_type
     else:
         print("INCORRECT REWARD TYPE")
 
-
     # Graph Details
     plt.xlabel("Generations")
     plt.ylabel("Global Reward")
@@ -107,9 +106,13 @@ def generate_policy_learning_curves(generations, sample_rate, sruns, reward_type
 
 
 if __name__ == '__main__':
+    """
+    This code generates the training plots for training the counterfactual supervisor.
+    When calling script, reward type that agents are trained with needs to be entered (Global, D, or D++)
+    """
     generations = 500
-    acg_generations = 1000
-    sruns = 15
+    acg_generations = 1800
+    sruns = 30
     reward_type = sys.argv[1]
     sample_rate = 20
 

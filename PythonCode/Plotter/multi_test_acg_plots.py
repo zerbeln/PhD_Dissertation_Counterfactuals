@@ -14,10 +14,10 @@ def generate_incursion_plots(sruns, reward_type, n_tests):
     color5 = np.array([211, 95, 183]) / 255  # Fuschia
 
     # File Paths
-    fpath1 = '../OneConfig/Output_Data/HazardIncursions.csv'
-    fpath2 = '../TwoConfigs/Output_Data/HazardIncursions.csv'
-    fpath3 = '../FourConfigs/Output_Data/HazardIncursions.csv'
-    fpath4 = '../C4/Output_Data/HazardIncursions.csv'
+    fpath1 = '../1Rover/Output_Data/HazardIncursions.csv'
+    fpath2 = '../2Rovers/Output_Data/HazardIncursions.csv'
+    fpath3 = '../3Rovers/Output_Data/HazardIncursions.csv'
+    fpath4 = '../4Rovers/Output_Data/HazardIncursions.csv'
     fpath5 = '../5Rovers/Output_Data/HazardIncursions.csv'
 
     rover_incursions = np.zeros(n_tests)
@@ -63,14 +63,14 @@ def generate_incursion_plots(sruns, reward_type, n_tests):
 
     # Plot The Data
     x_axis = np.arange(n_tests)
-    labels = [1, 2, 4]
+    labels = [1, 2, 3]
     width = 0.35
     fig, ax = plt.subplots()
     p1 = plt.bar(x_axis - width/2, rover_incursions, width, color=color1, label=reward_type)
     p2 = plt.bar(x_axis + width/2, acg_incursions, width, color=color4, label="ACG")
 
-    # ax.set_xlabel("Number of Rovers")
-    ax.set_xlabel("Number of Training Configurations")
+    ax.set_xlabel("Number of Rovers")
+    # ax.set_xlabel("Number of Training Configurations")
     ax.set_ylabel("Number of Rover Incursions")
     ax.set_xticks(x_axis, labels)
     ax.legend()
@@ -92,15 +92,15 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
     color5 = np.array([211, 95, 183]) / 255  # Fuschia
 
     # File Paths
-    acg_fpath1 = '../OneConfig/Output_Data/TeamPerformance_ACG.csv'
-    acg_fpath2 = '../TwoConfigs/Output_Data/TeamPerformance_ACG.csv'
-    acg_fpath3 = '../FourConfigs/Output_Data/TeamPerformance_ACG.csv'
-    acg_fpath4 = '../C4/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath1 = '../1Rover/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath2 = '../2Rovers/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath3 = '../3Rovers/Output_Data/TeamPerformance_ACG.csv'
+    acg_fpath4 = '../4Rovers/Output_Data/TeamPerformance_ACG.csv'
     acg_fpath5 = '../5Rovers/Output_Data/TeamPerformance_ACG.csv'
-    global_fpath1 = '../OneConfig/Output_Data/Final_GlobalRewards.csv'
-    global_fpath2 = '../TwoConfigs/Output_Data/Final_GlobalRewards.csv'
-    global_fpath3 = '../FourConfigs/Output_Data/Final_GlobalRewards.csv'
-    global_fpath4 = '../C4/Output_Data/Final_GlobalRewards.csv'
+    global_fpath1 = '../1Rover/Output_Data/Final_GlobalRewards.csv'
+    global_fpath2 = '../2Rovers/Output_Data/Final_GlobalRewards.csv'
+    global_fpath3 = '../3Rovers/Output_Data/Final_GlobalRewards.csv'
+    global_fpath4 = '../4Rovers/Output_Data/Final_GlobalRewards.csv'
     global_fpath5 = '../5Rovers/Output_Data/Final_GlobalRewards.csv'
 
     rover_performance = np.zeros(n_tests)
@@ -168,14 +168,14 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
 
     # Plot The Data
     x_axis = np.arange(n_tests)
-    labels = [1, 2, 4]
+    labels = [1, 2, 3]
     width = 0.35
     fig, ax = plt.subplots()
     p1 = plt.bar(x_axis - width / 2, rover_performance, width, color=color1, label=reward_type)
     p2 = plt.bar(x_axis + width / 2, acg_performance, width, color=color4, label="ACG")
 
-    # ax.set_xlabel("Number of Rovers")
-    ax.set_xlabel("Number of Training Configurations")
+    ax.set_xlabel("Number of Rovers")
+    # ax.set_xlabel("Number of Training Configurations")
     ax.set_ylabel("Average Team Performance")
     ax.set_xticks(x_axis, labels)
     ax.legend()
@@ -189,6 +189,12 @@ def generate_performance_graphs(sruns, reward_type, n_tests):
 
 
 if __name__ == '__main__':
+    """
+    This code generates the performance plots for the counterfactual supervisor.
+    The functions plot overall team performance according to G and the number of entries into hazards.
+    Requires the number of stat runs and the reward type used to train agents as inputs when calling script.
+    """
+
     sruns = int(sys.argv[1])
     reward_type = sys.argv[2]
     sample_rate = 20

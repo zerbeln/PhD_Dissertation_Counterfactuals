@@ -7,11 +7,12 @@ parameters["generations"] = 500  # Number of generations for CCEA in each stat r
 parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 4  # The number of environmental configurations used for training
+parameters["h_penalty"] = 10  # Penalty for entering hazard areas
 
 # Domain parameters
 parameters["x_dim"] = 80.0  # X-Dimension of the rover map
 parameters["y_dim"] = 80.0  # Y-Dimension of the rover map
-parameters["n_rovers"] = 5  # Number of rovers on map
+parameters["n_rovers"] = 1  # Number of rovers on map
 parameters["n_poi"] = 5  # Number of POIs on map
 parameters["steps"] = 30  # Number of time steps rovers take each episode
 parameters["world_setup"] = "All"  # Rover_Only, All
@@ -38,7 +39,7 @@ parameters["n_elites"] = 1  # How many elites to carry over during elite selecti
 
 # CBA Parameters
 parameters["skill_type"] = "Target_POI"  # Target_Quadrant or Target_POI
-parameters["randomize_skills"] = False  # Rovers are learning different skills at different times when True
+parameters["randomize_skills"] = False  # Rovers are learning different skills at different times when True 
 parameters["n_skills"] = parameters["n_poi"] + 1  # Number of pre-trained policies in the policy bank
 parameters["cba_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["cba_hid"] = 12
@@ -50,7 +51,7 @@ parameters["acg_inp"] = int(2 * (360 / parameters["angle_res"]))
 parameters["acg_hid"] = 12
 parameters["acg_out"] = parameters["n_inp"] * parameters["n_rovers"]
 parameters["acg_alg"] = "Difference"
-parameters["acg_generations"] = 2000
+parameters["acg_generations"] = 2500
 parameters["rover_loss"] = [0]  # Number of rovers that will become nonfunctional in each configuration
 parameters["acg_configurations"] = parameters["n_configurations"]  # Configurations used for training supervisors
 
