@@ -90,7 +90,7 @@ def test_acg_hazards(config_id):
     print(average_reward / p["stat_runs"])
     create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_ACG.csv")
-    create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
+    create_csv_file(incursion_tracker, "Output_Data/", "ACGHazardIncursions.csv")
     if p["vis_running"]:
         run_visualizer(cf_id=config_id)
 
