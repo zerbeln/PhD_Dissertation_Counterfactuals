@@ -118,7 +118,7 @@ def generate_incursion_plots(sruns, n_tests):
     plt.close()
 
 
-def generate_performance_graphs(sruns, n_tests):
+def generate_performance_graphs(sruns, n_tests, scaling):
     # Plot Color Palette
     color1 = np.array([26, 133, 255]) / 255  # Blue
     color2 = np.array([255, 194, 10]) / 255  # Yellow
@@ -167,7 +167,7 @@ def generate_performance_graphs(sruns, n_tests):
     team_rewards = np.zeros(int(sruns))
     for row in config_input:
         for i in range(sruns):
-            team_rewards[i] = float(row[i]) + 50.00
+            team_rewards[i] = float(row[i]) + scaling
         acg_performance[test_id] = np.mean(team_rewards)
         test_id += 1
 
@@ -197,7 +197,7 @@ def generate_performance_graphs(sruns, n_tests):
     team_rewards = np.zeros(int(sruns))
     for row in config_input:
         for i in range(sruns):
-            team_rewards[i] = float(row[i]) + 50.00
+            team_rewards[i] = float(row[i]) + scaling
         rover_performance[test_id] = np.mean(team_rewards)
         test_id += 1
 
@@ -213,9 +213,9 @@ def generate_performance_graphs(sruns, n_tests):
     ax.set_xlabel("Agent Team Size")
     ax.set_ylabel("Average Team Performance")
     ax.set_xticks(x_axis, labels)
-    ax.legend(loc=2)
+    ax.legend()
     fig.tight_layout()
-    # plt.axhline(x_line, color='black')
+    plt.axhline(x_line, color='black')
 
     # Save the plot
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
@@ -234,6 +234,7 @@ if __name__ == '__main__':
     sruns = int(sys.argv[1])
     sample_rate = 20
     n_tests = 2
+    scaling = 0.0
 
-    generate_performance_graphs(sruns, n_tests)
+    generate_performance_graphs(sruns, n_tests, scaling)
     generate_incursion_plots(sruns, n_tests)
