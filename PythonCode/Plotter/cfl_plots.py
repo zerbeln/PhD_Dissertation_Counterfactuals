@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
-from plots_common_functions import import_reward_data, get_standard_deviations
+from plots_common_functions import import_reward_data, get_standard_deviations_learning
 
 
 def generate_cfl_learning_curves(generations, sample_rate, sruns):
@@ -17,27 +17,27 @@ def generate_cfl_learning_curves(generations, sample_rate, sruns):
     # Graph Data
     g_file_path ='../Global/Output_Data/Global_Reward.csv'
     g_reward = import_reward_data(g_file_path, generations, sample_rate, sruns)
-    g_stdev = get_standard_deviations(g_file_path, g_reward, generations, sample_rate, sruns)
+    g_stdev = get_standard_deviations_learning(g_file_path, g_reward, generations, sample_rate, sruns)
 
     d_file_path = '../Difference/Output_Data/Difference_Reward.csv'
     d_reward = import_reward_data(d_file_path, generations, sample_rate, sruns)
-    d_stdev = get_standard_deviations(d_file_path, d_reward, generations, sample_rate, sruns)
+    d_stdev = get_standard_deviations_learning(d_file_path, d_reward, generations, sample_rate, sruns)
 
     dpp_file_path = '../D++/Output_Data/DPP_Reward.csv'
     dpp_reward = import_reward_data(dpp_file_path, generations, sample_rate, sruns)
-    dpp_stdev = get_standard_deviations(dpp_file_path, dpp_reward, generations, sample_rate, sruns)
+    dpp_stdev = get_standard_deviations_learning(dpp_file_path, dpp_reward, generations, sample_rate, sruns)
 
     cfl_file_path = '../CFL_P1/Output_Data/CFL_DPP_Rewards.csv'
     cfl_reward = import_reward_data(cfl_file_path, generations, sample_rate, sruns)
-    cfl_stdev = get_standard_deviations(cfl_file_path, cfl_reward, generations, sample_rate, sruns)
+    cfl_stdev = get_standard_deviations_learning(cfl_file_path, cfl_reward, generations, sample_rate, sruns)
 
     abv_cfl_file_path = '../CFL_Above/Output_Data/CFL_DPP_Rewards.csv'
     abv_cfl_reward = import_reward_data(abv_cfl_file_path, generations, sample_rate, sruns)
-    abv_cfl_stdev = get_standard_deviations(abv_cfl_file_path, abv_cfl_reward, generations, sample_rate, sruns)
+    abv_cfl_stdev = get_standard_deviations_learning(abv_cfl_file_path, abv_cfl_reward, generations, sample_rate, sruns)
 
     bel_cfl_file_path = '../CFL_Below/Output_Data/CFL_DPP_Rewards.csv'
     bel_cfl_reward = import_reward_data(bel_cfl_file_path, generations, sample_rate, sruns)
-    bel_cfl_stdev = get_standard_deviations(bel_cfl_file_path, bel_cfl_reward, generations, sample_rate, sruns)
+    bel_cfl_stdev = get_standard_deviations_learning(bel_cfl_file_path, bel_cfl_reward, generations, sample_rate, sruns)
 
     x_axis = []
     for i in range(generations):

@@ -4,7 +4,7 @@ import numpy as np
 import csv
 import sys
 import os
-from plots_common_functions import import_reward_data, get_standard_deviations
+from plots_common_functions import import_reward_data, get_standard_err_performance
 
 
 def calc_max_poi_val(n_rovers, poi_coupling):
@@ -34,7 +34,7 @@ def calc_max_poi_val(n_rovers, poi_coupling):
     return max_val
 
 
-def create_coupling_plots(max_coupling, n_poi, n_rovers):
+def create_coupling_plots(max_coupling, n_poi, n_rovers, sruns):
     # Plot Color Palette
     color1 = np.array([26, 133, 255]) / 255  # Blue
     color2 = np.array([255, 194, 10]) / 255  # Yellow
@@ -44,9 +44,13 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
     x_axis = ["C1", "C2", "C3", "C4", "C5", "C6"]
 
     g_data = []
+    g_err = []
     d_data = []
+    d_err = []
     dpp_data = []
+    dpp_err = []
     cki_data = []
+    cki_err = []
 
     for i in range(max_coupling):
         g_path = '../C{0}/Global/Output_Data/Final_GlobalRewards.csv'.format(i+1)
@@ -54,8 +58,7 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
         dpp_path = '../C{0}/D++/Output_Data/Final_GlobalRewards.csv'.format(i+1)
         cki_path = '../C{0}/CBA/Output_Data/Final_GlobalRewards.csv'.format(i+1)
 
-        max_reward = calc_max_poi_val(n_rovers, i+1)
-
+        max_reward = calc_max_poi_val(n_rovers, i+1)  # Maximum possible score teams can achieve
         g_input = []
         d_input = []
         dpp_input = []
@@ -69,8 +72,9 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
         temp = []
         for row in g_input:
             for val in row:
-                temp.append(float(val)/max_reward)
-        g_data.append(np.mean(temp))
+                temp.append(float(val))
+        g_data.append(np.mean(temp)/max_reward)  # Scaled with respect to maximum possible reward
+        g_err.append(get_standard_err_performance(g_path, np.mean(temp), sruns)/max_reward)
 
         # Difference Reward Performance --------------------------
         with open(d_path) as csvfile:
@@ -80,8 +84,9 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
         temp = []
         for row in d_input:
             for val in row:
-                temp.append(float(val)/max_reward)
-        d_data.append(np.mean(temp))
+                temp.append(float(val))
+        d_data.append(np.mean(temp)/max_reward)  # Scaled with respect to maximum possible reward
+        d_err.append(get_standard_err_performance(d_path, np.mean(temp), sruns)/max_reward)
 
         # D++ Reward Performance ------------------------------
         with open(dpp_path) as csvfile:
@@ -91,8 +96,9 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
         temp = []
         for row in dpp_input:
             for val in row:
-                temp.append(float(val)/max_reward)
-        dpp_data.append(np.mean(temp))
+                temp.append(float(val))
+        dpp_data.append(np.mean(temp)/max_reward)  # Scaled with respect to maximum possible reward
+        dpp_err.append(get_standard_err_performance(dpp_path, np.mean(temp), sruns)/max_reward)
 
         # CKI Performance -------------------------------------
         with open(cki_path) as csvfile:
@@ -102,8 +108,9 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
         temp = []
         for row in cki_input:
             for val in row:
-                temp.append(float(val)/max_reward)
-        cki_data.append(np.mean(temp))
+                temp.append(float(val))
+        cki_data.append(np.mean(temp)/max_reward)  # Scaled with respect to maximum possible reward
+        cki_err.append(get_standard_err_performance(cki_path, np.mean(temp), sruns)/max_reward)
 
     # POI Value Estimates may not be exact if rovers can reach multiple POI
     for i in range(len(dpp_data)):
@@ -116,13 +123,13 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
         if cki_data[i] > 1.0:
             cki_data[i] = 1.0
 
-    plt.plot(x_axis, g_data, color=color1, linestyle='--', marker='^')
-    plt.plot(x_axis, d_data, color=color2, linestyle='-.', marker='o')
-    plt.plot(x_axis, dpp_data, color=color3, linestyle=':', marker='s')
-    plt.plot(x_axis, cki_data, color=color4, marker='H')
+    plt.errorbar(x_axis, g_data, g_err, color=color3, linestyle='--', marker='^')
+    plt.errorbar(x_axis, d_data, d_err, color=color2, linestyle='-.', marker='o')
+    plt.errorbar(x_axis, dpp_data, dpp_err, color=color1, linestyle=':', marker='s')
+    plt.errorbar(x_axis, cki_data, cki_err, color=color4, marker='H')
 
     plt.xlabel("POI Coupling Requirement")
-    plt.ylabel("Percentage of Maximum Score")
+    plt.ylabel("Percentage of Maximum Fitness")
     plt.legend(["G", "D", "D++", "CKI"])
 
     # Save the plot
@@ -132,7 +139,7 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers):
     plt.close()
 
 
-def create_hazard_performance_plots(n_poi, n_rovers):
+def create_hazard_performance_plots(n_poi, n_rovers, sruns):
     # Plot Color Palette
     color1 = np.array([26, 133, 255]) / 255  # Blue
     color2 = np.array([255, 194, 10]) / 255  # Yellow
@@ -143,10 +150,15 @@ def create_hazard_performance_plots(n_poi, n_rovers):
     x_axis = ["G", "D", "CKI-C1", "D++", "CKI-C3"]
 
     g_data = []
+    g_err = []
     d_data = []
+    d_err = []
     dpp_data = []
+    dpp_err = []
     cki_c1_data = []
+    cki_c1_err = []
     cki_c3_data = []
+    cki_c3_err = []
 
     for i in range(3):
         g_path = '../H{0}/Global/Output_Data/Final_GlobalRewards.csv'.format(i + 1)
@@ -171,6 +183,7 @@ def create_hazard_performance_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         g_data.append(np.mean(temp))
+        g_err.append(get_standard_err_performance(g_path, np.mean(temp), sruns))
 
         # Difference Reward Performance -----------------------------
         with open(d_path) as csvfile:
@@ -182,6 +195,7 @@ def create_hazard_performance_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         d_data.append(np.mean(temp))
+        d_err.append(get_standard_err_performance(d_path, np.mean(temp), sruns))
 
         # D++ Reward Performance ---------------------------------
         with open(dpp_path) as csvfile:
@@ -193,6 +207,7 @@ def create_hazard_performance_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         dpp_data.append(np.mean(temp))
+        dpp_err.append(get_standard_err_performance(dpp_path, np.mean(temp), sruns))
 
         # CKI-1 Performance ----------------------------------
         with open(cki_c1_path) as csvfile:
@@ -204,6 +219,7 @@ def create_hazard_performance_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         cki_c1_data.append(np.mean(temp))
+        cki_c1_err.append(get_standard_err_performance(cki_c1_path, np.mean(temp), sruns))
 
         # CKI-3 Performance ----------------------------------
         with open(cki_c3_path) as csvfile:
@@ -215,27 +231,31 @@ def create_hazard_performance_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         cki_c3_data.append(np.mean(temp))
+        cki_c3_err.append(get_standard_err_performance(cki_c3_path, np.mean(temp), sruns))
 
-    h1_ydata = [g_data[0], d_data[0], cki_c1_data[0], dpp_data[0], cki_c3_data[0]]
-    h2_ydata = [g_data[1], d_data[1], cki_c1_data[1], dpp_data[1], cki_c3_data[1]]
-    h3_ydata = [g_data[2], d_data[2], cki_c1_data[2], dpp_data[2], cki_c3_data[2]]
+    h1_ydata = [g_data[0], d_data[0], cki_c1_data[0], dpp_data[0], cki_c3_data[0]] + np.array([450.0 for i in range(5)])
+    h1_err = [g_err[0], d_err[0], cki_c1_err[0], dpp_err[0], cki_c3_err[0]]
+    h2_ydata = [g_data[1], d_data[1], cki_c1_data[1], dpp_data[1], cki_c3_data[1]] + np.array([550.0 for i in range(5)])
+    h2_err = [g_err[1], d_err[1], cki_c1_err[1], dpp_err[1], cki_c3_err[1]]
+    h3_ydata = [g_data[2], d_data[2], cki_c1_data[2], dpp_data[2], cki_c3_data[2]] + np.array([1100.0 for i in range(5)])
+    h3_err = [g_err[2], d_err[2], cki_c1_err[2], dpp_err[2], cki_c3_err[2]]
 
     fig, (h1, h2, h3) = plt.subplots(nrows=1, ncols=3)
 
-    h1.bar(x_axis, h1_ydata, color=colors)
+    h1.bar(x_axis, h1_ydata, yerr=h1_err, color=colors)
     h1.axhline(0, color='black')
     h1.axvline(2.5, color='k', linestyle="--")
-    h1.set_ylabel("Average Team Reward")
+    h1.set_ylabel("Average Team Fitness")
     h1.set_title("3 Hazards")
     h1.tick_params('x', labelrotation=45)
 
-    h2.bar(x_axis, h2_ydata, color=colors)
+    h2.bar(x_axis, h2_ydata, yerr=h2_err, color=colors)
     h2.axhline(0, color='black')
     h2.axvline(2.5, color='k', linestyle="--")
     h2.set_title("4 Hazards")
     h2.tick_params('x', labelrotation=45)
 
-    h3.bar(x_axis, h3_ydata, color=colors)
+    h3.bar(x_axis, h3_ydata, yerr=h3_err, color=colors)
     h3.axhline(0, color='black')
     h3.axvline(2.5, color='k', linestyle="--")
     h3.set_title("6 Hazards")
@@ -249,7 +269,7 @@ def create_hazard_performance_plots(n_poi, n_rovers):
     plt.close()
 
 
-def create_hazard_incursion_plots(n_poi, n_rovers):
+def create_hazard_incursion_plots(n_poi, n_rovers, sruns):
     # Plot Color Palette
     color1 = np.array([26, 133, 255]) / 255  # Blue
     color2 = np.array([255, 194, 10]) / 255  # Yellow
@@ -260,10 +280,15 @@ def create_hazard_incursion_plots(n_poi, n_rovers):
     x_axis = ["G", "D", "CKI-C1", "D++", "CKI-C3"]
 
     g_data = []
+    g_err = []
     d_data = []
+    d_err = []
     dpp_data = []
+    dpp_err = []
     cki_c1_data = []
+    cki_c1_err = []
     cki_c3_data = []
+    cki_c3_err = []
 
     for i in range(3):
         g_path = '../H{0}/Global/Output_Data/HazardIncursions.csv'.format(i + 1)
@@ -288,6 +313,7 @@ def create_hazard_incursion_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         g_data.append(np.mean(temp))
+        g_err.append(get_standard_err_performance(g_path, np.mean(temp), sruns))
 
         # Difference Reward Incursions ------------------------
         with open(d_path) as csvfile:
@@ -299,6 +325,7 @@ def create_hazard_incursion_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         d_data.append(np.mean(temp))
+        d_err.append(get_standard_err_performance(d_path, np.mean(temp), sruns))
 
         # D++ Reward Incursions ------------------------------
         with open(dpp_path) as csvfile:
@@ -310,6 +337,7 @@ def create_hazard_incursion_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         dpp_data.append(np.mean(temp))
+        dpp_err.append(get_standard_err_performance(dpp_path, np.mean(temp), sruns))
 
         # CKI-1 Incursions -----------------------------------
         with open(cki_c1_path) as csvfile:
@@ -321,6 +349,7 @@ def create_hazard_incursion_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         cki_c1_data.append(np.mean(temp))
+        cki_c1_err.append(get_standard_err_performance(cki_c1_path, np.mean(temp), sruns))
 
         # CKI-3 Incursions ----------------------------------
         with open(cki_c3_path) as csvfile:
@@ -332,29 +361,34 @@ def create_hazard_incursion_plots(n_poi, n_rovers):
             for val in row:
                 temp.append(float(val))
         cki_c3_data.append(np.mean(temp))
+        cki_c3_err.append(get_standard_err_performance(cki_c3_path, np.mean(temp), sruns))
 
+    # Results are scaled for better performance comparisons
     h1_ydata = [g_data[0], d_data[0], cki_c1_data[0], dpp_data[0], cki_c3_data[0]]
+    h1_err = [g_err[0], d_err[0], cki_c1_err[0], dpp_err[0], cki_c3_err[0]]
     h2_ydata = [g_data[1], d_data[1], cki_c1_data[1], dpp_data[1], cki_c3_data[1]]
+    h2_err = [g_err[1], d_err[1], cki_c1_err[1], dpp_err[1], cki_c3_err[1]]
     h3_ydata = [g_data[2], d_data[2], cki_c1_data[2], dpp_data[2], cki_c3_data[2]]
+    h3_err = [g_err[2], d_err[2], cki_c1_err[2], dpp_err[2], cki_c3_err[2]]
 
     fig, (h1, h2, h3) = plt.subplots(nrows=3, ncols=1)
 
-    h1.barh(x_axis, h1_ydata, color=colors)
+    h1.barh(x_axis, h1_ydata, xerr=h1_err, color=colors)
     h1.axhline(2.5, color='k', linestyle='--')
     h1.set_title("3 Hazards")
     h1.tick_params('x')
     h1.invert_yaxis()
 
-    h2.barh(x_axis, h2_ydata, color=colors)
+    h2.barh(x_axis, h2_ydata, xerr=h2_err, color=colors)
     h2.axhline(2.5, color='k', linestyle='--')
     h2.set_title("4 Hazards")
     h2.tick_params('x')
     h2.invert_yaxis()
 
-    h3.barh(x_axis, h3_ydata, color=colors)
+    h3.barh(x_axis, h3_ydata, xerr=h3_err, color=colors)
     h3.axhline(2.5, color='k', linestyle='--')
     h3.set_title("6 Hazards")
-    h3.set_xlabel("Number of Rover Incursions")
+    h3.set_xlabel("Number of Hazard Incursions")
     h3.tick_params('x')
     h3.invert_yaxis()
 
@@ -462,18 +496,55 @@ def create_skill_heatmap_plots(n_poi, n_rovers):
             j += 1
         i += 1
 
-
+    for i in range(n_poi):
+        for j in range(n_poi):
+            if i == j:
+                rover_data[n_poi, n_poi] += rover_data[i, j]
+    rover_data[n_poi, n_poi] /= n_poi
     rover_data /= n_rovers
 
     # Create The Plot
+    # x_axis = [0, 1, 2]
+    # x_axis = [0, 1, 2, 3, 4]
+    # x_axis = [0, 1, 2, 3, 4, 5]
     x_axis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     plt.imshow(rover_data, cmap=hmap_colors)
-    plt.xticks(x_axis, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '0'])
-    plt.yticks(x_axis, ['POI 1', 'POI 2', 'POI 3', 'POI 4', 'POI 5', 'POI 6', 'POI 7', 'POI 8', 'POI 9', 'POI 10', 'Stop'])
-    plt.xlabel("Counterfactual States")
-    plt.ylabel("Agent Skill")
+    plt.xticks(x_axis)
+    plt.yticks(x_axis)
+    plt.xlabel("Desired Policy Selection")
+    plt.ylabel("Agent Policy Selection")
     plt.colorbar()
-    plt.show()
+
+    # Add gridlines (requires shifting major/mior gridlines)
+    ax = plt.gca()
+    # Major ticks
+    ax.set_xticks(np.arange(0, len(x_axis), 1))
+    ax.set_yticks(np.arange(0, len(x_axis), 1))
+
+    # Labels for major ticks
+    # ax.set_xticklabels(['P1', 'P2', 'P0'])
+    # ax.set_yticklabels(['P1', 'P2', 'P0'])
+    # ax.set_xticklabels(['P1', 'P2', 'P3', 'P4', 'P0'])
+    # ax.set_yticklabels(['P1', 'P2', 'P3', 'P4', 'P0'])
+    # ax.set_xticklabels(['P1', 'P2', 'P3', 'P4', 'P5', 'P0'])
+    # ax.set_yticklabels(['P1', 'P2', 'P3', 'P4', 'P5', 'P0'])
+    ax.set_xticklabels(['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P0'])
+    ax.set_yticklabels(['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P0'])
+
+    # Minor ticks
+    ax.set_xticks(np.arange(-.5, len(x_axis), 1), minor=True)
+    ax.set_yticks(np.arange(-.5, len(x_axis), 1), minor=True)
+
+    # Gridlines based on minor ticks
+    ax.grid(which='minor', color='k', linestyle='-', linewidth=1)
+
+    # Remove minor ticks
+    ax.tick_params(which='minor', bottom=False, left=False)
+
+    if not os.path.exists('Plots'):  # If Data directory does not exist, create it
+        os.makedirs('Plots')
+    plt.savefig("Plots/P{0}R{1}_Heatmap.pdf".format(n_poi, n_rovers))
+    plt.close()
 
 
 if __name__ == '__main__':
@@ -488,9 +559,9 @@ if __name__ == '__main__':
     n_poi = 10
 
     if graph_type == "Coupling":
-        create_coupling_plots(max_coupling, n_poi, n_rovers)
+        create_coupling_plots(max_coupling, n_poi, n_rovers, sruns)
     elif graph_type == "Hazard":
-        create_hazard_performance_plots(n_poi, n_rovers)
-        create_hazard_incursion_plots(n_poi, n_rovers)
+        create_hazard_performance_plots(n_poi, n_rovers, sruns)
+        create_hazard_incursion_plots(n_poi, n_rovers, sruns)
     elif graph_type == "HeatMap":
         create_skill_heatmap_plots(n_poi, n_rovers)
