@@ -233,11 +233,11 @@ def create_hazard_performance_plots(n_poi, n_rovers, sruns):
         cki_c3_data.append(np.mean(temp))
         cki_c3_err.append(get_standard_err_performance(cki_c3_path, np.mean(temp), sruns))
 
-    h1_ydata = [g_data[0], d_data[0], cki_c1_data[0], dpp_data[0], cki_c3_data[0]] + np.array([450.0 for i in range(5)])
+    h1_ydata = [g_data[0], d_data[0], cki_c1_data[0], dpp_data[0], cki_c3_data[0]] + np.array([1050.0 for i in range(5)])
     h1_err = [g_err[0], d_err[0], cki_c1_err[0], dpp_err[0], cki_c3_err[0]]
-    h2_ydata = [g_data[1], d_data[1], cki_c1_data[1], dpp_data[1], cki_c3_data[1]] + np.array([550.0 for i in range(5)])
+    h2_ydata = [g_data[1], d_data[1], cki_c1_data[1], dpp_data[1], cki_c3_data[1]] + np.array([1050.0 for i in range(5)])
     h2_err = [g_err[1], d_err[1], cki_c1_err[1], dpp_err[1], cki_c3_err[1]]
-    h3_ydata = [g_data[2], d_data[2], cki_c1_data[2], dpp_data[2], cki_c3_data[2]] + np.array([1100.0 for i in range(5)])
+    h3_ydata = [g_data[2], d_data[2], cki_c1_data[2], dpp_data[2], cki_c3_data[2]] + np.array([1050.0 for i in range(5)])
     h3_err = [g_err[2], d_err[2], cki_c1_err[2], dpp_err[2], cki_c3_err[2]]
 
     fig, (h1, h2, h3) = plt.subplots(nrows=1, ncols=3)
@@ -248,18 +248,24 @@ def create_hazard_performance_plots(n_poi, n_rovers, sruns):
     h1.set_ylabel("Average Team Fitness")
     h1.set_title("3 Hazards")
     h1.tick_params('x', labelrotation=45)
+    h1.set_yticks(np.arange(0, 1105, 100))
+    h1.set_ylim([0, 1100])
 
     h2.bar(x_axis, h2_ydata, yerr=h2_err, color=colors)
     h2.axhline(0, color='black')
     h2.axvline(2.5, color='k', linestyle="--")
     h2.set_title("4 Hazards")
     h2.tick_params('x', labelrotation=45)
+    h2.set_yticks(np.arange(0, 1105, 100))
+    h2.set_ylim([0, 1100])
 
     h3.bar(x_axis, h3_ydata, yerr=h3_err, color=colors)
     h3.axhline(0, color='black')
     h3.axvline(2.5, color='k', linestyle="--")
     h3.set_title("6 Hazards")
     h3.tick_params('x', labelrotation=45)
+    h3.set_yticks(np.arange(0, 1105, 100))
+    h3.set_ylim([0, 1100])
 
     fig.tight_layout()
     # Save the plot

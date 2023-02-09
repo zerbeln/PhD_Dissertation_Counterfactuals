@@ -72,6 +72,7 @@ def test_trained_policy(config_id):
     # Run tests
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
+        rover_poi_tracker = np.zeros((p["n_rovers"], p["n_poi"] + 1))  # Track number of times rovers visit POI or none
         # Load Trained Rover Networks
         for rv in rd.rovers:
             rover_id = rd.rovers[rv].rover_id
@@ -100,10 +101,22 @@ def test_trained_policy(config_id):
             step_rewards = rd.step(rover_actions)
             for poi_id in range(p["n_poi"]):
                 poi_rewards[poi_id, step_id] = step_rewards[poi_id]
-                if rd.pois["P{0}".format(poi_id)].hazardous:
-                    for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
-                        if dist < p["observation_radius"]:
+                rov_id = 0
+                for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                    if dist < p["observation_radius"]:
+                        rover_poi_tracker[rov_id, poi_id] += 1
+                        if rd.pois["P{0}".format(poi_id)].hazardous:
                             n_incursions += 1
+                    rov_id += 1
+
+        for rov_id in range(p["n_rovers"]):
+            none_visited = True
+            for poi_id in range(p["n_poi"]):
+                if rover_poi_tracker[rov_id, poi_id] > 0:
+                    rover_poi_tracker[rov_id, poi_id] = 1
+                    none_visited = False
+            if none_visited:
+                rover_poi_tracker[rov_id, p["n_poi"]] += 1
 
         # Calculate episodic global reward
         g_reward = 0
@@ -113,6 +126,8 @@ def test_trained_policy(config_id):
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward
+        for rov_id in range(p["n_rovers"]):
+            create_csv_file(rover_poi_tracker[rov_id], "Output_Data/", "Rover{0}POIVisits.csv".format(rov_id))
         srun += 1
 
     print(average_reward/p["stat_runs"])

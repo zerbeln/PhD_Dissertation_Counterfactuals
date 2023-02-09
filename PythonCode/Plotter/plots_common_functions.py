@@ -23,7 +23,7 @@ def import_reward_data(csv_name, generations, sample_rate, sruns):
     return average_reward
 
 
-def get_standard_deviations_learning(csv_name, data_mean, generations, sample_rate, sruns):
+def get_standard_err_learning(csv_name, data_mean, generations, sample_rate, sruns):
     """
     Calculates standard deviation for training data. data_mean is an array of floats
     """
@@ -69,5 +69,15 @@ def get_standard_err_performance(csv_name, data_mean, sruns):
             temp_val += (float(val) - data_mean)**2
 
     standard_err = math.sqrt(temp_val/sruns)/math.sqrt(sruns)
+
+    return standard_err
+
+
+def get_acg_standard_err(csv_row, data_mean, sruns):
+    temp_val = 0.0
+    for val in csv_row:
+        temp_val += (float(val) - data_mean)**2
+
+    standard_err = math.sqrt(temp_val/sruns) / math.sqrt(sruns)
 
     return standard_err
