@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-from RoverDomain_Core.reward_functions import calc_difference
+from RoverDomainCore.reward_functions import calc_difference
 from parameters import parameters as p
 
 

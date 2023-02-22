@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -40,14 +43,14 @@ def generate_incursion_plots(sruns, n_rovers):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    with open(acg_fpath3) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
-    with open(acg_fpath4) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
+    # with open(acg_fpath3) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
+    # with open(acg_fpath4) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
     # with open(acg_fpath5) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -73,14 +76,14 @@ def generate_incursion_plots(sruns, n_rovers):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    with open(fpath3) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
-    with open(fpath4) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
+    # with open(fpath3) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
+    # with open(fpath4) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
     # with open(fpath5) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -98,7 +101,7 @@ def generate_incursion_plots(sruns, n_rovers):
 
     # Plot The Data
     x_axis = np.arange(n_rovers)
-    labels = [1, 2, 3, 4]
+    labels = [1, 2]
     width = 0.35
     fig, ax = plt.subplots()
     p1 = plt.barh(x_axis - width/2, rover_incursions,  width, xerr=rover_inc_err, color=color1, label="Without Supervisor")
@@ -152,14 +155,14 @@ def generate_performance_graphs(sruns, n_rovers, scaling):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    with open(acg_fpath3) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
-    with open(acg_fpath4) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
+    # with open(acg_fpath3) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
+    # with open(acg_fpath4) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
     # with open(acg_fpath5) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -183,14 +186,14 @@ def generate_performance_graphs(sruns, n_rovers, scaling):
         csv_reader = csv.reader(csvfile, delimiter=',')
         for row in csv_reader:
             config_input.append(row)
-    with open(global_fpath3) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
-    with open(global_fpath4) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        for row in csv_reader:
-            config_input.append(row)
+    # with open(global_fpath3) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
+    # with open(global_fpath4) as csvfile:
+    #     csv_reader = csv.reader(csvfile, delimiter=',')
+    #     for row in csv_reader:
+    #         config_input.append(row)
     # with open(global_fpath5) as csvfile:
     #     csv_reader = csv.reader(csvfile, delimiter=',')
     #     for row in csv_reader:
@@ -208,7 +211,7 @@ def generate_performance_graphs(sruns, n_rovers, scaling):
     # Plot The Data
     x_line = 0
     x_axis = np.arange(n_rovers)
-    labels = [1, 2, 3, 4]
+    labels = [1, 2]
     width = 0.35
     fig, ax = plt.subplots()
     p1 = plt.bar(x_axis - width / 2, rover_performance, width, yerr=rov_err, color=color1, label="Without Supervisor")
@@ -236,7 +239,7 @@ if __name__ == '__main__':
     """
 
     sruns = 30
-    n_rovers = 4
+    n_rovers = 2
     scaling = 0.0
 
     generate_performance_graphs(sruns, n_rovers, scaling)

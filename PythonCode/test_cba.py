@@ -1,13 +1,13 @@
-from rover_neural_network import NeuralNetwork
-from RoverDomain_Core.rover_domain import RoverDomain
+from NeuralNetworks.neural_network import NeuralNetwork
+from RoverDomainCore.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 import sys
 from parameters import parameters as p
 from itertools import product
-from CBA.custom_rover_skills import get_custom_action
+from CKI.custom_rover_skills import get_custom_action
 from global_functions import *
-from CBA.cba import get_counterfactual_state, calculate_poi_sectors
+from CKI.cki import get_counterfactual_state, calculate_poi_sectors
 
 
 def find_best_counterfactuals(srun, c_list, config_id):
@@ -52,7 +52,7 @@ def find_best_counterfactuals(srun, c_list, config_id):
                 # Select a skill using counterfactually shaped state information
                 c_sensor_data = get_counterfactual_state(rd.pois, rd.rovers, rover_id, c_state[rover_id], sensor_data)
                 cba_input = np.sum((c_sensor_data, sensor_data), axis=0)  # Shaped agent perception
-                cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CBA picks skill
+                cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(cba_outputs))
                 rover_skill_selections["RV{0}".format(rover_id)][c_state[rover_id]][chosen_pol] += 1
 
@@ -85,7 +85,7 @@ def find_best_counterfactuals(srun, c_list, config_id):
 
 def test_cba(counterfactuals, config_id):
     """
-    Test CBA using the hand created rover policies
+    Test CKI using the hand created rover policies
     """
     # World Setup
     rd = RoverDomain()
@@ -131,7 +131,7 @@ def test_cba(counterfactuals, config_id):
                 # Select a skill using counterfactually shaped state information
                 c_sensor_data = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
                 cba_input = np.sum((c_sensor_data, sensor_data), axis=0)  # Shaped agent perception
-                cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CBA picks skill
+                cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(cba_outputs))
 
                 # Determine action based on sensor inputs and suggestion
@@ -167,9 +167,9 @@ def test_cba(counterfactuals, config_id):
 
 if __name__ == '__main__':
     config_id = int(sys.argv[1])
-    print("Testing CBA on Configuration: ", config_id)
+    print("Testing CKI on Configuration: ", config_id)
 
-    # Test Performance of CBA
+    # Test Performance of CKI
     counterfactuals = {}
     if p["c_type"] == 'Custom':
         rover_c_states = [0 for i in range(p["n_skills"])]
@@ -205,6 +205,6 @@ if __name__ == '__main__':
             for c in range(p["n_skills"]):
                 create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
 
-    # Testing CBA using the selected set of counterfactual states
+    # Testing CKI using the selected set of counterfactual states
     test_cba(counterfactuals, config_id)
 

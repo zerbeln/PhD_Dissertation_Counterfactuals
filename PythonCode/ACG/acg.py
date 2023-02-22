@@ -1,17 +1,17 @@
-from ACG.ea import EA
-from rover_neural_network import NeuralNetwork
-from RoverDomain_Core.rover_domain import RoverDomain
+from EvolutionaryAlgorithms.ea import EA
+from NeuralNetworks.neural_network import NeuralNetwork
+from NeuralNetworks.supervisor_neural_network import SupervisorNetwork
+from RoverDomainCore.rover_domain import RoverDomain
 from ACG.supervisor import Supervisor
-from ACG.supervisor_neural_network import SupervisorNetwork
 from parameters import parameters as p
-import numpy as np
 from global_functions import *
-from CBA.custom_rover_skills import get_custom_action
+from CKI.custom_rover_skills import get_custom_action
+import numpy as np
 
 
 def train_supervisor_poi_hazards():
     """
-    Train CBA rovers using a hand-crafted set of rover skills
+    Train CKI rovers using a hand-crafted set of rover skills
     """
     # World Setup
     rd = RoverDomain()
@@ -38,7 +38,7 @@ def train_supervisor_poi_hazards():
         # Import rover neural network weights from pickle
         for rover_id in range(p["n_rovers"]):
             weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            rovers_nn["RV{0}".format(rover_id)].get_weights(weights)  # CBA Network Gets Weights
+            rovers_nn["RV{0}".format(rover_id)].get_weights(weights)  # CKI Network Gets Weights
 
         training_rewards = []
         for gen in range(p["acg_generations"]):
@@ -112,7 +112,7 @@ def train_supervisor_poi_hazards():
 
 def train_supervisor_rover_loss():
     """
-    Train CBA rovers using a hand-crafted set of rover skills
+    Train CKI rovers using a hand-crafted set of rover skills
     """
     # World Setup
     rd = RoverDomain()
@@ -139,7 +139,7 @@ def train_supervisor_rover_loss():
         # Import rover neural network weights from pickle
         for rover_id in range(p["n_rovers"]):
             weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            rovers_nn["RV{0}".format(rover_id)].get_weights(weights)  # CBA Network Gets Weights
+            rovers_nn["RV{0}".format(rover_id)].get_weights(weights)  # CKI Network Gets Weights
 
         training_rewards = []
         for gen in range(p["acg_generations"]):

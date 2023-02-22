@@ -1,6 +1,6 @@
-from RoverDomain_Core.rover_domain import RoverDomain
+from RoverDomainCore.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
-from rover_neural_network import NeuralNetwork
+from NeuralNetworks.neural_network import NeuralNetwork
 from global_functions import load_saved_policies
 import numpy as np
 import sys

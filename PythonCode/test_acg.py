@@ -1,13 +1,13 @@
-from rover_neural_network import NeuralNetwork
-from RoverDomain_Core.rover_domain import RoverDomain
+from NeuralNetworks.neural_network import NeuralNetwork
+from RoverDomainCore.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 import sys
 from parameters import parameters as p
 from ACG.supervisor import Supervisor
-from ACG.supervisor_neural_network import SupervisorNetwork
+from NeuralNetworks.supervisor_neural_network import SupervisorNetwork
 from global_functions import *
-from CBA.custom_rover_skills import get_custom_action
+from CKI.custom_rover_skills import get_custom_action
 
 
 def test_acg_hazards(config_id):
@@ -63,7 +63,7 @@ def test_acg_hazards(config_id):
                 # Rover acts based on perception + supervisor counterfactual
                 c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
                 rover_input = np.sum((sensor_data, c_data), axis=0)
-                nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(nn_output))
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
 
@@ -162,7 +162,7 @@ def test_acg_rover_loss(config_id, lost_rovers):
                     # Rover acts based on perception + supervisor counterfactual
                     c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
                     rover_input = np.sum((sensor_data, c_data), axis=0)
-                    nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CBA picks skill
+                    nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CKI picks skill
                     chosen_pol = int(np.argmax(nn_output))
                     action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 else:

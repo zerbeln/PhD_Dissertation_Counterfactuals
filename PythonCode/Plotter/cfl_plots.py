@@ -1,8 +1,11 @@
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
-from plots_common_functions import import_reward_data, get_standard_deviations_learning
+from plots_common_functions import import_reward_data, get_standard_err_learning
 
 
 def generate_cfl_learning_curves(generations, sample_rate, sruns):

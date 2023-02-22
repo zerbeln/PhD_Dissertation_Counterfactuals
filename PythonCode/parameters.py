@@ -4,7 +4,7 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 30  # Total number of runs to perform
 parameters["generations"] = 500  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CBA, CFL, ACG
+parameters["algorithm"] = "ACG"  # Global, Difference, DPP (D++), CKI, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 4  # The number of environmental configurations used for training
 parameters["h_penalty"] = 10  # Penalty for entering hazard areas
@@ -37,7 +37,7 @@ parameters["mutation_rate"] = 0.2  # How much a weight is allowed to change
 parameters["epsilon"] = 0.1  # For e-greedy selection in CCEA
 parameters["n_elites"] = 1  # How many elites to carry over during elite selection
 
-# CBA Parameters
+# CKI Parameters
 parameters["skill_type"] = "Target_POI"  # Target_Quadrant or Target_POI
 parameters["randomize_skills"] = False  # Rovers are learning different skills at different times when True 
 parameters["n_skills"] = parameters["n_poi"] + 1  # Number of pre-trained policies in the policy bank

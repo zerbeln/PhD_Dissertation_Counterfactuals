@@ -1,4 +1,4 @@
-from RoverDomain_Core.rover_domain import RoverDomain
+from RoverDomainCore.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 import numpy as np
 from parameters import parameters as p

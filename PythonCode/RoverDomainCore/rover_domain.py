@@ -2,7 +2,8 @@ import numpy as np
 import csv
 import copy
 from parameters import parameters as p
-from RoverDomain_Core.agent import Poi, Rover
+from RoverDomainCore.rover import Rover
+from RoverDomainCore.poi import POI
 
 
 class RoverDomain:
@@ -70,22 +71,22 @@ class RoverDomain:
         """
 
         for cf_id in range(p["n_configurations"]):
-            config_input = []
+            csv_input = []
             with open('./World_Config/POI_Config{0}.csv'.format(cf_id)) as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=',')
 
                 for row in csv_reader:
-                    config_input.append(row)
+                    csv_input.append(row)
 
             for poi_id in range(self.n_pois):
-                poi_x = float(config_input[poi_id][0])
-                poi_y = float(config_input[poi_id][1])
-                poi_val = float(config_input[poi_id][2])
-                poi_coupling = float(config_input[poi_id][3])
-                poi_hazard = float(config_input[poi_id][4])
+                poi_x = float(csv_input[poi_id][0])
+                poi_y = float(csv_input[poi_id][1])
+                poi_val = float(csv_input[poi_id][2])
+                poi_coupling = float(csv_input[poi_id][3])
+                poi_hazard = float(csv_input[poi_id][4])
 
                 if cf_id == 0:
-                    self.pois["P{0}".format(poi_id)] = Poi(poi_x, poi_y, poi_val, poi_coupling, poi_id)
+                    self.pois["P{0}".format(poi_id)] = POI(poi_x, poi_y, poi_val, poi_coupling, poi_id)
 
                 self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 0] = poi_x
                 self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 1] = poi_y
@@ -99,17 +100,17 @@ class RoverDomain:
         """
 
         for cf_id in range(p["n_configurations"]):
-            config_input = []
+            csv_input = []
             with open('./World_Config/Rover_Config{0}.csv'.format(cf_id)) as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=',')
 
                 for row in csv_reader:
-                    config_input.append(row)
+                    csv_input.append(row)
 
             for rover_id in range(self.n_rovers):
-                rov_x = float(config_input[rover_id][0])
-                rov_y = float(config_input[rover_id][1])
-                rov_theta = float(config_input[rover_id][2])
+                rov_x = float(csv_input[rover_id][0])
+                rov_y = float(csv_input[rover_id][1])
+                rov_theta = float(csv_input[rover_id][2])
 
                 if cf_id == 0:
                     self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)

@@ -1,12 +1,12 @@
-from CBA.cba import calculate_poi_sectors
-from RoverDomain_Core.rover_domain import RoverDomain
+from CKI.cki import calculate_poi_sectors
+from RoverDomainCore.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
-from rover_neural_network import NeuralNetwork
+from NeuralNetworks.neural_network import NeuralNetwork
 import numpy as np
 import sys
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file, load_saved_policies
-from CBA.custom_rover_skills import get_custom_action
+from CKI.custom_rover_skills import get_custom_action
 
 
 def test_custom_skills(skill_id, config_id):

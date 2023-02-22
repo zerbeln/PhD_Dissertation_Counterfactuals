@@ -1,11 +1,11 @@
-from ccea import Ccea
-from rover_neural_network import NeuralNetwork
-from RoverDomain_Core.reward_functions import calc_difference, calc_dpp
-from RoverDomain_Core.rover_domain import RoverDomain
+from EvolutionaryAlgorithms.ccea import Ccea
+from NeuralNetworks.neural_network import NeuralNetwork
+from RoverDomainCore.reward_functions import calc_difference, calc_dpp
+from RoverDomainCore.rover_domain import RoverDomain
 import numpy as np
 from parameters import parameters as p
 from global_functions import create_csv_file, save_best_policies
-from CBA.custom_rover_skills import get_custom_action
+from CKI.custom_rover_skills import get_custom_action
 
 
 def sample_best_team(rd, pops, networks):

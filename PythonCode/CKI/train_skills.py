@@ -1,6 +1,6 @@
-from ccea import Ccea
-from CBA.cba_rewards import *
-from RoverDomain_Core.rover_domain import RoverDomain
+from EvolutionaryAlgorithms.ccea import CCEA
+from CKI.cki_rewards import *
+from RoverDomainCore.rover_domain import RoverDomain
 import os
 import numpy as np
 import csv
@@ -58,12 +58,12 @@ def train_towards_teammates():
 
     # World Setup
     rd = RoverDomain()
-    rd.load_world(0)
+    rd.load_world()
 
     # Create dictionary of rover instances
     pops = {}
     for rover_id in range(n_rovers):
-        pops["EA{0}".format(rover_id)] = Ccea(population_size, n_inp=n_inp, n_hid=n_hid, n_out=n_out)
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=n_inp, n_hid=n_hid, n_out=n_out)
 
     for srun in range(stat_runs):  # Perform statistical runs
         print("Run: %i" % srun)

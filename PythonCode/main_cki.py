@@ -1,11 +1,11 @@
 from parameters import parameters as p
 from standard_rover_cba import rover_global, rover_difference, rover_dpp
-from CBA.cba import train_cba
+from CKI.cki import train_cki
 
 
 if __name__ == '__main__':
     """
-    Run classic or tightly coupled rover domain using either G, D, D++, or CBA with pre-defined rover skills.
+    Run classic or tightly coupled rover domain using either G, D, D++, or CKI with pre-defined rover skills.
     """
 
     assert(p["algorithm"] != "CFL")  # This main file is for use with pre-defined rover skills only
@@ -20,8 +20,8 @@ if __name__ == '__main__':
     elif p["algorithm"] == "DPP":
         print("Rover Domain: D++ Rewards")
         rover_dpp()
-    elif p["algorithm"] == "CBA":
-        print("Rover Domain: CBA with custom skills")
-        train_cba()
+    elif p["algorithm"] == "CKI":
+        print("Rover Domain: CKI with custom skills")
+        train_cki()
     else:
         print("ALGORITHM TYPE ERROR")

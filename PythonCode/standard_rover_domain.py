@@ -1,7 +1,7 @@
-from ccea import Ccea
-from rover_neural_network import NeuralNetwork
-from RoverDomain_Core.reward_functions import calc_difference, calc_dpp
-from RoverDomain_Core.rover_domain import RoverDomain
+from EvolutionaryAlgorithms.ccea import CCEA
+from NeuralNetworks.neural_network import NeuralNetwork
+from RoverDomainCore.reward_functions import calc_difference, calc_dpp
+from RoverDomainCore.rover_domain import RoverDomain
 import numpy as np
 from parameters import parameters as p
 from global_functions import create_csv_file, save_best_policies
@@ -60,7 +60,7 @@ def rover_global():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
@@ -148,7 +148,7 @@ def rover_difference():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
@@ -236,7 +236,7 @@ def rover_dpp():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs

@@ -1,9 +1,9 @@
 from global_functions import *
-from ccea import Ccea
-from rover_neural_network import NeuralNetwork
-from RoverDomain_Core.rover_domain import RoverDomain
-from CBA.cba_rewards import *
-from CBA.custom_rover_skills import get_custom_action
+from EvolutionaryAlgorithms.ccea import CCEA
+from NeuralNetworks.neural_network import NeuralNetwork
+from RoverDomainCore.rover_domain import RoverDomain
+from CKI.cki_rewards import *
+from CKI.custom_rover_skills import get_custom_action
 from parameters import parameters as p
 import numpy as np
 import random
@@ -141,9 +141,9 @@ def cba_step(rovers, pois, rover_actions):
         pois[poi].update_observer_distances(rovers)
 
 
-def train_cba():
+def train_cki():
     """
-    Train CBA rovers using a hand-crafted set of rover skills
+    Train CKI rovers using a hand-crafted set of rover skills
     """
     # World Setup
     rd = RoverDomain()
@@ -154,7 +154,7 @@ def train_cba():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Perform statistical runs
@@ -184,7 +184,7 @@ def train_cba():
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                         weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
-                        networks["NN{0}".format(rover_id)].get_weights(weights)  # CBA Network Gets Weights
+                        networks["NN{0}".format(rover_id)].get_weights(weights)  # CKI Network Gets Weights
 
                     for step_id in range(p["steps"]):
                         # Rover scans environment and processes counterfactually shaped perceptions
@@ -197,7 +197,7 @@ def train_cba():
                             # Select a skill using counterfactually shaped state information
                             c_sensor_data = get_counterfactual_state(rd.pois, rd.rovers, rover_id, skill, sensor_data)
                             cba_input = np.sum((c_sensor_data, sensor_data), axis=0)  # Shaped agent perception
-                            cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CBA picks skill
+                            cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CKI picks skill
                             chosen_pol = int(np.argmax(cba_outputs))
 
                             # Store rover action output
@@ -229,6 +229,6 @@ def train_cba():
             policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
             weights = pops["EA{0}".format(rover_id)].population["pol{0}".format(policy_id)]
             save_best_policies(weights, srun, "SelectionWeights{0}".format(rover_id), rover_id)
-            create_csv_file(policy_rewards[rover_id], 'Output_Data/Rover{0}'.format(rover_id), "CBA_Rewards.csv")
+            create_csv_file(policy_rewards[rover_id], 'Output_Data/Rover{0}'.format(rover_id), "CKI_Rewards.csv")
 
         srun += 1

@@ -8,7 +8,7 @@ if __name__ == '__main__':
     Run classic or tightly coupled rover domain using either G, D, D++, or CFL
     """
 
-    assert (p["algorithm"] != "CBA")  # This main file is for use with rovers learning navigation (not skills)
+    assert (p["algorithm"] != "CKI")  # This main file is for use with rovers learning navigation (not skills)
 
     if p["algorithm"] == "Global":
         print("Rover Domain: Global Rewards")

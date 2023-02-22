@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
@@ -8,7 +11,7 @@ from plots_common_functions import import_reward_data, get_standard_err_performa
 
 
 def calc_max_poi_val(n_rovers, poi_coupling):
-    poi_path = '../C{0}/CBA/World_Config/POI_Config.csv'.format(poi_coupling)
+    poi_path = '../C{0}/CKI/World_Config/POI_Config.csv'.format(poi_coupling)
 
     config_input = []
     with open(poi_path) as csvfile:
@@ -56,7 +59,7 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers, sruns):
         g_path = '../C{0}/Global/Output_Data/Final_GlobalRewards.csv'.format(i+1)
         d_path = '../C{0}/Difference/Output_Data/Final_GlobalRewards.csv'.format(i+1)
         dpp_path = '../C{0}/D++/Output_Data/Final_GlobalRewards.csv'.format(i+1)
-        cki_path = '../C{0}/CBA/Output_Data/Final_GlobalRewards.csv'.format(i+1)
+        cki_path = '../C{0}/CKI/Output_Data/Final_GlobalRewards.csv'.format(i+1)
 
         max_reward = calc_max_poi_val(n_rovers, i+1)  # Maximum possible score teams can achieve
         g_input = []
@@ -416,12 +419,12 @@ def create_skill_heatmap_plots(n_poi, n_rovers):
     hmap_colors = LinearSegmentedColormap.from_list("Custom", hcolors, N=n_colors)
 
     # File Paths
-    r1_path = '../CBA/Output_Data/Rover0_SkillSelections.csv'
-    r2_path = '../CBA/Output_Data/Rover1_SkillSelections.csv'
-    r3_path = '../CBA/Output_Data/Rover2_SkillSelections.csv'
-    r4_path = '../CBA/Output_Data/Rover3_SkillSelections.csv'
-    r5_path = '../CBA/Output_Data/Rover4_SkillSelections.csv'
-    r6_path = '../CBA/Output_Data/Rover5_SkillSelections.csv'
+    r1_path = '../CKI/Output_Data/Rover0_SkillSelections.csv'
+    r2_path = '../CKI/Output_Data/Rover1_SkillSelections.csv'
+    r3_path = '../CKI/Output_Data/Rover2_SkillSelections.csv'
+    r4_path = '../CKI/Output_Data/Rover3_SkillSelections.csv'
+    r5_path = '../CKI/Output_Data/Rover4_SkillSelections.csv'
+    r6_path = '../CKI/Output_Data/Rover5_SkillSelections.csv'
 
     rover_data = np.zeros((n_poi + 1, n_poi + 1))
     rov_input1 = []

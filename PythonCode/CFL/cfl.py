@@ -1,9 +1,9 @@
 from parameters import parameters as p
-from RoverDomain_Core.rover_domain import RoverDomain
+from RoverDomainCore.rover_domain import RoverDomain
 from CFL.cfl_rewards import calc_cfl_dpp, calc_cfl_difference
-from rover_neural_network import NeuralNetwork
+from NeuralNetworks.neural_network import NeuralNetwork
 from global_functions import create_csv_file, save_best_policies
-from ccea import Ccea
+from EvolutionaryAlgorithms.ccea import CCEA
 import numpy as np
 
 
@@ -58,7 +58,7 @@ def rover_cdif(counterfactuals):
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
