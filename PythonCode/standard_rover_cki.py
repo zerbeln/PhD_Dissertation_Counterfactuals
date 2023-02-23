@@ -1,4 +1,4 @@
-from EvolutionaryAlgorithms.ccea import Ccea
+from EvolutionaryAlgorithms.ccea import CCEA
 from NeuralNetworks.neural_network import NeuralNetwork
 from RoverDomainCore.reward_functions import calc_difference, calc_dpp
 from RoverDomainCore.rover_domain import RoverDomain
@@ -63,8 +63,8 @@ def rover_global():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
 
     # Perform runs
     srun = p["starting_srun"]
@@ -153,8 +153,8 @@ def rover_difference():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
 
     # Perform runs
     srun = p["starting_srun"]
@@ -243,8 +243,8 @@ def rover_dpp():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
 
     # Perform runs
     srun = p["starting_srun"]

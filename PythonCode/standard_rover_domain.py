@@ -139,7 +139,6 @@ def rover_difference():
     """
     Train rovers in classic rover domain using difference rewards
     """
-
     # World Setup
     rd = RoverDomain()
     rd.load_world()

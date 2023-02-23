@@ -18,9 +18,11 @@ class RoverDomain:
 
         # Rover Instances
         self.rovers = {}  # Dictionary containing instances of rover objects
+        self.rover_configurations = [[] for _ in range(p["n_rovers"])]
 
         # POI Instances
         self.pois = {}  # Dictionary containing instances of PoI objects
+        self.poi_configurations = [[] for _ in range(p["n_poi"])]
 
     def reset_world(self, cf_id):
         """
@@ -28,9 +30,9 @@ class RoverDomain:
         """
         self.rover_poi_distances = [[] for i in range(self.n_pois)]
         for rv in self.rovers:
-            self.rovers[rv].reset_rover(cf_id)
+            self.rovers[rv].reset_rover(self.rover_configurations[self.rovers[rv].rover_id][cf_id])
         for poi in self.pois:
-            self.pois[poi].reset_poi(cf_id)
+            self.pois[poi].reset_poi(self.poi_configurations[self.pois[poi].poi_id][cf_id])
 
     def load_world(self):
         """
@@ -88,11 +90,7 @@ class RoverDomain:
                 if cf_id == 0:
                     self.pois["P{0}".format(poi_id)] = POI(poi_x, poi_y, poi_val, poi_coupling, poi_id)
 
-                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 0] = poi_x
-                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 1] = poi_y
-                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 2] = poi_val
-                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 3] = poi_coupling
-                self.pois["P{0}".format(poi_id)].poi_configurations[cf_id, 4] = poi_hazard
+                self.poi_configurations[poi_id].append((poi_x, poi_y, poi_val, poi_coupling, poi_hazard))
 
     def load_rover_configuration(self):
         """
@@ -115,9 +113,7 @@ class RoverDomain:
                 if cf_id == 0:
                     self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
 
-                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 0] = rov_x
-                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 1] = rov_y
-                self.rovers["R{0}".format(rover_id)].rover_configurations[cf_id, 2] = rov_theta
+                self.rover_configurations[rover_id].append((rov_x, rov_y, rov_theta))
 
     def step(self, rover_actions):
         """

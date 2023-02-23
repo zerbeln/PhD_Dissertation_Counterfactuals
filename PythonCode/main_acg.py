@@ -1,7 +1,7 @@
 from parameters import parameters as p
-from standard_rover_cba import rover_global as global_skills
-from standard_rover_cba import rover_difference as difference_skills
-from standard_rover_cba import rover_dpp as dpp_skills
+from standard_rover_cki import rover_global as global_skills
+from standard_rover_cki import rover_difference as difference_skills
+from standard_rover_cki import rover_dpp as dpp_skills
 from ACG.acg import train_supervisor_poi_hazards, train_supervisor_rover_loss
 
 

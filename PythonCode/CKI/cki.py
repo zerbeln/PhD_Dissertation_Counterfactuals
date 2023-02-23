@@ -154,8 +154,8 @@ def train_cki():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
 
     # Perform statistical runs
     srun = p["starting_srun"]

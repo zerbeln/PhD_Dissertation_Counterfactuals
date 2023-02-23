@@ -368,9 +368,9 @@ if __name__ == '__main__':
         rv_path = np.zeros((p["stat_runs"], p["n_rovers"], p["steps"], 3))
         for rv_id in range(p["n_rovers"]):
             for t in range(p["steps"]):
-                rv_path[0:p["stat_runs"], rv_id, t, 0] = rd.rovers["R{0}".format(rv_id)].rover_configurations[cf_id, 0]
-                rv_path[0:p["stat_runs"], rv_id, t, 1] = rd.rovers["R{0}".format(rv_id)].rover_configurations[cf_id, 1]
-                rv_path[0:p["stat_runs"], rv_id, t, 2] = rd.rovers["R{0}".format(rv_id)].rover_configurations[cf_id, 2]
+                rv_path[0:p["stat_runs"], rv_id, t, 0] = rd.rover_configurations[rv_id][cf_id][0]
+                rv_path[0:p["stat_runs"], rv_id, t, 1] = rd.rover_configurations[rv_id][cf_id][1]
+                rv_path[0:p["stat_runs"], rv_id, t, 2] = rd.rover_configurations[rv_id][cf_id][2]
 
         create_pickle_file(rv_path, "./Output_Data/", "Rover_Paths{0}".format(cf_id))
         run_visualizer(cf_id=cf_id)

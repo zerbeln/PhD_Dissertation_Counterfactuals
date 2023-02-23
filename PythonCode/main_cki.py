@@ -1,5 +1,5 @@
 from parameters import parameters as p
-from standard_rover_cba import rover_global, rover_difference, rover_dpp
+from standard_rover_cki import rover_global, rover_difference, rover_dpp
 from CKI.cki import train_cki
 
 

@@ -21,16 +21,13 @@ class Rover:
         self.observations = np.zeros(p["n_inp"], dtype=np.longdouble)  # Number of sensor inputs for Neural Network
         self.rover_actions = np.zeros(p["n_out"], dtype=np.longdouble)  # Motor actions from neural network outputs
 
-        # Other ----------------------------------------------------------------------------------------------
-        self.rover_configurations = np.zeros((p["n_configurations"], 3))
-
-    def reset_rover(self, config_id):
+    def reset_rover(self, rover_config):
         """
         Resets the rover to its initial position in the world and clears observation array of state information
         """
-        self.loc[0] = self.rover_configurations[config_id, 0]
-        self.loc[1] = self.rover_configurations[config_id, 1]
-        self.loc[2] = self.rover_configurations[config_id, 2]
+        self.loc[0] = rover_config[0]
+        self.loc[1] = rover_config[1]
+        self.loc[2] = rover_config[2]
         self.observations = np.zeros(self.n_inputs, dtype=np.longdouble)
 
     def scan_environment(self, rovers, pois):
@@ -70,12 +67,12 @@ class Rover:
             poi_id += 1
 
         # Encode POI information into the state vector
-        for bracket in temp_poi_dist_list:
-            if len(bracket) > 0:
+        for bracket in range(n_brackets):
+            if len(temp_poi_dist_list[bracket]) > 0:
                 if self.sensor_type == 'density':
-                    poi_state[bracket] = sum(bracket)/len(bracket)  # Density Sensor
+                    poi_state[bracket] = sum(temp_poi_dist_list[bracket])/len(temp_poi_dist_list[bracket])  # Density Sensor
                 elif self.sensor_type == 'summed':
-                    poi_state[bracket] = sum(bracket)  # Summed Distance Sensor
+                    poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
                 else:
                     sys.exit('Incorrect sensor model')
             else:
@@ -108,12 +105,12 @@ class Rover:
                 temp_rover_dist_list[bracket].append(1/dist)
 
         # Encode Rover information into the state vector
-        for bracket in temp_rover_dist_list:
-            if len(bracket) > 0:
+        for bracket in range(n_brackets):
+            if len(temp_rover_dist_list[bracket]) > 0:
                 if self.sensor_type == 'density':
-                    rover_state[bracket] = sum(bracket) / len(bracket)  # Density Sensor
+                    rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / len(temp_rover_dist_list[bracket])  # Density Sensor
                 elif self.sensor_type == 'summed':
-                    rover_state[bracket] = sum(bracket)  # Summed Distance Sensor
+                    rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
                 else:
                     sys.exit('Incorrect sensor model')
             else:
