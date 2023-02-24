@@ -33,16 +33,16 @@
 
 # Other
 *.jpg
-*/Output_Data
-*/Policy_Bank
-*/Screenshots
-*/World_Config
+/Output_Data
+/Policy_Bank
+/Screenshots
+/World_Config
 *.txt
 *.csv
 *.pdf
-*/__pycache__
-*./idea
-*/.idea
+/__pycache__
+./idea
+/.idea
 /venv
 *.c
 *.so
