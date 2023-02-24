@@ -79,6 +79,6 @@ def test_trained_policy(config_id):
 
 
 if __name__ == '__main__':
-    cf_id = int(sys.argv[1])
+    cf_id = 0
     print("Testing Trained Policies on Configuration: ", cf_id)
     test_trained_policy(cf_id)
