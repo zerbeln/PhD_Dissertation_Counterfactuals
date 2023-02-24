@@ -7,7 +7,7 @@ import random
 import math
 import csv
 import os
-from global_functions import get_linear_dist, get_angle
+from global_functions import get_linear_dist
 
 
 def save_poi_configuration(pois_info, config_id):
