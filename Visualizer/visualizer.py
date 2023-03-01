@@ -90,7 +90,7 @@ def run_visualizer(v_running=False, cf_id=0):
     pygame.display.set_caption('Rover Domain')
     robot_image = pygame.image.load('Visualizer/rover.png')
     background = pygame.image.load('Visualizer/background.png')
-    color_array = generate_color_array(3)
+    color_array = generate_color_array(17)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
 

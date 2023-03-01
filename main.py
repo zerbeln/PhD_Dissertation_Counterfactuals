@@ -6,9 +6,10 @@ from CFL.cfl import rover_cdpp, rover_cdif
 if __name__ == '__main__':
     """
     Run classic or tightly coupled rover domain using either G, D, D++, or CFL
+    This main file is for use with rovers learning navigation (not skills)
     """
 
-    assert (p["algorithm"] != "CKI")  # This main file is for use with rovers learning navigation (not skills)
+    assert (p["algorithm"] != "CKI" and p["algorithm"] != "ACG")
 
     if p["algorithm"] == "Global":
         print("Rover Domain: Global Rewards")
@@ -21,20 +22,6 @@ if __name__ == '__main__':
         rover_dpp()
     elif p["algorithm"] == "CFL":
         print("Rover Domain: CFL")
-
-        # Define Expert Counterfactuals
-        counterfacutals = []
-        cp1 = [1, 1, 1, 1, 1, 1]
-        cp2 = [1, 1, 1, 1, 1, 1]
-        cp3 = [0, 0, 0, 0, 0, 0]
-        cp4 = [0, 0, 0, 0, 0, 0]
-        counterfactuals = [cp1, cp2, cp3, cp4]
-
-        # Check that this parameter was manually tuned for the specific experiment
-        assert(len(counterfactuals) == p["n_poi"])
-        for cfact in counterfactuals:
-            assert(len(cfact) == p["n_rovers"])
-
-        rover_cdpp(counterfactuals)
+        rover_cdpp()
     else:
         print("ALGORITHM TYPE ERROR")

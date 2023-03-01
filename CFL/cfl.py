@@ -4,6 +4,7 @@ from CFL.cfl_rewards import calc_cfl_dpp, calc_cfl_difference
 from NeuralNetworks.neural_network import NeuralNetwork
 from global_functions import create_csv_file, save_best_policies
 from EvolutionaryAlgorithms.ccea import CCEA
+from CFL.cfl_counterfactuals import generate_high_low_counterfactuals, generate_custom_counterfactuals, generate_two_poi_counterfactuals
 import numpy as np
 
 
@@ -46,7 +47,7 @@ def sample_best_team(rd, pops, networks):
     return g_reward
 
 
-def rover_cdif(counterfactuals):
+def rover_cdif():
     """
     Train rovers in tightly coupled rover domain using D with expert counterfactuals
     """
@@ -60,6 +61,10 @@ def rover_cdif(counterfactuals):
     for rover_id in range(p["n_rovers"]):
         pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+
+    # counterfactuals = generate_high_low_counterfactuals(rd.pois)
+    # counterfactuals = generate_custom_counterfactuals()
+    counterfactuals = generate_two_poi_counterfactuals()
 
     # Perform runs
     srun = p["starting_srun"]
@@ -126,7 +131,7 @@ def rover_cdif(counterfactuals):
         srun += 1
 
 
-def rover_cdpp(counterfactuals):
+def rover_cdpp():
     """
     Train rovers in tightly coupled rover domain using D++ with expert counterfactuals
     """
@@ -138,8 +143,12 @@ def rover_cdpp(counterfactuals):
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+
+        # counterfactuals = generate_high_low_counterfactuals(rd.pois)
+        # counterfactuals = generate_custom_counterfactuals()
+        counterfactuals = generate_two_poi_counterfactuals()
 
     # Perform runs
     srun = p["starting_srun"]
