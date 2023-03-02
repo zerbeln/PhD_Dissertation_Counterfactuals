@@ -20,7 +20,7 @@ def generate_high_low_counterfactuals(pois):
     return counterfactuals
 
 
-def generate_custom_counterfactuals():
+def ten_poi_counterfactuals():
     # Define Expert Counterfactuals
     cp1 = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]  # 10
     cp2 = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]  # 3
@@ -41,7 +41,38 @@ def generate_custom_counterfactuals():
     return counterfactuals
 
 
-def generate_two_poi_counterfactuals():
+def four_poi_counterfactuals():
+    # Define Expert Counterfactuals
+    cp1 = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    cp2 = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+    cp3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    cp4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    counterfactuals = [cp1, cp2, cp3, cp4]
+    assert (len(counterfactuals) == p["n_poi"])
+    for i in range(p["n_poi"]):
+        assert (len(counterfactuals[i]) == p["n_rovers"])
+
+    return counterfactuals
+
+
+def five_poi_counterfactuals():
+    # Define Expert Counterfactuals
+    cp1 = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    cp2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    cp3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    cp4 = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+    cp5 = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+
+    counterfactuals = [cp1, cp2, cp3, cp4, cp5]
+    assert (len(counterfactuals) == p["n_poi"])
+    for i in range(p["n_poi"]):
+        assert (len(counterfactuals[i]) == p["n_rovers"])
+
+    return counterfactuals
+
+
+def two_poi_counterfactuals():
     assert(p["n_poi"] == 2)
     # Define Expert Counterfactuals
     cp1 = [1, 1, 1, 1, 1, 1]  # 10

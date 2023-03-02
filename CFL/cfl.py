@@ -4,7 +4,7 @@ from CFL.cfl_rewards import calc_cfl_dpp, calc_cfl_difference
 from NeuralNetworks.neural_network import NeuralNetwork
 from global_functions import create_csv_file, save_best_policies
 from EvolutionaryAlgorithms.ccea import CCEA
-from CFL.cfl_counterfactuals import generate_high_low_counterfactuals, generate_custom_counterfactuals, generate_two_poi_counterfactuals
+from CFL.cfl_counterfactuals import *
 import numpy as np
 
 
@@ -62,9 +62,17 @@ def rover_cdif():
         pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
-    # counterfactuals = generate_high_low_counterfactuals(rd.pois)
-    # counterfactuals = generate_custom_counterfactuals()
-    counterfactuals = generate_two_poi_counterfactuals()
+    counterfactuals = []
+    if p["c_type"] == "Auto":
+        counterfactuals = generate_high_low_counterfactuals(rd.pois)
+    elif p["n_poi"] == 10:
+        counterfactuals = ten_poi_counterfactuals()
+    elif p["n_poi"] == 5:
+        counterfactuals = five_poi_counterfactuals()
+    elif p["n_poi"] == 4:
+        counterfactuals = four_poi_counterfactuals()
+    elif p["n_poi"] == 2:
+        counterfactuals = two_poi_counterfactuals()
 
     # Perform runs
     srun = p["starting_srun"]
@@ -146,9 +154,17 @@ def rover_cdpp():
         pops["EA{0}".format(rover_id)] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
-        # counterfactuals = generate_high_low_counterfactuals(rd.pois)
-        # counterfactuals = generate_custom_counterfactuals()
-        counterfactuals = generate_two_poi_counterfactuals()
+    counterfactuals = []
+    if p["c_type"] == "Auto":
+        counterfactuals = generate_high_low_counterfactuals(rd.pois)
+    elif p["n_poi"] == 10:
+        counterfactuals = ten_poi_counterfactuals()
+    elif p["n_poi"] == 5:
+        counterfactuals = five_poi_counterfactuals()
+    elif p["n_poi"] == 4:
+        counterfactuals = four_poi_counterfactuals()
+    elif p["n_poi"] == 2:
+        counterfactuals = two_poi_counterfactuals()
 
     # Perform runs
     srun = p["starting_srun"]
