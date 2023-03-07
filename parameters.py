@@ -4,11 +4,11 @@ parameters = {}
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 15  # Total number of runs to perform
 parameters["generations"] = 3000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "CFL"  # Global, Difference, DPP (D++), CKI, CFL, ACG
+parameters["algorithm"] = "DPP"  # Global, Difference, DPP (D++), CKI, CFL, ACG
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 1  # The number of environmental configurations used for training
 parameters["h_penalty"] = 10  # Penalty for entering hazard areas
-parameters["c_type"] = "Auto"  # Auto or Custom
+parameters["c_type"] = "Custom"  # Auto or Custom
 
 # Domain parameters
 parameters["x_dim"] = 50.0  # X-Dimension of the rover map
