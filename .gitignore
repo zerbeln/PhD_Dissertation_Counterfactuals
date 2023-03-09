@@ -37,6 +37,7 @@ Output_Data/
 Policy_Bank/
 Screenshots/
 World_Config/
+Rover_Policies/
 *.txt
 *.csv
 *.pdf
