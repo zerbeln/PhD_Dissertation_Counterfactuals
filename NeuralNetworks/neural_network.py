@@ -60,7 +60,6 @@ class NeuralNetwork:
         """
         tanh neural network activation function
         """
-
         tanh = (2 / (1 + np.exp(-2 * inp))) - 1
 
         return tanh
@@ -69,7 +68,6 @@ class NeuralNetwork:
         """
         sigmoid neural network activation function
         """
-
         sig = 1 / (1 + np.exp(-inp))
 
         return sig

@@ -3,7 +3,6 @@ from RoverDomainCore.rover_domain import RoverDomain
 from Visualizer.visualizer import run_visualizer
 from NeuralNetworks.neural_network import NeuralNetwork
 import numpy as np
-import sys
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file, load_saved_policies
 from CKI.custom_rover_skills import get_custom_action
@@ -47,8 +46,10 @@ def test_custom_skills(skill_id, config_id):
         skill_performance.append(g_reward)
         srun += 1
 
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
-    create_csv_file(skill_performance, "Output_Data/", "Skill{0}_Performance.csv".format(skill_id))
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
+    create_csv_file(skill_performance, "Output_Data/", f"Skill{skill_id}_Performance.csv")
+    if p["vis_running"]:
+        run_visualizer(cf_id=config_id)
 
 
 def test_trained_policy(config_id):
@@ -61,7 +62,7 @@ def test_trained_policy(config_id):
 
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["cki_inp"], n_hid=p["cki_hid"], n_out=p["cki_out"])
 
     # Data tracking
     reward_history = []  # Keep track of team performance throughout training
@@ -76,8 +77,8 @@ def test_trained_policy(config_id):
         # Load Trained Rover Networks
         for rv in rd.rovers:
             rover_id = rd.rovers[rv].rover_id
-            weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
+            weights = load_saved_policies(f'RoverWeights{rover_id}', rover_id, srun)
+            networks[f"NN{rover_id}"].get_weights(weights)
 
         n_incursions = 0
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
@@ -92,7 +93,7 @@ def test_trained_policy(config_id):
 
                 # Get actions from rover neural networks
                 rover_id = rd.rovers[rv].rover_id
-                nn_output = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
+                nn_output = networks[f"NN{rover_id}"].run_rover_nn(rd.rovers[rv].observations)
                 chosen_pol = int(np.argmax(nn_output))
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 rover_actions.append(action)
@@ -102,10 +103,10 @@ def test_trained_policy(config_id):
             for poi_id in range(p["n_poi"]):
                 poi_rewards[poi_id, step_id] = step_rewards[poi_id]
                 rov_id = 0
-                for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                for dist in rd.pois[f"P{poi_id}"].observer_distances:
                     if dist < p["observation_radius"]:
                         rover_poi_tracker[rov_id, poi_id] += 1
-                        if rd.pois["P{0}".format(poi_id)].hazardous:
+                        if rd.pois[f"P{poi_id}"].hazardous:
                             n_incursions += 1
                     rov_id += 1
 
@@ -126,12 +127,12 @@ def test_trained_policy(config_id):
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward
-        for rov_id in range(p["n_rovers"]):
-            create_csv_file(rover_poi_tracker[rov_id], "Output_Data/", "Rover{0}POIVisits.csv".format(rov_id))
+        for rover_id in range(p["n_rovers"]):
+            create_csv_file(rover_poi_tracker[rover_id], "Output_Data/", f"Rover{rover_id}POIVisits.csv")
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
@@ -140,6 +141,6 @@ def test_trained_policy(config_id):
 
 if __name__ == '__main__':
     # Test Performance of Skills in Agent Skill Set
-    cf_id = int(sys.argv[1])
+    cf_id = 0
     print("Testing Trained Skills on Configuration: ", cf_id)
-    test_trained_policy(cf_id)
+    test_custom_skills(1, cf_id)

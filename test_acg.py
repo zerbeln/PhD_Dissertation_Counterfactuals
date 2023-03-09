@@ -21,7 +21,7 @@ def test_acg_hazards(config_id):
 
     rover_nns = {}
     for rover_id in range(p["n_rovers"]):
-        rover_nns["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        rover_nns[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -36,8 +36,8 @@ def test_acg_hazards(config_id):
         s_weights = load_saved_policies('SupervisorWeights', p["n_rovers"], srun)
         sup_nn.get_weights(s_weights)
         for rover_id in range(p["n_rovers"]):
-            weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            rover_nns["NN{0}".format(rover_id)].get_weights(weights)
+            weights = load_saved_policies(f'RoverWeights{rover_id}', rover_id, srun)
+            rover_nns[f"NN{rover_id}"].get_weights(weights)
 
         # Reset environment to initial conditions
         rd.reset_world(config_id)
@@ -61,9 +61,9 @@ def test_acg_hazards(config_id):
                 sensor_data = rd.rovers[rv].observations  # Unaltered sensor readings
 
                 # Rover acts based on perception + supervisor counterfactual
-                c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
+                c_data = counterfactuals[f"RV{rover_id}"]  # Counterfactual from supervisor
                 rover_input = np.sum((sensor_data, c_data), axis=0)
-                nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CKI picks skill
+                nn_output = rover_nns[f"NN{rover_id}"].run_rover_nn(rover_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(nn_output))
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
 
@@ -74,10 +74,10 @@ def test_acg_hazards(config_id):
             for poi_id in range(p["n_poi"]):
                 poi_rewards[poi_id, step_id] = step_rewards[poi_id]
                 rov_id = 0
-                for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                for dist in rd.pois[f"P{poi_id}"].observer_distances:
                     if dist < p["observation_radius"]:
                         rover_poi_tracker[rov_id, poi_id] += 1
-                        if rd.pois["P{0}".format(poi_id)].hazardous:
+                        if rd.pois[f"P{poi_id}"].hazardous:
                             n_incursions += 1
                     rov_id += 1
 
@@ -90,7 +90,6 @@ def test_acg_hazards(config_id):
             if none_visited:
                 rover_poi_tracker[rov_id, p["n_poi"]] += 1
 
-
         # Calculate episodic global reward
         g_reward = 0
         for p_reward in poi_rewards:
@@ -99,12 +98,12 @@ def test_acg_hazards(config_id):
         reward_history.append(g_reward)
         incursion_tracker.append(n_incursions)
         average_reward += g_reward
-        for rov_id in range(p["n_rovers"]):
-            create_csv_file(rover_poi_tracker[rov_id], "Output_Data/", "ACGRover{0}POIVisits.csv".format(rov_id))
+        for rover_id in range(p["n_rovers"]):
+            create_csv_file(rover_poi_tracker[rover_id], "Output_Data/", f"ACGRover{rover_id}POIVisits.csv")
         srun += 1
 
     print(average_reward / p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_ACG.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "ACGHazardIncursions.csv")
     if p["vis_running"]:
@@ -135,7 +134,7 @@ def test_acg_rover_loss(config_id, lost_rovers):
         s_weights = load_saved_policies('SupervisorWeights', p["n_rovers"], srun)
         sup_nn.get_weights(s_weights)
         for rover_id in range(p["n_rovers"]):
-            weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
+            weights = load_saved_policies(f'RoverWeights{rover_id}', rover_id, srun)
             rover_nns["NN{0}".format(rover_id)].get_weights(weights)
 
         # Reset environment to initial conditions
@@ -160,9 +159,9 @@ def test_acg_rover_loss(config_id, lost_rovers):
                     sensor_data = rd.rovers[rv].observations  # Unaltered sensor readings
 
                     # Rover acts based on perception + supervisor counterfactual
-                    c_data = counterfactuals["RV{0}".format(rover_id)]  # Counterfactual from supervisor
+                    c_data = counterfactuals[f"RV{rover_id}"]  # Counterfactual from supervisor
                     rover_input = np.sum((sensor_data, c_data), axis=0)
-                    nn_output = rover_nns["NN{0}".format(rover_id)].run_rover_nn(rover_input)  # CKI picks skill
+                    nn_output = rover_nns[f"NN{rover_id}"].run_rover_nn(rover_input)  # CKI picks skill
                     chosen_pol = int(np.argmax(nn_output))
                     action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 else:
@@ -184,7 +183,7 @@ def test_acg_rover_loss(config_id, lost_rovers):
         srun += 1
 
     print(average_reward / p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_ACG.csv")
     if p["vis_running"]:
         run_visualizer(cf_id=config_id)
@@ -200,7 +199,7 @@ def test_standard_pol_rov_loss(config_id, lost_rovers):
 
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     # Data tracking
     reward_history = []  # Keep track of team performance throughout training
@@ -213,8 +212,8 @@ def test_standard_pol_rov_loss(config_id, lost_rovers):
         # Load Trained Rover Networks
         for rv in rd.rovers:
             rover_id = rd.rovers[rv].rover_id
-            weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
+            weights = load_saved_policies(f'RoverWeights{rover_id}', rover_id, srun)
+            networks[f"NN{rover_id}"].get_weights(weights)
 
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
         rd.reset_world(config_id)
@@ -229,7 +228,7 @@ def test_standard_pol_rov_loss(config_id, lost_rovers):
                 if rd.rovers[rv].rover_id not in lost_rovers:
                     # Get actions from rover neural networks
                     rover_id = rd.rovers[rv].rover_id
-                    nn_output = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
+                    nn_output = networks[f"NN{rover_id}"].run_rover_nn(rd.rovers[rv].observations)
                     chosen_pol = int(np.argmax(nn_output))
                     action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                     rover_actions.append(action)
@@ -250,7 +249,7 @@ def test_standard_pol_rov_loss(config_id, lost_rovers):
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
     create_csv_file(reward_history, "Output_Data/", "Final_GlobalRewards.csv")
     if p["vis_running"]:
         run_visualizer(cf_id=config_id)

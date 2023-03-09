@@ -23,13 +23,13 @@ def find_best_counterfactuals(srun, c_list, config_id):
     networks = {}
     rover_skill_selections = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
-        rover_skill_selections["RV{0}".format(rover_id)] = [[0 for i in range(p["n_skills"])] for j in range(p["n_skills"])]
+        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        rover_skill_selections[f"RV{rover_id}"] = [[0 for i in range(p["n_skills"])] for j in range(p["n_skills"])]
 
     # Load Trained Suggestion Interpreter Weights
     for rover_id in range(p["n_rovers"]):
-        s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
-        networks["NN{0}".format(rover_id)].get_weights(s_weights)
+        s_weights = load_saved_policies(f'SelectionWeights{rover_id}', rover_id, srun)
+        networks[f"NN{rover_id}"].get_weights(s_weights)
 
     best_rover_suggestion = None
     best_reward = None
@@ -52,9 +52,9 @@ def find_best_counterfactuals(srun, c_list, config_id):
                 # Select a skill using counterfactually shaped state information
                 c_sensor_data = get_counterfactual_state(rd.pois, rd.rovers, rover_id, c_state[rover_id], sensor_data)
                 cba_input = np.sum((c_sensor_data, sensor_data), axis=0)  # Shaped agent perception
-                cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CKI picks skill
+                cba_outputs = networks[f"NN{rover_id}"].run_rover_nn(cba_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(cba_outputs))
-                rover_skill_selections["RV{0}".format(rover_id)][c_state[rover_id]][chosen_pol] += 1
+                rover_skill_selections[f"RV{rover_id}"][c_state[rover_id]][chosen_pol] += 1
 
                 # Determine action based on sensor inputs and suggestion
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
@@ -64,8 +64,8 @@ def find_best_counterfactuals(srun, c_list, config_id):
             step_rewards = rd.step(rover_actions)
             for poi_id in range(p["n_poi"]):
                 poi_rewards[poi_id, step_id] = step_rewards[poi_id]
-                if rd.pois["P{0}".format(poi_id)].hazardous:
-                    for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                if rd.pois[f"P{poi_id}"].hazardous:
+                    for dist in rd.pois[f"P{poi_id}"].observer_distances:
                         if dist < p["observation_radius"]:
                             n_incursions += 1
 
@@ -95,7 +95,7 @@ def test_cba(counterfactuals, config_id):
     # Create dictionary for each instance of rover and corresponding NN and EA population
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
+        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["cba_inp"], n_hid=p["cba_hid"], n_out=p["cba_out"])
 
     average_reward = 0
     reward_history = []  # Keep track of team performance throughout training
@@ -104,12 +104,12 @@ def test_cba(counterfactuals, config_id):
 
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
-        sgst = counterfactuals["S{0}".format(srun)]
+        sgst = counterfactuals[f"S{srun}"]
 
         # Load Trained Suggestion Interpreter Weights
         for rover_id in range(p["n_rovers"]):
-            s_weights = load_saved_policies('SelectionWeights{0}'.format(rover_id), rover_id, srun)
-            networks["NN{0}".format(rover_id)].get_weights(s_weights)
+            s_weights = load_saved_policies(f'SelectionWeights{rover_id}', rover_id, srun)
+            networks[f"NN{rover_id}"].get_weights(s_weights)
 
         # Reset environment to initial conditions
         rd.reset_world(config_id)
@@ -131,7 +131,7 @@ def test_cba(counterfactuals, config_id):
                 # Select a skill using counterfactually shaped state information
                 c_sensor_data = get_counterfactual_state(rd.pois, rd.rovers, rover_id, sgst[rover_id], sensor_data)
                 cba_input = np.sum((c_sensor_data, sensor_data), axis=0)  # Shaped agent perception
-                cba_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(cba_input)  # CKI picks skill
+                cba_outputs = networks[f"NN{rover_id}"].run_rover_nn(cba_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(cba_outputs))
 
                 # Determine action based on sensor inputs and suggestion
@@ -142,8 +142,8 @@ def test_cba(counterfactuals, config_id):
             step_rewards = rd.step(rover_actions)
             for poi_id in range(p["n_poi"]):
                 poi_rewards[poi_id, step_id] = step_rewards[poi_id]
-                if rd.pois["P{0}".format(poi_id)].hazardous:
-                    for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                if rd.pois[f"P{poi_id}"].hazardous:
+                    for dist in rd.pois[f"P{poi_id}"].observer_distances:
                         if dist < p["observation_radius"]:
                             n_incursions += 1
 
@@ -158,8 +158,8 @@ def test_cba(counterfactuals, config_id):
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
-    create_csv_file(reward_history, "Output_Data/", "TeamPerformance_CBA.csv")
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
+    create_csv_file(reward_history, "Output_Data/", "TeamPerformance_CKI.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:
         run_visualizer(cf_id=config_id)
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     if p["c_type"] == 'Custom':
         rover_c_states = [0 for i in range(p["n_skills"])]
         for srun in range(p["stat_runs"]):
-            counterfactuals["S{0}".format(srun)] = rover_c_states
+            counterfactuals[f"S{srun}"] = rover_c_states
     elif p["c_type"] == "Best_Total":
         choices = range(p["n_skills"])
         n = p["n_rovers"]
@@ -183,27 +183,27 @@ if __name__ == '__main__':
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
             c_list = (product(*t_list))
-            counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list, config_id)
+            counterfactuals[f"S{srun}"], r_skills = find_best_counterfactuals(srun, c_list, config_id)
             for rover_id in range(p["n_rovers"]):
                 for c in range(p["n_skills"]):
                     for ci in range(p["n_skills"]):
-                        rover_skill_selections[rover_id, c, ci] += r_skills["RV{0}".format(rover_id)][c][ci]
+                        rover_skill_selections[rover_id, c, ci] += r_skills[f"RV{rover_id}"][c][ci]
         for rover_id in range(p["n_rovers"]):
             for c in range(p["n_skills"]):
-                create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
+                create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", f"Rover{rover_id}_SkillSelections.csv")
     else:
         c_list = np.random.randint(0, p["n_skills"], (p["c_list_size"], p["n_rovers"]))
         rover_skill_selections = np.zeros((p["n_rovers"], p["n_skills"], p["n_skills"]))
         for srun in range(p["stat_runs"]):
             print(srun+1, "/", p["stat_runs"])
-            counterfactuals["S{0}".format(srun)], r_skills = find_best_counterfactuals(srun, c_list, config_id)
+            counterfactuals[f"S{srun}"], r_skills = find_best_counterfactuals(srun, c_list, config_id)
             for rover_id in range(p["n_rovers"]):
                 for c in range(p["n_skills"]):
                     for ci in range(p["n_skills"]):
-                        rover_skill_selections[rover_id, c, ci] += r_skills["RV{0}".format(rover_id)][c][ci]
+                        rover_skill_selections[rover_id, c, ci] += r_skills[f"RV{rover_id}"][c][ci]
         for rover_id in range(p["n_rovers"]):
             for c in range(p["n_skills"]):
-                create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", "Rover{0}_SkillSelections.csv".format(rover_id))
+                create_csv_file(rover_skill_selections[rover_id, c], "Output_Data/", f"Rover{rover_id}_SkillSelections.csv")
 
     # Testing CKI using the selected set of counterfactual states
     test_cba(counterfactuals, config_id)

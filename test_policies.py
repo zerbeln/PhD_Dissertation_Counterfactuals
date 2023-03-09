@@ -3,7 +3,6 @@ from Visualizer.visualizer import run_visualizer
 from NeuralNetworks.neural_network import NeuralNetwork
 from global_functions import load_saved_policies
 import numpy as np
-import sys
 from parameters import parameters as p
 from global_functions import create_csv_file, create_pickle_file
 
@@ -18,7 +17,7 @@ def test_trained_policy(config_id):
 
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Data tracking
     reward_history = []  # Keep track of team performance throughout training
@@ -32,8 +31,8 @@ def test_trained_policy(config_id):
         # Load Trained Rover Networks
         for rv in rd.rovers:
             rover_id = rd.rovers[rv].rover_id
-            weights = load_saved_policies('RoverWeights{0}'.format(rover_id), rover_id, srun)
-            networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
+            weights = load_saved_policies(f'RoverWeights{rover_id}', rover_id, srun)
+            networks[f"NN{rover_id}"].get_weights(weights)
 
         n_incursions = 0
         poi_rewards = np.zeros((p["n_poi"], p["steps"]))
@@ -48,15 +47,15 @@ def test_trained_policy(config_id):
 
                 # Get actions from rover neural networks
                 rover_id = rd.rovers[rv].rover_id
-                nn_outputs = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
+                nn_outputs = networks[f"NN{rover_id}"].run_rover_nn(rd.rovers[rv].observations)
                 rover_actions.append(nn_outputs)
 
             # Environment takes in rover actions and returns next state and global reward
             step_rewards = rd.step(rover_actions)
             for poi_id in range(p["n_poi"]):
                 poi_rewards[poi_id, step_id] = step_rewards[poi_id]
-                if rd.pois["P{0}".format(poi_id)].hazardous:
-                    for dist in rd.pois["P{0}".format(poi_id)].observer_distances:
+                if rd.pois[f"P{poi_id}"].hazardous:
+                    for dist in rd.pois[f"P{poi_id}"].observer_distances:
                         if dist < p["observation_radius"]:
                             n_incursions += 1
 
@@ -71,7 +70,7 @@ def test_trained_policy(config_id):
         srun += 1
 
     print(average_reward/p["stat_runs"])
-    create_pickle_file(final_rover_path, "Output_Data/", "Rover_Paths{0}".format(config_id))
+    create_pickle_file(final_rover_path, "Output_Data/", f"Rover_Paths{config_id}")
     create_csv_file(reward_history, "Output_Data/", "TeamPerformance_Standard.csv")
     create_csv_file(incursion_tracker, "Output_Data/", "HazardIncursions.csv")
     if p["vis_running"]:

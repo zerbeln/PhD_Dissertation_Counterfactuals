@@ -8,7 +8,8 @@ if __name__ == '__main__':
     Run classic or tightly coupled rover domain using either G, D, D++, or CKI with pre-defined rover skills.
     """
 
-    assert(p["algorithm"] != "CFL")  # This main file is for use with pre-defined rover skills only
+    # This file trains rovers to use skill selection instead of training the skills themselves
+    assert(p["algorithm"] != "CFL")
     assert (p["algorithm"] != "ACG")
 
     if p["algorithm"] == "Global":

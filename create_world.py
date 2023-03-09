@@ -19,7 +19,7 @@ def save_poi_configuration(pois_info, config_id):
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
 
-    pfile_name = os.path.join(dir_name, 'POI_Config{0}.csv'.format(config_id))
+    pfile_name = os.path.join(dir_name, f'POI_Config{config_id}.csv')
 
     with open(pfile_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -38,7 +38,7 @@ def save_rover_configuration(initial_rover_positions, config_id):
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
 
-    pfile_name = os.path.join(dir_name, 'Rover_Config{0}.csv'.format(config_id))
+    pfile_name = os.path.join(dir_name, f'Rover_Config{config_id}.csv')
 
     row = np.zeros(3)
     with open(pfile_name, 'w', newline='') as csvfile:
@@ -319,7 +319,7 @@ def create_rover_setup_only():
         pois_info = np.zeros((p["n_poi"], 5))  # [X, Y, Val, Coupling, Hazardous]
 
         config_input = []
-        with open('./World_Config/POI_Config{0}.csv'.format(cf_id)) as csvfile:
+        with open(f'./World_Config/POI_Config{cf_id}.csv') as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
 
             for row in csv_reader:
@@ -372,5 +372,5 @@ if __name__ == '__main__':
                 rv_path[0:p["stat_runs"], rv_id, t, 1] = rd.rover_configurations[rv_id][cf_id][1]
                 rv_path[0:p["stat_runs"], rv_id, t, 2] = rd.rover_configurations[rv_id][cf_id][2]
 
-        create_pickle_file(rv_path, "./Output_Data/", "Rover_Paths{0}".format(cf_id))
+        create_pickle_file(rv_path, "./Output_Data/", f"Rover_Paths{cf_id}")
         run_visualizer(cf_id=cf_id)
