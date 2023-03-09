@@ -19,9 +19,9 @@ def sample_best_team(rd, pops, networks):
 
     # Rover runs initial scan of environment and selects network weights
     for rv in rd.rovers:
-        policy_id = np.argmax(pops[f"EA{rd.rovers[rv].rover_id}"].fitness)
-        weights = pops[f"EA{rd.rovers[rv].rover_id}"].population[f"pol{policy_id}"]
-        networks[f"NN{rd.rovers[rv].rover_id}"].get_weights(weights)
+        policy_id = np.argmax(pops[f'EA{rd.rovers[rv].rover_id}'].fitness)
+        weights = pops[f'EA{rd.rovers[rv].rover_id}'].population[f'pol{policy_id}']
+        networks[f'NN{rd.rovers[rv].rover_id}'].get_weights(weights)
 
     g_reward = 0
     for cf_id in range(p["n_configurations"]):
@@ -33,7 +33,7 @@ def sample_best_team(rd, pops, networks):
             rover_actions = []
             for rv in rd.rovers:
                 rover_id = rd.rovers[rv].rover_id
-                nn_output = networks[f"NN{rover_id}"].run_rover_nn(rd.rovers[rv].observations)
+                nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                 rover_actions.append(nn_output)
 
             step_rewards = rd.step(rover_actions)
@@ -59,8 +59,8 @@ def rover_cdif():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops[f"EA{rover_id}"] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
-        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops[f'EA{rover_id}'] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        networks[f'NN{rover_id}'] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     counterfactuals = []
     if p["c_type"] == "Auto":
@@ -91,9 +91,9 @@ def rover_cdif():
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(p["pop_size"]):
                 for rv in rd.rovers:
-                    policy_id = int(pops[f"EA{rd.rovers[rv].rover_id}"].team_selection[team_number])
-                    weights = pops[f"EA{rd.rovers[rv].rover_id}"].population[f"pol{policy_id}"]
-                    networks[f"NN{rd.rovers[rv].rover_id}"].get_weights(weights)
+                    policy_id = int(pops[f'EA{rd.rovers[rv].rover_id}'].team_selection[team_number])
+                    weights = pops[f'EA{rd.rovers[rv].rover_id}'].population[f'pol{policy_id}']
+                    networks[f'NN{rd.rovers[rv].rover_id}'].get_weights(weights)
 
                 for cf_id in range(p["n_configurations"]):
                     rd.reset_world(cf_id)
@@ -103,7 +103,7 @@ def rover_cdif():
                         rover_actions = []
                         for rv in rd.rovers:
                             rover_id = rd.rovers[rv].rover_id
-                            nn_output = networks[f"NN{rover_id}"].run_rover_nn(rd.rovers[rv].observations)
+                            nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             rover_actions.append(nn_output)
 
                         step_rewards = rd.step(rover_actions)
@@ -117,8 +117,8 @@ def rover_cdif():
                         g_reward += max(p_reward)
                     cfl_d_rewards = calc_cfl_difference(rd.pois, g_reward, rd.rover_poi_distances, counterfactuals)
                     for rover_id in range(p["n_rovers"]):
-                        policy_id = int(pops[f"EA{rover_id}"].team_selection[team_number])
-                        pops[f"EA{rover_id}"].fitness[policy_id] += cfl_d_rewards[rover_id]
+                        policy_id = int(pops[f'EA{rover_id}'].team_selection[team_number])
+                        pops[f'EA{rover_id}'].fitness[policy_id] += cfl_d_rewards[rover_id]
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
@@ -132,9 +132,9 @@ def rover_cdif():
         # Record Output Files
         create_csv_file(reward_history, "Output_Data/", "CFL_D_Rewards.csv")
         for rover_id in range(p["n_rovers"]):
-            policy_id = np.argmax(pops["EA{0}".format(rover_id)].fitness)
-            weights = pops[f"EA{rover_id}"].population[f"pol{policy_id}"]
-            save_best_policies(weights, srun, f"RoverWeights{rover_id}", rover_id)
+            policy_id = np.argmax(pops[f'EA{rover_id}'].fitness)
+            weights = pops[f'EA{rover_id}'].population[f'pol{policy_id}']
+            save_best_policies(weights, srun, f'RoverWeights{rover_id}', rover_id)
 
         srun += 1
 
@@ -151,8 +151,8 @@ def rover_cdpp():
     pops = {}
     networks = {}
     for rover_id in range(p["n_rovers"]):
-        pops[f"EA{rover_id}"] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
-        networks[f"NN{rover_id}"] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        pops[f'EA{rover_id}'] = CCEA(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        networks[f'NN{rover_id}'] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     counterfactuals = []
     if p["c_type"] == "Auto":
@@ -183,9 +183,9 @@ def rover_cdpp():
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(p["pop_size"]):
                 for rv in rd.rovers:
-                    policy_id = int(pops[f"EA{rd.rovers[rv].rover_id}"].team_selection[team_number])
-                    weights = pops[f"EA{rd.rovers[rv].rover_id}"].population[f"pol{policy_id}"]
-                    networks[f"NN{rd.rovers[rv].rover_id}"].get_weights(weights)
+                    policy_id = int(pops[f'EA{rd.rovers[rv].rover_id}'].team_selection[team_number])
+                    weights = pops[f'EA{rd.rovers[rv].rover_id}'].population[f'pol{policy_id}']
+                    networks[f'NN{rd.rovers[rv].rover_id}'].get_weights(weights)
 
                 for cf_id in range(p["n_configurations"]):
                     rd.reset_world(cf_id)
@@ -195,7 +195,7 @@ def rover_cdpp():
                         rover_actions = []
                         for rv in rd.rovers:
                             rover_id = rd.rovers[rv].rover_id
-                            nn_output = networks[f"NN{rover_id}"].run_rover_nn(rd.rovers[rv].observations)
+                            nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             rover_actions.append(nn_output)
 
                         step_rewards = rd.step(rover_actions)
@@ -209,8 +209,8 @@ def rover_cdpp():
                         g_reward += max(p_reward)
                     cfl_dpp_rewards = calc_cfl_dpp(rd.pois, g_reward, rd.rover_poi_distances, counterfactuals)
                     for rover_id in range(p["n_rovers"]):
-                        policy_id = int(pops[f"EA{rover_id}"].team_selection[team_number])
-                        pops[f"EA{rover_id}"].fitness[policy_id] += cfl_dpp_rewards[rover_id]
+                        policy_id = int(pops[f'EA{rover_id}'].team_selection[team_number])
+                        pops[f'EA{rover_id}'].fitness[policy_id] += cfl_dpp_rewards[rover_id]
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
@@ -224,8 +224,8 @@ def rover_cdpp():
         # Record Output Files
         create_csv_file(reward_history, "Output_Data/", "CFL_DPP_Rewards.csv")
         for rover_id in range(p["n_rovers"]):
-            policy_id = np.argmax(pops[f"EA{rover_id}"].fitness)
-            weights = pops[f"EA{rover_id}"].population[f"pol{policy_id}"]
-            save_best_policies(weights, srun, f"RoverWeights{rover_id}", rover_id)
+            policy_id = np.argmax(pops[f'EA{rover_id}'].fitness)
+            weights = pops[f'EA{rover_id}'].population[f'pol{policy_id}']
+            save_best_policies(weights, srun, f'RoverWeights{rover_id}', rover_id)
 
         srun += 1

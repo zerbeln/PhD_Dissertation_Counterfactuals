@@ -88,7 +88,7 @@ class RoverDomain:
                 poi_hazard = float(csv_input[poi_id][4])
 
                 if cf_id == 0:
-                    self.pois[f"P{poi_id}"] = POI(poi_x, poi_y, poi_val, poi_coupling, poi_id)
+                    self.pois[f'P{poi_id}'] = POI(poi_x, poi_y, poi_val, poi_coupling, poi_id)
 
                 self.poi_configurations[poi_id].append((poi_x, poi_y, poi_val, poi_coupling, poi_hazard))
 
@@ -111,7 +111,7 @@ class RoverDomain:
                 rov_theta = float(csv_input[rover_id][2])
 
                 if cf_id == 0:
-                    self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
+                    self.rovers[f'R{rover_id}'] = Rover(rover_id, rov_x, rov_y, rov_theta)
 
                 self.rover_configurations[rover_id].append((rov_x, rov_y, rov_theta))
 

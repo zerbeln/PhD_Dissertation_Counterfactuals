@@ -6,7 +6,7 @@ from CFL.cfl import rover_cdpp, rover_cdif
 if __name__ == '__main__':
     """
     Run classic or tightly coupled rover domain using either G, D, D++, or CFL
-    This main file is for use with rovers learning navigation (not skills)
+    This file trains rover policies directly (not skills based)
     """
 
     assert (p["algorithm"] != "CKI" and p["algorithm"] != "ACG")

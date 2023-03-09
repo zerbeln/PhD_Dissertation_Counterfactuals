@@ -11,7 +11,7 @@ from plots_common_functions import import_reward_data, get_standard_err_performa
 
 
 def calc_max_poi_val(n_rovers, poi_coupling):
-    poi_path = '../C{0}/CKI/World_Config/POI_Config.csv'.format(poi_coupling)
+    poi_path = f'../C{poi_coupling}/CKI/World_Config/POI_Config.csv'
 
     config_input = []
     with open(poi_path) as csvfile:
@@ -56,10 +56,10 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers, sruns):
     cki_err = []
 
     for i in range(max_coupling):
-        g_path = '../C{0}/Global/Output_Data/Final_GlobalRewards.csv'.format(i+1)
-        d_path = '../C{0}/Difference/Output_Data/Final_GlobalRewards.csv'.format(i+1)
-        dpp_path = '../C{0}/D++/Output_Data/Final_GlobalRewards.csv'.format(i+1)
-        cki_path = '../C{0}/CKI/Output_Data/Final_GlobalRewards.csv'.format(i+1)
+        g_path = f'../C{i+1}/Global/Output_Data/Final_GlobalRewards.csv'
+        d_path = f'../C{i+1}/Difference/Output_Data/Final_GlobalRewards.csv'
+        dpp_path = f'../C{i+1}/D++/Output_Data/Final_GlobalRewards.csv'
+        cki_path = f'../C{i+1}/CKI/Output_Data/Final_GlobalRewards.csv'
 
         max_reward = calc_max_poi_val(n_rovers, i+1)  # Maximum possible score teams can achieve
         g_input = []
@@ -138,7 +138,7 @@ def create_coupling_plots(max_coupling, n_poi, n_rovers, sruns):
     # Save the plot
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
-    plt.savefig("Plots/P{0}R{1}_Coupling.pdf".format(n_poi, n_rovers))
+    plt.savefig(f'Plots/P{n_poi}R{n_rovers}_Coupling.pdf')
     plt.close()
 
 
@@ -164,11 +164,11 @@ def create_hazard_performance_plots(n_poi, n_rovers, sruns):
     cki_c3_err = []
 
     for i in range(3):
-        g_path = '../H{0}/Global/Output_Data/Final_GlobalRewards.csv'.format(i + 1)
-        d_path = '../H{0}/Difference/Output_Data/Final_GlobalRewards.csv'.format(i + 1)
-        dpp_path = '../H{0}/D++/Output_Data/Final_GlobalRewards.csv'.format(i + 1)
-        cki_c1_path = '../H{0}/CBA_LC/Output_Data/Final_GlobalRewards.csv'.format(i + 1)
-        cki_c3_path = '../H{0}/CBA_TC/Output_Data/Final_GlobalRewards.csv'.format(i + 1)
+        g_path = f'../H{i+1}/Global/Output_Data/Final_GlobalRewards.csv'
+        d_path = f'../H{i+1}/Difference/Output_Data/Final_GlobalRewards.csv'
+        dpp_path = f'../H{i+1}/D++/Output_Data/Final_GlobalRewards.csv'
+        cki_c1_path = f'../H{i+1}/CBA_LC/Output_Data/Final_GlobalRewards.csv'
+        cki_c3_path = f'../H{i+1}/CBA_TC/Output_Data/Final_GlobalRewards.csv'
 
         g_input = []
         d_input = []
@@ -274,7 +274,7 @@ def create_hazard_performance_plots(n_poi, n_rovers, sruns):
     # Save the plot
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
-    plt.savefig("Plots/P{0}R{1}_Hazards.pdf".format(n_poi, n_rovers))
+    plt.savefig(f'Plots/P{n_poi}R{n_rovers}_Hazards.pdf')
     plt.close()
 
 
@@ -300,11 +300,11 @@ def create_hazard_incursion_plots(n_poi, n_rovers, sruns):
     cki_c3_err = []
 
     for i in range(3):
-        g_path = '../H{0}/Global/Output_Data/HazardIncursions.csv'.format(i + 1)
-        d_path = '../H{0}/Difference/Output_Data/HazardIncursions.csv'.format(i + 1)
-        dpp_path = '../H{0}/D++/Output_Data/HazardIncursions.csv'.format(i + 1)
-        cki_c1_path = '../H{0}/CBA_LC/Output_Data/HazardIncursions.csv'.format(i + 1)
-        cki_c3_path = '../H{0}/CBA_TC/Output_Data/HazardIncursions.csv'.format(i + 1)
+        g_path = f'../H{i+1}/Global/Output_Data/HazardIncursions.csv'
+        d_path = f'../H{i+1}/Difference/Output_Data/HazardIncursions.csv'
+        dpp_path = f'../H{i+1}/D++/Output_Data/HazardIncursions.csv'
+        cki_c1_path = f'../H{i+1}/CBA_LC/Output_Data/HazardIncursions.csv'
+        cki_c3_path = f'../H{i+1}/CBA_TC/Output_Data/HazardIncursions.csv'
 
         g_input = []
         d_input = []
@@ -405,7 +405,7 @@ def create_hazard_incursion_plots(n_poi, n_rovers, sruns):
     # Save the plot
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
-    plt.savefig("Plots/P{0}R{1}_Incursions.pdf".format(n_poi, n_rovers))
+    plt.savefig(f'Plots/P{n_poi}R{n_rovers}_Incursions.pdf')
     plt.close()
 
 
@@ -552,7 +552,7 @@ def create_skill_heatmap_plots(n_poi, n_rovers):
 
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
-    plt.savefig("Plots/P{0}R{1}_Heatmap.pdf".format(n_poi, n_rovers))
+    plt.savefig(f'Plots/P{n_poi}R{n_rovers}_Heatmap.pdf')
     plt.close()
 
 

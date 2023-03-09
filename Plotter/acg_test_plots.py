@@ -237,7 +237,7 @@ def generate_rover_heatmap(sruns, n_rovers, n_poi):
 
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
-    plt.savefig("Plots/P{0}R{1}_Heatmap.pdf".format(n_poi, n_rovers))
+    plt.savefig(f'Plots/P{n_poi}R{n_rovers}_Heatmap.pdf')
     plt.close()
 
 
@@ -368,7 +368,7 @@ def generate_supervisor_heatmap(sruns, n_rovers, n_poi):
 
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
         os.makedirs('Plots')
-    plt.savefig("Plots/P{0}R{1}_ACGHeatmap.pdf".format(n_poi, n_rovers))
+    plt.savefig(f'Plots/P{n_poi}R{n_rovers}_ACGHeatmap.pdf')
     plt.close()
 
 
