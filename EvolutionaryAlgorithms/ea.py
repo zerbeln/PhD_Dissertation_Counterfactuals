@@ -89,7 +89,7 @@ class EA:
         new_population = {}
         max_id = np.argmax(self.fitness)
         for pol_id in range(self.pop_size):
-            if pol_id == max_id:  # Preserve the champion
+            if pol_id < self.n_elites:  # Preserve the champion
                 new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
             else:
                 p1 = random.randint(0, self.pop_size-1)

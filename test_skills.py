@@ -92,8 +92,7 @@ def test_trained_policy(config_id):
                 final_rover_path[srun, rd.rovers[rv].rover_id, step_id, 2] = rd.rovers[rv].loc[2]
 
                 # Get actions from rover neural networks
-                rover_id = rd.rovers[rv].rover_id
-                nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                nn_output = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                 chosen_pol = int(np.argmax(nn_output))
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 rover_actions.append(action)

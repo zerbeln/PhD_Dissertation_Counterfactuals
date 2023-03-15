@@ -11,10 +11,6 @@ from CKI.custom_rover_skills import get_custom_action
 def sample_best_team(rd, pops, networks):
     """
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
-    :param rd: Instance of the rover domain
-    :param pops: CCEA populations
-    :param networks: Dictionary containing rover neural network instances
-    :return: global reward for team of best individuals
     """
 
     # Rover runs initial scan of environment and selects network weights
@@ -32,8 +28,7 @@ def sample_best_team(rd, pops, networks):
             # Get rover actions from neural network
             rover_actions = []
             for rv in rd.rovers:
-                rover_id = rd.rovers[rv].rover_id
-                nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                nn_output = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                 chosen_pol = int(np.argmax(nn_output))
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 rover_actions.append(action)
@@ -97,8 +92,7 @@ def rover_global():
                         # Get rover actions from neural network
                         rover_actions = []
                         for rv in rd.rovers:
-                            rover_id = rd.rovers[rv].rover_id
-                            nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                            nn_output = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             chosen_pol = int(np.argmax(nn_output))
                             action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                             rover_actions.append(action)
@@ -187,8 +181,7 @@ def rover_difference():
                         # Get rover actions from neural network
                         rover_actions = []
                         for rv in rd.rovers:
-                            rover_id = rd.rovers[rv].rover_id
-                            nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                            nn_output = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             chosen_pol = int(np.argmax(nn_output))
                             action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                             rover_actions.append(action)
@@ -277,8 +270,7 @@ def rover_dpp():
                         # Get rover actions from neural network
                         rover_actions = []
                         for rv in rd.rovers:
-                            rover_id = rd.rovers[rv].rover_id
-                            nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                            nn_output = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             chosen_pol = int(np.argmax(nn_output))
                             action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                             rover_actions.append(action)

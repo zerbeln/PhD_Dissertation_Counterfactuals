@@ -46,8 +46,7 @@ def test_trained_policy(config_id):
                 final_rover_path[srun, rd.rovers[rv].rover_id, step_id, 2] = rd.rovers[rv].loc[2]
 
                 # Get actions from rover neural networks
-                rover_id = rd.rovers[rv].rover_id
-                nn_outputs = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                nn_outputs = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                 rover_actions.append(nn_outputs)
 
             # Environment takes in rover actions and returns next state and global reward

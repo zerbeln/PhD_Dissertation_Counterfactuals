@@ -56,14 +56,13 @@ def test_acg_hazards(config_id):
                 final_rover_path[srun, rd.rovers[rv].rover_id, step_id, 2] = rd.rovers[rv].loc[2]
 
                 # Rovers observe environment
-                rover_id = rd.rovers[rv].rover_id
                 rd.rovers[rv].scan_environment(rd.rovers, rd.pois)
                 sensor_data = rd.rovers[rv].observations  # Unaltered sensor readings
 
                 # Rover acts based on perception + supervisor counterfactual
-                c_data = counterfactuals[f'RV{rover_id}']  # Counterfactual from supervisor
+                c_data = counterfactuals[f'RV{rd.rovers[rv].rover_id}']  # Counterfactual from supervisor
                 rover_input = np.sum((sensor_data, c_data), axis=0)
-                nn_output = rover_nns[f'NN{rover_id}'].run_rover_nn(rover_input)  # CKI picks skill
+                nn_output = rover_nns[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rover_input)  # CKI picks skill
                 chosen_pol = int(np.argmax(nn_output))
                 action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
 
@@ -154,14 +153,13 @@ def test_acg_rover_loss(config_id, lost_rovers):
 
                 # Rovers observe environment
                 if rd.rovers[rv].rover_id not in lost_rovers:
-                    rover_id = rd.rovers[rv].rover_id
                     rd.rovers[rv].scan_environment(rd.rovers, rd.pois)
                     sensor_data = rd.rovers[rv].observations  # Unaltered sensor readings
 
                     # Rover acts based on perception + supervisor counterfactual
-                    c_data = counterfactuals[f'RV{rover_id}']  # Counterfactual from supervisor
+                    c_data = counterfactuals[f'RV{rd.rovers[rv].rover_id}']  # Counterfactual from supervisor
                     rover_input = np.sum((sensor_data, c_data), axis=0)
-                    nn_output = rover_nns[f'NN{rover_id}'].run_rover_nn(rover_input)  # CKI picks skill
+                    nn_output = rover_nns[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rover_input)  # CKI picks skill
                     chosen_pol = int(np.argmax(nn_output))
                     action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                 else:
@@ -227,8 +225,7 @@ def test_standard_pol_rov_loss(config_id, lost_rovers):
 
                 if rd.rovers[rv].rover_id not in lost_rovers:
                     # Get actions from rover neural networks
-                    rover_id = rd.rovers[rv].rover_id
-                    nn_output = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                    nn_output = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                     chosen_pol = int(np.argmax(nn_output))
                     action = get_custom_action(chosen_pol, rd.pois, rd.rovers[rv].loc[0], rd.rovers[rv].loc[1])
                     rover_actions.append(action)
