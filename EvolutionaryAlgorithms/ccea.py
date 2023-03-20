@@ -12,5 +12,4 @@ class CCEA(EA):
         """
         Determines which individuals from each population get paired together
         """
-
         self.team_selection = random.sample(range(self.pop_size), self.pop_size)

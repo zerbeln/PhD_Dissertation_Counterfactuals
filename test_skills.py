@@ -141,5 +141,6 @@ def test_trained_policy(config_id):
 if __name__ == '__main__':
     # Test Performance of Skills in Agent Skill Set
     cf_id = 0
+    skill_id = 0
     print("Testing Trained Skills on Configuration: ", cf_id)
-    test_custom_skills(1, cf_id)
+    test_custom_skills(skill_id, cf_id)

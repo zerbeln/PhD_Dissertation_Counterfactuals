@@ -13,7 +13,6 @@ def save_time_history(time_history, file_name):
     """
     Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
     """
-
     dir_name = 'Output_Data/'  # Intended directory for output files
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
@@ -28,7 +27,6 @@ def save_skill_reward_history(rover_id, reward_history, file_name):
     """
     Save reward data as a CSV file for graph generation. CSV is appended each time function is called.
     """
-
     dir_name = 'Output_Data/Rover{0}'.format(rover_id)  # Intended directory for output files
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
@@ -43,7 +41,6 @@ def train_towards_teammates():
     """
     Train rover policy for travelling towards teammates
     """
-
     # Parameters
     stat_runs = p["stat_runs"]
     generations = p["pbank_generations"]
@@ -112,7 +109,6 @@ def train_away_teammates():
     """
     Train rover policy for travelling away from teammates
     """
-
     # Parameters
     stat_runs = p["stat_runs"]
     generations = p["pbank_generations"]
@@ -181,7 +177,6 @@ def train_towards_poi():
     """
     Train rover policy for travelling towards POI
     """
-
     # Parameters
     stat_runs = p["stat_runs"]
     generations = p["pbank_generations"]
@@ -253,7 +248,6 @@ def train_away_poi():
     """
     Train rover policy for travelling away from POI
     """
-
     # Parameters
     stat_runs = p["stat_runs"]
     generations = p["pbank_generations"]
@@ -325,7 +319,6 @@ def train_target_poi(rover_targets):
     """
     Train rover skills for travelling towards specific POI
     """
-
     # Parameters
     stat_runs = p["stat_runs"]
     generations = p["pbank_generations"]
@@ -499,7 +492,6 @@ if __name__ == '__main__':
     """
     Train policy playbooks for rover team
     """
-
     rover_skills = []
     if p["randomize_skills"]:
         for rover_id in range(p["n_rovers"]):

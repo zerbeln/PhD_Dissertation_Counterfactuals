@@ -7,14 +7,15 @@ def sigmoid(inp):  # Sigmoid function as activation function
     """
     sigmoid neural network activation function
     """
-
     sig = 1 / (1 + np.exp(-inp))
 
     return sig
 
 
 def get_custom_action(chosen_pol, pois, rover_x, rover_y):
-
+    """
+    Rover receives a customized (hard-coded) action
+    """
     if chosen_pol < p["n_poi"]:
         action = travel_to_poi(chosen_pol, pois, rover_x, rover_y)
     else:
@@ -24,7 +25,9 @@ def get_custom_action(chosen_pol, pois, rover_x, rover_y):
 
 
 def travel_to_poi(target_poi, pois, rover_x, rover_y):
-
+    """
+    Prouces an action that will make a rover travel in a straight line towards a POI
+    """
     poi_x = pois["P{0}".format(target_poi)].loc[0]
     poi_y = pois["P{0}".format(target_poi)].loc[1]
 
@@ -45,25 +48,35 @@ def travel_to_poi(target_poi, pois, rover_x, rover_y):
 
 
 def travel_north():
-
+    """
+    Rover moves "up"
+    """
     return [0.5, 1]
 
 
 def travel_south():
-
+    """
+    Rover moves "down"
+    """
     return [0.5, 0]
 
 
 def travel_east():
-
+    """
+    Rover moves "right"
+    """
     return [1, 0.5]
 
 
 def travel_west():
-
+    """
+    Rover moves "left"
+    """
     return [0, 0.5]
 
 
 def remain_stationary():
-
+    """
+    Rover does not move
+    """
     return [0.5, 0.5]

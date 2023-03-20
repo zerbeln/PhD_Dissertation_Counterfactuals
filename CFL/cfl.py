@@ -11,12 +11,7 @@ import numpy as np
 def sample_best_team(rd, pops, networks):
     """
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
-    :param rd: Instance of the rover domain
-    :param pops: CCEA populations
-    :param networks: Dictionary containing rover neural network instances
-    :return: global reward for team of best individuals
     """
-
     # Rover runs initial scan of environment and selects network weights
     for rv in rd.rovers:
         policy_id = np.argmax(pops[f'EA{rd.rovers[rv].rover_id}'].fitness)

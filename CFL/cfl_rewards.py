@@ -28,10 +28,6 @@ def create_counterfactuals_dif(counterfactual, rover_dist):
 def calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals):
     """
     Calculate D rewards for each rover
-    :param pois: Dictionary containing POI class instances
-    :param global_reward: Episodic global reward
-    :param rov_poi_dist: Array containing distances between POI and rovers for entire episode
-    :return dpp_rewards: Numpy array containing each rover's D++ reward
     """
 
     cfl_d_rewards = np.zeros(p["n_rovers"])
@@ -70,10 +66,6 @@ def calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals):
 def calc_cfl_dpp(pois, global_reward, rov_poi_dist, counterfactuals):
     """
     Calculate D++ rewards for each rover
-    :param pois: Dictionary containing POI class instances
-    :param global_reward: Episodic global reward
-    :param rov_poi_dist: Array containing distances between POI and rovers for entire episode
-    :return dpp_rewards: Numpy array containing each rover's D++ reward
     """
     d_rewards = calc_difference(pois, global_reward, rov_poi_dist)
     rewards = np.zeros(p["n_rovers"])  # This is just a temporary reward tracker for iterations of counterfactuals
@@ -159,12 +151,7 @@ def calc_cfl_dpp(pois, global_reward, rov_poi_dist, counterfactuals):
 def cfl_dpp_dif(pois, global_reward, rov_poi_dist, counterfactuals):
     """
     Calculate D++ rewards for each rover
-    :param pois: Dictionary containing POI class instances
-    :param global_reward: Episodic global reward
-    :param rov_poi_dist: Array containing distances between POI and rovers for entire episode
-    :return dpp_rewards: Numpy array containing each rover's D++ reward
     """
-
     sd_rewards = calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals)
     rewards = np.zeros(p["n_rovers"])  # This is just a temporary reward tracker for iterations of counterfactuals
     cfl_dpp_rewards = np.zeros(p["n_rovers"])
@@ -244,4 +231,3 @@ def cfl_dpp_dif(pois, global_reward, rov_poi_dist, counterfactuals):
             cfl_dpp_rewards[agent_id] = sd_rewards[agent_id]  # Returns difference reward for this agent
 
     return cfl_dpp_rewards
-

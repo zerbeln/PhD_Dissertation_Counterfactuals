@@ -10,8 +10,6 @@ class SupervisorNetwork(NeuralNetwork):
     def run_supervisor_nn(self, sensor_data):
         """
         Run neural network using state information, return rover counterfactuals
-        :param sensor_data: array containing state information from rover observations of the current state
-        :return: array containing rover's next actions
         """
         self.get_nn_inputs(sensor_data)
         self.get_nn_outputs()
@@ -20,7 +18,7 @@ class SupervisorNetwork(NeuralNetwork):
         for rover_id in range(self.n_agents):
             counterfactual = np.zeros(self.n_inputs)
             for i in range(self.n_inputs):
-                counterfactual[i] = self.output_layer[rover_id*self.n_inputs + i, 0]
+                counterfactual[i] = self.output_layer[rover_id*self.n_inputs + i]
 
             rover_counterfactuals[f'RV{rover_id}'] = counterfactual.copy()
 
