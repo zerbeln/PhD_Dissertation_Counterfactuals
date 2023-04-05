@@ -4,18 +4,13 @@ from RoverDomainCore.reward_functions import calc_difference, calc_dpp
 from RoverDomainCore.rover_domain import RoverDomain
 import numpy as np
 from parameters import parameters as p
-from global_functions import create_csv_file, save_best_policies
+from global_functions import create_csv_file, save_best_policies, create_pickle_file
 
 
 def sample_best_team(rd, pops, networks):
     """
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
-    :param rd: Instance of the rover domain
-    :param pops: CCEA populations
-    :param networks: Dictionary containing rover neural network instances
-    :return: global reward for team of best individuals
     """
-
     # Select network weights
     for rv in rd.rovers:
         policy_id = np.argmax(pops[f'EA{rd.rovers[rv].rover_id}'].fitness)
@@ -64,15 +59,18 @@ def rover_global():
 
     # Perform runs
     srun = p["starting_srun"]
+    calls_to_g = {"gen_calls": [], "srun_calls": []}  # Total calls to g
     while srun < p["stat_runs"]:
         print("Run: %i" % srun)
-
+        srun_g_count = 0
+        calls_to_g_gen = []
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
 
         reward_history = []
         for gen in range(p["generations"]):
+            gen_g_count = 0
             for pkey in pops:
                 pops[pkey].select_policy_teams()
                 pops[pkey].reset_fitness()
@@ -97,6 +95,7 @@ def rover_global():
                             rover_actions.append(action)
 
                         step_rewards = rd.step(rover_actions)
+                        gen_g_count += 1  # Increment calls to g counter
                         # Calculate rewards at current time step
                         for poi_id in range(p["n_poi"]):
                             poi_rewards[poi_id, step_id] = step_rewards[poi_id]
@@ -118,10 +117,11 @@ def rover_global():
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
-
             # Choose new parents and create new offspring population
-            for rover_id in range(p["n_rovers"]):
-                pops[f'EA{rover_id}'].down_select()
+            for pkey in pops:
+                pops[pkey].down_select()
+            srun_g_count += gen_g_count
+            calls_to_g_gen.append(gen_g_count)
 
         # Record Output Files
         create_csv_file(reward_history, "Output_Data/", "Global_Reward.csv")
@@ -131,6 +131,10 @@ def rover_global():
             save_best_policies(weights, srun, f'RoverWeights{rover_id}', rover_id)
 
         srun += 1
+        calls_to_g["srun_calls"].append(srun_g_count)
+        calls_to_g["gen_calls"].append(calls_to_g_gen)
+
+    create_pickle_file(calls_to_g, "Output_Data/", "G_Calls_G")
 
 
 def rover_difference():
@@ -149,16 +153,19 @@ def rover_difference():
         networks[f'NN{rover_id}'] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
+    calls_to_g = {"gen_calls": [], "srun_calls": []}  # Total calls to g
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
         print("Run: %i" % srun)
-
+        srun_g_count = 0
+        calls_to_g_gen = []
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
 
         reward_history = []
         for gen in range(p["generations"]):
+            gen_g_count = 0
             for pkey in pops:
                 pops[pkey].select_policy_teams()
                 pops[pkey].reset_fitness()
@@ -183,6 +190,7 @@ def rover_difference():
                             rover_actions.append(action)
 
                         step_rewards = rd.step(rover_actions)
+                        gen_g_count += 1  # Increment calls to g counter
                         # Calculate rewards at current time step
                         for poi_id in range(p["n_poi"]):
                             poi_rewards[poi_id, step_id] = step_rewards[poi_id]
@@ -191,7 +199,8 @@ def rover_difference():
                     g_reward = 0
                     for p_reward in poi_rewards:
                         g_reward += max(p_reward)
-                    d_rewards = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
+                    d_rewards, g_count = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
+                    gen_g_count += g_count  # Increment calls to g counter
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops[f'EA{rover_id}'].team_selection[team_number])
                         pops[f'EA{rover_id}'].fitness[policy_id] += d_rewards[rover_id]
@@ -205,10 +214,11 @@ def rover_difference():
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
-
             # Choose new parents and create new offspring population
             for pkey in pops:
                 pops[pkey].down_select()
+            srun_g_count += gen_g_count
+            calls_to_g_gen.append(gen_g_count)
 
         # Record Output Files
         create_csv_file(reward_history, "Output_Data/", "Difference_Reward.csv")
@@ -218,6 +228,10 @@ def rover_difference():
             save_best_policies(weights, srun, f'RoverWeights{rover_id}', rover_id)
 
         srun += 1
+        calls_to_g["srun_calls"].append(srun_g_count)
+        calls_to_g["gen_calls"].append(calls_to_g_gen)
+
+    create_pickle_file(calls_to_g, "Output_Data/", "G_Calls_D")
 
 
 def rover_dpp():
@@ -236,16 +250,19 @@ def rover_dpp():
         networks[f'NN{rover_id}'] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
+    calls_to_g = {"gen_calls": [], "srun_calls": []}  # Total calls to g
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
         print("Run: %i" % srun)
-
+        srun_g_count = 0
+        calls_to_g_gen = []
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
 
         reward_history = []
         for gen in range(p["generations"]):
+            gen_g_count = 0
             for pkey in pops:
                 pops[pkey].select_policy_teams()
                 pops[pkey].reset_fitness()
@@ -270,6 +287,7 @@ def rover_dpp():
                             rover_actions.append(action)
 
                         step_rewards = rd.step(rover_actions)
+                        gen_g_count += 1  # Increment calls to g counter
                         # Calculate rewards at current time step
                         for poi_id in range(p["n_poi"]):
                             poi_rewards[poi_id, step_id] = step_rewards[poi_id]
@@ -278,7 +296,8 @@ def rover_dpp():
                     g_reward = 0
                     for p_reward in poi_rewards:
                         g_reward += max(p_reward)
-                    dpp_rewards = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
+                    dpp_rewards, g_count = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
+                    gen_g_count += g_count  # Increment calls to g counter
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops[f'EA{rover_id}'].team_selection[team_number])
                         pops[f'EA{rover_id}'].fitness[policy_id] += dpp_rewards[rover_id]
@@ -292,10 +311,11 @@ def rover_dpp():
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
-
             # Choose new parents and create new offspring population
             for pkey in pops:
                 pops[pkey].down_select()
+            srun_g_count += gen_g_count
+            calls_to_g_gen.append(gen_g_count)
 
         # Record Output Files
         create_csv_file(reward_history, "Output_Data/", "DPP_Reward.csv")
@@ -305,3 +325,7 @@ def rover_dpp():
             save_best_policies(weights, srun, f'RoverWeights{rover_id}', rover_id)
 
         srun += 1
+        calls_to_g["srun_calls"].append(srun_g_count)
+        calls_to_g["gen_calls"].append(calls_to_g_gen)
+
+    create_pickle_file(calls_to_g, "Output_Data/", "G_Calls_DPP")

@@ -12,7 +12,6 @@ def sample_best_team(rd, pops, networks):
     """
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
     """
-
     # Rover runs initial scan of environment and selects network weights
     for rv in rd.rovers:
         policy_id = np.argmax(pops[f'EA{rd.rovers[rv].rover_id}'].fitness)
@@ -195,7 +194,7 @@ def rover_difference():
                     g_reward = 0
                     for p_reward in poi_rewards:
                         g_reward += max(p_reward)
-                    d_rewards = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
+                    d_rewards, g_count = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops[f'EA{rover_id}'].team_selection[team_number])
                         pops[f'EA{rover_id}'].fitness[policy_id] += d_rewards[rover_id]
@@ -284,7 +283,7 @@ def rover_dpp():
                     g_reward = 0
                     for p_reward in poi_rewards:
                         g_reward += max(p_reward)
-                    dpp_rewards = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
+                    dpp_rewards, g_count = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
                     for rover_id in range(p["n_rovers"]):
                         policy_id = int(pops[f'EA{rover_id}'].team_selection[team_number])
                         pops[f'EA{rover_id}'].fitness[policy_id] += dpp_rewards[rover_id]

@@ -29,10 +29,11 @@ def calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals):
     """
     Calculate D rewards for each rover
     """
-
+    g_count = 0
     cfl_d_rewards = np.zeros(p["n_rovers"])
     for agent_id in range(p["n_rovers"]):
         counterfactual_global_reward = 0.0
+        g_count += 1
         for pk in pois:  # For each POI
             poi_reward = 0.0  # Track best POI reward over all time steps for given POI
             for step in range(p["steps"]):
@@ -59,7 +60,7 @@ def calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals):
 
         cfl_d_rewards[agent_id] = global_reward - counterfactual_global_reward
 
-    return cfl_d_rewards
+    return cfl_d_rewards, g_count
 
 
 # S-D++ REWARD -------------------------------------------------------------------------------------------------------
@@ -67,7 +68,7 @@ def calc_cfl_dpp(pois, global_reward, rov_poi_dist, counterfactuals):
     """
     Calculate D++ rewards for each rover
     """
-    d_rewards = calc_difference(pois, global_reward, rov_poi_dist)
+    d_rewards, g_count = calc_difference(pois, global_reward, rov_poi_dist)
     rewards = np.zeros(p["n_rovers"])  # This is just a temporary reward tracker for iterations of counterfactuals
     cfl_dpp_rewards = np.zeros(p["n_rovers"])
 
@@ -75,6 +76,7 @@ def calc_cfl_dpp(pois, global_reward, rov_poi_dist, counterfactuals):
     for agent_id in range(p["n_rovers"]):
         counterfactual_global_reward = 0.0
         n_counters = p["n_rovers"]-1
+        g_count += 1
         for pk in pois:
             poi_reward = 0.0  # Track best POI reward over all time steps for given POI
             for step in range(p["steps"]):
@@ -108,6 +110,7 @@ def calc_cfl_dpp(pois, global_reward, rov_poi_dist, counterfactuals):
             n_counters = 1
             while n_counters < p["n_rovers"]:
                 counterfactual_global_reward = 0.0
+                g_count += 1
                 for pk in pois:
                     observer_count = 0
                     poi_reward = 0.0  # Track best POI reward over all time steps for given POI
@@ -145,14 +148,14 @@ def calc_cfl_dpp(pois, global_reward, rov_poi_dist, counterfactuals):
         else:
             cfl_dpp_rewards[agent_id] = d_rewards[agent_id]  # Returns difference reward for this agent
 
-    return cfl_dpp_rewards
+    return cfl_dpp_rewards, g_count
 
 
 def cfl_dpp_dif(pois, global_reward, rov_poi_dist, counterfactuals):
     """
     Calculate D++ rewards for each rover
     """
-    sd_rewards = calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals)
+    sd_rewards, g_count = calc_cfl_difference(pois, global_reward, rov_poi_dist, counterfactuals)
     rewards = np.zeros(p["n_rovers"])  # This is just a temporary reward tracker for iterations of counterfactuals
     cfl_dpp_rewards = np.zeros(p["n_rovers"])
 
@@ -160,6 +163,7 @@ def cfl_dpp_dif(pois, global_reward, rov_poi_dist, counterfactuals):
     for agent_id in range(p["n_rovers"]):
         counterfactual_global_reward = 0.0
         n_counters = p["n_rovers"] - 1
+        g_count += 1
         for pk in pois:
             poi_reward = 0.0  # Track best POI reward over all time steps for given POI
             for step in range(p["steps"]):
@@ -193,6 +197,7 @@ def cfl_dpp_dif(pois, global_reward, rov_poi_dist, counterfactuals):
             n_counters = 1
             while n_counters < p["n_rovers"]:
                 counterfactual_global_reward = 0.0
+                g_count += 1
                 for pk in pois:
                     observer_count = 0
                     poi_reward = 0.0  # Track best POI reward over all time steps for given POI
@@ -230,4 +235,4 @@ def cfl_dpp_dif(pois, global_reward, rov_poi_dist, counterfactuals):
         else:
             cfl_dpp_rewards[agent_id] = sd_rewards[agent_id]  # Returns difference reward for this agent
 
-    return cfl_dpp_rewards
+    return cfl_dpp_rewards, g_count

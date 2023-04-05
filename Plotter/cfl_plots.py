@@ -29,17 +29,17 @@ def generate_cfl_learning_curves(generations, sample_rate, sruns):
     dpp_reward = import_reward_data(dpp_file_path, generations, sample_rate, sruns)
     dpp_stdev = get_standard_err_learning(dpp_file_path, dpp_reward, generations, sample_rate, sruns)
 
-    cfl1_file_path = '../CFL2/Output_Data/CFL_DPP_Rewards.csv'
-    cfl1_reward = import_reward_data(cfl1_file_path, generations, sample_rate, sruns)
-    cfl1_stdev = get_standard_err_learning(cfl1_file_path, cfl1_reward, generations, sample_rate, sruns)
+    cfl_high_file_path = '../CFL_High/Output_Data/CFL_DPP_Rewards.csv'
+    cfl_high_reward = import_reward_data(cfl_high_file_path, generations, sample_rate, sruns)
+    cfl_high_stdev = get_standard_err_learning(cfl_high_file_path, cfl_high_reward, generations, sample_rate, sruns)
 
-    cfl2_file_path = '../CFL3/Output_Data/CFL_DPP_Rewards.csv'
+    cfl2_file_path = '../CFL4/Output_Data/CFL_DPP_Rewards.csv'
     cfl2_reward = import_reward_data(cfl2_file_path, generations, sample_rate, sruns)
     cfl2_stdev = get_standard_err_learning(cfl2_file_path, cfl2_reward, generations, sample_rate, sruns)
 
-    # bel_cfl_file_path = '../CFL_Below/Output_Data/CFL_DPP_Rewards.csv'
-    # bel_cfl_reward = import_reward_data(bel_cfl_file_path, generations, sample_rate, sruns)
-    # bel_cfl_stdev = get_standard_err_learning(bel_cfl_file_path, bel_cfl_reward, generations, sample_rate, sruns)
+    cfl_low_path = '../CFL_Low/Output_Data/CFL_DPP_Rewards.csv'
+    cfl_low_reward = import_reward_data(cfl_low_path, generations, sample_rate, sruns)
+    cfl_low_stdev = get_standard_err_learning(cfl_low_path, cfl_low_reward, generations, sample_rate, sruns)
 
     x_axis = []
     for i in range(generations):
@@ -51,25 +51,25 @@ def generate_cfl_learning_curves(generations, sample_rate, sruns):
     plt.plot(x_axis, g_reward, color=color1)
     plt.plot(x_axis, d_reward, color=color2)
     plt.plot(x_axis, dpp_reward, color=color3)
-    plt.plot(x_axis, cfl1_reward, color=color4)
+    plt.plot(x_axis, cfl_high_reward, color=color4)
     plt.plot(x_axis, cfl2_reward, color=color5)
-    # plt.plot(x_axis, bel_cfl_reward, color=[0,0,0])
+    plt.plot(x_axis, cfl_low_reward, color=[0, 0, 0])
 
     # Plot of Error
     alpha_val = 0.2
     plt.fill_between(x_axis, g_reward + g_stdev, g_reward - g_stdev, alpha=alpha_val, facecolor=color1)
     plt.fill_between(x_axis, d_reward + d_stdev, d_reward - d_stdev, alpha=alpha_val, facecolor=color2)
     plt.fill_between(x_axis, dpp_reward + dpp_stdev, dpp_reward - dpp_stdev, alpha=alpha_val, facecolor=color3)
-    plt.fill_between(x_axis, cfl1_reward + cfl1_stdev, cfl1_reward - cfl1_stdev, alpha=alpha_val, facecolor=color4)
+    plt.fill_between(x_axis, cfl_high_reward + cfl_high_stdev, cfl_high_reward - cfl_high_stdev, alpha=alpha_val, facecolor=color4)
     plt.fill_between(x_axis, cfl2_reward + cfl2_stdev, cfl2_reward - cfl2_stdev, alpha=alpha_val, facecolor=color5)
-    # plt.fill_between(x_axis, bel_cfl_reward + bel_cfl_stdev, bel_cfl_reward - bel_cfl_stdev, alpha=alpha_val, facecolor=[0,0,0])
+    plt.fill_between(x_axis, cfl_low_reward + cfl_low_stdev, cfl_low_reward - cfl_low_stdev, alpha=alpha_val, facecolor=[0, 0, 0])
 
     # Graph Details
     plt.xlabel("Generations")
     plt.ylabel("Global Reward")
     # plt.legend(["Global", "Difference"])
     # plt.legend(["Global", "Difference", "D++"])
-    plt.legend(["Global", "Difference", "D++", "CFL-2", 'CFL-3'])
+    plt.legend(["Global", "Difference", "D++", "CFL-High", 'CFL-4', 'CFL-Low'])
 
     # Save the plot
     if not os.path.exists('Plots'):  # If Data directory does not exist, create it
