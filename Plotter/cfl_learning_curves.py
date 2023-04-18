@@ -83,6 +83,6 @@ def generate_cfl_learning_curves(generations, sample_rate, sruns):
 if __name__ == '__main__':
     generations = 3000
     sample_rate = 20
-    sruns = 15
+    sruns = 30
 
     generate_cfl_learning_curves(generations, sample_rate, sruns)

@@ -1,6 +1,8 @@
 import csv
 import numpy as np
 import math
+import pickle
+import os
 
 
 def import_reward_data(csv_name, generations, sample_rate, sruns):
@@ -81,3 +83,15 @@ def get_acg_standard_err(csv_row, data_mean, sruns):
     standard_err = math.sqrt(temp_val/sruns) / math.sqrt(sruns)
 
     return standard_err
+
+
+def import_pickle_data(file_path):
+    """
+    Load saved Neural Network policies from pickle file
+    """
+
+    data_file = open(file_path, 'rb')
+    pickle_data = pickle.load(data_file)
+    data_file.close()
+
+    return pickle_data
